@@ -64,6 +64,3 @@ Thanks to the authors and maintainers who shared the knowledge and resources tha
 
 - https://hassantayyab.com/blogs/agent-skills-angular-ai-coding
 - https://github.com/Gentleman-Programming/Gentleman-Skills
-
-- https://hassantayyab.com/blogs/agent-skills-angular-ai-coding
-- https://github.com/Gentleman-Programming/Gentleman-Skills
