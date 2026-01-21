@@ -14,6 +14,10 @@
         <source>Angular 21 starter with signals, modern tooling, and Tailwind.</source>
         <target>Plantilla Angular 21 con signals, tooling moderno y Tailwind.</target>
       </trans-unit>
+      <trans-unit id="homeRepoButtonLabel" datatype="html">
+        <source>View repository</source>
+        <target>Ver repositorio</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
