@@ -1,11 +1,14 @@
 <main class="min-h-screen bg-slate-950 text-slate-100">
   <section class="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-16">
     <div class="text-center">
-      <p class="text-sm uppercase tracking-[0.3em] text-slate-400">Template</p>
-      <h1 class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
-        {{ appState.title() }}
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-400" i18n="@@homeBadge">Template</p>
+      <h1
+        class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl lg:text-6xl"
+        i18n="@@homeTitle"
+      >
+        Hello, {{ appState.projectName() }}
       </h1>
-      <p class="mt-4 text-base text-slate-300 sm:text-lg">
+      <p class="mt-4 text-base text-slate-300 sm:text-lg" i18n="@@homeSubtitle">
         Angular 21 starter with signals, modern tooling, and Tailwind.
       </p>
     </div>

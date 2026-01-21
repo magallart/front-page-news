@@ -1,11 +1,11 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class AppStateService {
-  private readonly projectName = signal('angular-project-base');
-  readonly title = computed(() => `Hello, ${this.projectName()}`);
+  private readonly projectNameSignal = signal('angular-project-base');
+  readonly projectName = this.projectNameSignal.asReadonly();
 
   setProjectName(name: string): void {
-    this.projectName.set(name);
+    this.projectNameSignal.set(name);
   }
 }

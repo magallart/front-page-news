@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2">
+  <file source-language="en-US" target-language="es" datatype="plaintext">
+    <body>
+      <trans-unit id="homeBadge" datatype="html">
+        <source>Template</source>
+        <target>Plantilla</target>
+      </trans-unit>
+      <trans-unit id="homeTitle" datatype="html">
+        <source>Hello, <x id="INTERPOLATION"/></source>
+        <target>Hola, <x id="INTERPOLATION"/></target>
+      </trans-unit>
+      <trans-unit id="homeSubtitle" datatype="html">
+        <source>Angular 21 starter with signals, modern tooling, and Tailwind.</source>
+        <target>Plantilla Angular 21 con signals, tooling moderno y Tailwind.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
