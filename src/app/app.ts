@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { AppStateService } from './core/state/app-state.service';
+import { AppStateService } from './services/state/app-state.service';
 
 @Component({
   selector: 'app-root',
