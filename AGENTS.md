@@ -118,6 +118,17 @@ This file acts as the **single source of truth** for global conventions and deci
 - Never assume implicit requirements.
 - If critical information is missing, stop and request it.
 
+## Session Continuity
+
+- Maintain a root `SESSION.md` file for short daily session logs.
+- Before ending a session, append a brief summary of the current session to `SESSION.md`.
+- Each session entry should include:
+  - Date
+  - What changed
+  - Files touched
+  - Verification performed
+  - Next pending step (if any)
+
 ## Agent Routing
 
 | Task Type                                     | Agent                    |
