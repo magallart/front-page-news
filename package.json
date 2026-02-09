@@ -16,7 +16,7 @@
     "commitlint": "commitlint --from=HEAD~1"
   },
   "private": true,
-  "packageManager": "npm@11.6.2",
+  "packageManager": "pnpm@10.28.1",
   "dependencies": {
     "@angular/common": "^21.1.0",
     "@angular/compiler": "^21.1.0",

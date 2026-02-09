@@ -149,13 +149,13 @@ E2E tests exist to answer one question:
 - When `BACKLOG.md` is used, treat ticket DoD as a release gate.
 - Before marking any ticket task as `[✔️]`, confirm:
   - relevant functional criteria are met
-  - `npm run lint` passes
-  - `npm test` passes
+  - `pnpm run lint` passes
+  - `pnpm test` passes
 - If DoD is not met, keep tasks as `[ ]`.
 
 ## Commands
 
 ```bash
-npm test
-npm run lint
+pnpm test
+pnpm run lint
 ```

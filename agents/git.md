@@ -60,7 +60,7 @@ Recommended structure:
 - Linked issue/ticket (if available)
 - Clear description: what/why/how verified
 - Screenshots for UI changes (if applicable)
-- `npm run lint` and `npm test` pass
+- `pnpm run lint` and `pnpm test` pass
 - No unrelated changes bundled in the PR
 
 ## History Policy

@@ -32,13 +32,13 @@ If you build Angular apps regularly and want **speed without chaos**, this templ
 ### 📦 Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### ▶️ Run the app locally
 
 ```bash
-ng serve
+pnpm start
 ```
 
 Then open:
@@ -56,7 +56,7 @@ The app will automatically reload on file changes.
 ### Build for production
 
 ```bash
-ng build
+pnpm build
 ```
 
 Artifacts will be generated in the `dist/` folder, optimized for performance.
@@ -64,7 +64,7 @@ Artifacts will be generated in the `dist/` folder, optimized for performance.
 ### Run unit tests
 
 ```bash
-ng test
+pnpm test
 ```
 
 Powered by **Vitest**.
@@ -72,7 +72,7 @@ Powered by **Vitest**.
 ### Run end-to-end tests
 
 ```bash
-ng e2e
+pnpm test:e2e
 ```
 
 ---

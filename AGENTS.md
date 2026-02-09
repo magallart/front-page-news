@@ -13,11 +13,11 @@ This file acts as the **single source of truth** for global conventions and deci
 
 ## Global Conventions
 
-- Use **npm** for all package management:
-  - npm install
-  - npm run dev
-  - npm run build
-  - npm test
+- Use **pnpm** for all package management:
+  - pnpm install
+  - pnpm run dev
+  - pnpm run build
+  - pnpm test
 - TypeScript is mandatory.
 - Prefer ESM and modern browser syntax.
 - Tailwind CSS is the only styling solution.
@@ -102,8 +102,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - PR title format:
   - [<project_name>] Clear and concise description.
 - Before committing or opening a PR:
-  - npm run lint.
-  - npm test.
+  - pnpm run lint.
+  - pnpm test.
 - PR descriptions must explain:
   - What changed.
   - Why it changed.
