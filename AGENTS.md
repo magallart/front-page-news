@@ -129,6 +129,14 @@ This file acts as the **single source of truth** for global conventions and deci
   - Verification performed
   - Next pending step (if any)
 
+## Backlog Workflow
+
+- If `BACKLOG.md` exists, tickets created with `/plan` must include a task checklist.
+- Checklist status format is mandatory:
+  - `[ ]` pending task
+  - `[✔️]` completed task
+- A task can be marked as `[✔️]` only when its ticket DoD is satisfied.
+
 ## Agent Routing
 
 | Task Type                                     | Agent                    |
