@@ -10,9 +10,9 @@ List of tickets created with `/plan`.
 
 ## Tickets
 
-| Ticket | Title | Status | Priority | Description | Date |
-| --- | --- | --- | --- | --- | --- |
-| [AP-001] | Define first ticket | todo | P2 | Sample ticket to bootstrap the backlog. | 2026-02-09 |
+| Ticket   | Title               | Status | Priority | Description                             | Date       |
+| -------- | ------------------- | ------ | -------- | --------------------------------------- | ---------- |
+| [AP-001] | Define first ticket | todo   | P2       | Sample ticket to bootstrap the backlog. | 2026-02-09 |
 
 ## Ticket Details
 
