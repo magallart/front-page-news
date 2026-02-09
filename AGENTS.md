@@ -91,6 +91,14 @@ This file acts as the **single source of truth** for global conventions and deci
 
 - Pull Requests must be small and focused.
 - Always use conventional commits.
+- Prefer atomic commits: one logical change per commit.
+- Do not group unrelated file changes in a single commit.
+- Never create commits without explicit user approval in the current conversation.
+- Commit or push actions are allowed only after the user explicitly asks for them.
+- Commit and PR descriptions must be explicit and self-contained, not terse.
+- Avoid vague messages like "fix stuff", "updates", or "cleanup".
+- If the project uses `BACKLOG.md`, commit subjects must include the ticket id.
+- Required commit subject format with ticket: `type(scope): [TICKET-ID] explicit summary`.
 - PR title format:
   - [<project_name>] Clear and concise description.
 - Before committing or opening a PR:
