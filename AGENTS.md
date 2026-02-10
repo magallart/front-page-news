@@ -90,6 +90,13 @@ This file acts as the **single source of truth** for global conventions and deci
 ## Git, Commits, and Pull Requests
 
 - Pull Requests must be small and focused.
+- Keep `main` always deployable and production-ready.
+- Work in short-lived branches; do not develop unfinished features directly on `main`.
+- Branch naming must include ticket id and intent:
+  - `feat/fpn-###-short-summary`
+  - `fix/fpn-###-short-summary`
+  - `refactor/fpn-###-short-summary`
+  - `docs/fpn-###-short-summary`
 - Always use conventional commits.
 - Prefer atomic commits: one logical change per commit.
 - Do not group unrelated file changes in a single commit.
@@ -101,6 +108,7 @@ This file acts as the **single source of truth** for global conventions and deci
 - Required commit subject format with ticket: `type(scope): [TICKET-ID] explicit summary`.
 - PR title format:
   - [<project_name>] Clear and concise description.
+- PR body should follow `.github/pull_request_template.md`.
 - Before committing or opening a PR:
   - pnpm run lint.
   - pnpm test.
