@@ -12,13 +12,22 @@ Brief continuity notes to recover context between terminal sessions.
     - explicit commit/PR descriptions
     - mandatory ticket id in commit subject when `BACKLOG.md` exists
     - atomic commits for large tickets
-- Files touched:
-  - `DESIGN.md`
-  - `src/styles.css`
-  - `AGENTS.md`
-  - `agents/git.md`
-- Verification performed:
-  - `npm run lint` passed
-  - `npm test -- --watch=false` passed
-- Next pending step:
-  - Continue refining template rules as requested.
+
+
+## 2026-02-10
+
+- What changed:
+  - Built and refined a full project backlog in `BACKLOG.md`:
+    - converted to one ticket per phase (`FPN-001` to `FPN-015`)
+    - removed time estimates, status, priority, and date columns
+    - added top table navigation links to each ticket section
+    - added `Finalizado` tracking column with visual checks
+    - removed `## Notes` section as requested
+  - Added branch/PR workflow rules to keep `main` always stable.
+  - Added PR template for consistent self-review and ticket traceability.
+  - Installed and validated CLI tooling:
+    - GitHub CLI (`gh`) installed and authenticated
+    - Vercel CLI (`vercel`) installed, authenticated, project linked, and `vercel dev` verified by user on `localhost:3000`
+  - Created and then removed temporary docs (`VERCEL.md`, `GITHUB.md`) after user moved content to Obsidian.
+  - Committed approved changes incrementally.
+
