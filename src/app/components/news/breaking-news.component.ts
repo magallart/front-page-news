@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
-  selector: 'app-latest-news-list',
+  selector: 'app-breaking-news',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
@@ -29,7 +29,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     </section>
   `,
 })
-export class LatestNewsListComponent {
+export class BreakingNewsComponent {
   readonly title = input('Ultima hora');
   readonly items = input<readonly NewsItem[]>([]);
 }

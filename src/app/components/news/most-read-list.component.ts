@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
-  selector: 'app-trending-list',
+  selector: 'app-most-read-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
@@ -33,7 +33,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     </section>
   `,
 })
-export class TrendingListComponent {
+export class MostReadListComponent {
   readonly title = input('Lo mas leido');
   readonly items = input<readonly NewsItem[]>([]);
 }

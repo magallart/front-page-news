@@ -6,7 +6,7 @@ import { NewsCardComponent } from './news-card.component';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
-  selector: 'app-current-affairs-block',
+  selector: 'app-current-news-block',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, NewsCardComponent],
   template: `
@@ -35,7 +35,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     </section>
   `,
 })
-export class CurrentAffairsBlockComponent {
+export class CurrentNewsBlockComponent {
   readonly title = input('Actualidad');
   readonly sectionSlug = input('actualidad');
   readonly articles = input<readonly NewsItem[]>([]);

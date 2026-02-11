@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
-import { CurrentAffairsBlockComponent } from '../../components/news/current-affairs-block.component';
-import { LatestNewsListComponent } from '../../components/news/latest-news-list.component';
+import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
+import { CurrentNewsBlockComponent } from '../../components/news/current-news-block.component';
+import { MostReadListComponent } from '../../components/news/most-read-list.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
-import { TrendingListComponent } from '../../components/news/trending-list.component';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
@@ -15,10 +15,10 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   imports: [
     PageContainerComponent,
     NewsCarouselComponent,
-    CurrentAffairsBlockComponent,
-    LatestNewsListComponent,
+    CurrentNewsBlockComponent,
+    BreakingNewsComponent,
+    MostReadListComponent,
     SectionBlockComponent,
-    TrendingListComponent,
   ],
   template: `
     <app-page-container>
@@ -34,12 +34,12 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         <app-news-carousel title="Destacadas" [articles]="featuredNews" />
 
         <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <app-current-affairs-block [articles]="currentAffairsNews" />
+          <app-current-news-block [articles]="currentAffairsNews" />
           <div class="space-y-6">
             <div class="mb-2">
-              <app-latest-news-list [items]="latestNews" />
+              <app-breaking-news [items]="breakingNews" />
             </div>
-            <app-trending-list [items]="trendingNews" />
+            <app-most-read-list [items]="mostReadNews" />
           </div>
         </div>
 
@@ -51,9 +51,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 export class HomePageComponent {
   protected readonly featuredNews = pickRandomItems(MOCK_NEWS, FEATURED_STORIES_COUNT);
   protected readonly currentAffairsNews = MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, 4);
-  protected readonly latestNews = MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, 6);
+  protected readonly breakingNews = MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, 6);
   protected readonly economyNews = MOCK_NEWS.filter((item) => item.section === 'economia').slice(0, 3);
-  protected readonly trendingNews = MOCK_NEWS.slice(0, 5);
+  protected readonly mostReadNews = MOCK_NEWS.slice(0, 5);
 }
 
 const FEATURED_STORIES_COUNT = 10;
