@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { CurrentAffairsBlockComponent } from '../../components/news/current-affairs-block.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { TrendingListComponent } from '../../components/news/trending-list.component';
@@ -10,7 +11,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 @Component({
   selector: 'app-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, NewsCarouselComponent, SectionBlockComponent, TrendingListComponent],
+  imports: [PageContainerComponent, NewsCarouselComponent, CurrentAffairsBlockComponent, SectionBlockComponent, TrendingListComponent],
   template: `
     <app-page-container>
       <section class="space-y-6 py-4 sm:space-y-8">
@@ -25,7 +26,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         <app-news-carousel title="Destacadas" [articles]="featuredNews" />
 
         <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <app-section-block title="Actualidad" sectionSlug="actualidad" [articles]="currentAffairsNews" />
+          <app-current-affairs-block [articles]="currentAffairsNews" />
           <app-trending-list [items]="trendingNews" />
         </div>
 
