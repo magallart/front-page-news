@@ -93,6 +93,12 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Extraer iconos SVG a componentes dedicados en `src/app/components/icons`.
   - [✔️] Implementar bateria de tests unitarios para header/navbar y subcomponentes clave.
   - [✔️] Implementar tests e2e para flujos desktop/mobile del header y guardas de branding (textos, colores e imagenes).
+  - [✔️] Implementar snapshots visuales del header para desktop/tablet/mobile con estados cerrado/abierto en responsive.
+  - [✔️] Centralizar mocks editoriales en `src/app/mocks` para reducir ruido en componentes.
+  - [✔️] Crear `mock-news.service.ts` para encapsular acceso a datos mock y facilitar futura sustitucion por API real.
+  - [✔️] Refactorizar footer para consumir datos mock centralizados (`footer.mock.ts`).
+  - [✔️] Implementar bateria de tests unitarios para footer (contenido, enlaces legales, enlaces externos).
+  - [✔️] Implementar tests e2e y snapshots visuales del footer (desktop y mobile).
 
 <a id="fpn-004"></a>
 
