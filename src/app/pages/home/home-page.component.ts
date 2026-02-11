@@ -35,11 +35,13 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   `,
 })
 export class HomePageComponent {
-  protected readonly featuredNews = MOCK_NEWS.slice(0, 2);
+  protected readonly featuredNews = pickRandomItems(MOCK_NEWS, FEATURED_STORIES_COUNT);
   protected readonly currentAffairsNews = MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, 3);
   protected readonly economyNews = MOCK_NEWS.filter((item) => item.section === 'economia').slice(0, 3);
   protected readonly trendingNews = MOCK_NEWS.slice(0, 5);
 }
+
+const FEATURED_STORIES_COUNT = 10;
 
 const MOCK_NEWS: readonly NewsItem[] = [
   {
@@ -119,4 +121,65 @@ const MOCK_NEWS: readonly NewsItem[] = [
     author: 'Irene Gil',
     url: 'https://example.com/noticia-007',
   },
+  {
+    id: 'demo-noticia-008',
+    title: 'El sector turistico adelanta previsiones al alza para primavera',
+    summary: 'Las reservas anticipadas mejoran frente al mismo periodo del ano anterior.',
+    imageUrl: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=80',
+    source: 'Actualidad 24',
+    section: 'actualidad',
+    publishedAt: '2026-02-08',
+    author: 'Rocio Lara',
+    url: 'https://example.com/noticia-008',
+  },
+  {
+    id: 'demo-noticia-009',
+    title: 'Los bancos centrales mantienen cautela ante la inflacion subyacente',
+    summary: 'Los analistas esperan ajustes graduales en las proximas reuniones monetarias.',
+    imageUrl: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1200&q=80',
+    source: 'Economia Europa',
+    section: 'economia',
+    publishedAt: '2026-02-08',
+    author: 'Sergio Nieto',
+    url: 'https://example.com/noticia-009',
+  },
+  {
+    id: 'demo-noticia-010',
+    title: 'Una red de bibliotecas lanza un plan de actividades para jovenes',
+    summary: 'El programa combina talleres de lectura, escritura y arte digital en barrios urbanos.',
+    imageUrl: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80',
+    source: 'Cultura Viva',
+    section: 'cultura',
+    publishedAt: '2026-02-08',
+    author: 'Marta Soler',
+    url: 'https://example.com/noticia-010',
+  },
+  {
+    id: 'demo-noticia-011',
+    title: 'Tecnologia sanitaria acelera el diagnostico en centros publicos',
+    summary: 'Nuevos sistemas de apoyo clinico reducen tiempos de espera en pruebas clave.',
+    imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80',
+    source: 'Salud y Ciencia',
+    section: 'actualidad',
+    publishedAt: '2026-02-07',
+    author: 'Diego Fuentes',
+    url: 'https://example.com/noticia-011',
+  },
 ] as const;
+
+function pickRandomItems(items: readonly NewsItem[], count: number): readonly NewsItem[] {
+  if (items.length <= count) {
+    return items;
+  }
+
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const currentItem = shuffled[index];
+    shuffled[index] = shuffled[randomIndex];
+    shuffled[randomIndex] = currentItem;
+  }
+
+  return shuffled.slice(0, count);
+}

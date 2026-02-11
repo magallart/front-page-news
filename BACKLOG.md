@@ -73,7 +73,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Navegacion a seccion/detalle operativa.
 - Tasks:
   - [✔️] Crear componentes de UI: `news-card`, `news-carousel`, `section-block`, `trending-list`.
-  - [ ] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
+  - [✔️] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
   - [ ] Implementar bloque "actualidad".
   - [ ] Implementar bloque "2-3 noticias por seccion".
   - [ ] Implementar bloque "lo mas leido" con criterio temporal mock.
