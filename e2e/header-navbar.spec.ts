@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 test.describe('Header/Navbar', () => {
   test('desktop: sticky appears on scroll and side menu navigates to section', async ({ page }) => {
@@ -22,14 +22,7 @@ test.describe('Header/Navbar', () => {
   test('desktop: ticker links route to article page', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
-
-    await page.addStyleTag({
-      content: `
-        .ticker-marquee {
-          animation: none !important;
-        }
-      `,
-    });
+    await stabilizeVisualState(page);
 
     await page.locator('app-navbar-ticker a').first().click();
     await expect(page).toHaveURL(/\/noticia\//);
@@ -43,7 +36,9 @@ test.describe('Header/Navbar', () => {
     await expect(stickyContainer).toHaveClass(/translate-y-0/);
 
     const compactMeta = page.locator('app-navbar-sticky-header p');
-    await expect(compactMeta).toContainText(/\d{2}-\d{2}-\d{2}\s\u00B7\s[A-Z\u00C1\u00C9\u00CD\u00D3\u00DA\u00DC\u00D1 ]+\s(?:--|\d+)\u00BAC/);
+    await expect(compactMeta).toContainText(
+      /\d{2}-\d{2}-\d{2}\s\u00B7\s[A-Z\u00C1\u00C9\u00CD\u00D3\u00DA\u00DC\u00D1 ]+\s(?:--|\d+)\u00BAC/,
+    );
 
     await page.getByRole('button', { name: 'Abrir menu' }).click();
     const sideMenu = page.locator('app-navbar-side-menu aside');
@@ -63,7 +58,7 @@ test.describe('Header/Navbar', () => {
     const tickerBadge = page.locator('app-navbar-ticker .breaking-badge').first();
     const footer = page.locator('app-footer footer').first();
 
-    await expect(tickerBadge).toContainText('Última hora');
+    await expect(tickerBadge).toContainText('\u00DAltima hora');
     await expect(page.locator('app-navbar-main-header')).toContainText('FRONT PAGE');
     await expect(page.locator('app-navbar-main-header')).toContainText('NEWS');
     await expect(page.locator('app-footer')).toContainText(
@@ -108,4 +103,69 @@ test.describe('Header/Navbar', () => {
     expect(pageBackground).not.toBe(footerBackground);
   });
 
+  test('visual regression: header desktop snapshot', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto('/');
+    await stabilizeVisualState(page);
+
+    const header = page.locator('app-navbar').first();
+    await expect(header).toHaveScreenshot('header-desktop.png', {
+      maxDiffPixelRatio: 0.01,
+      mask: dynamicMetaMasks(page),
+    });
+  });
+
+  test('visual regression: tablet sticky header closed and open', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto('/');
+    await stabilizeVisualState(page);
+
+    const header = page.locator('app-navbar').first();
+    await expect(header).toHaveScreenshot('header-tablet-closed.png', {
+      maxDiffPixelRatio: 0.01,
+      mask: dynamicMetaMasks(page),
+    });
+
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await expect(page.locator('app-navbar-side-menu aside')).toBeVisible();
+    await expect(header).toHaveScreenshot('header-tablet-open.png', {
+      maxDiffPixelRatio: 0.01,
+      mask: dynamicMetaMasks(page),
+    });
+  });
+
+  test('visual regression: mobile sticky header closed and open', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await stabilizeVisualState(page);
+
+    const header = page.locator('app-navbar').first();
+    await expect(header).toHaveScreenshot('header-mobile-closed.png', {
+      maxDiffPixelRatio: 0.01,
+      mask: dynamicMetaMasks(page),
+    });
+
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await expect(page.locator('app-navbar-side-menu aside')).toBeVisible();
+    await expect(header).toHaveScreenshot('header-mobile-open.png', {
+      maxDiffPixelRatio: 0.01,
+      mask: dynamicMetaMasks(page),
+    });
+  });
 });
+
+async function stabilizeVisualState(page: Page): Promise<void> {
+  await page.addStyleTag({
+    content: `
+      .ticker-marquee,
+      .breaking-badge {
+        animation: none !important;
+      }
+    `,
+  });
+}
+
+function dynamicMetaMasks(page: Page) {
+  return [page.locator('app-navbar-main-header p').first(), page.locator('app-navbar-sticky-header p').first()];
+}
+
