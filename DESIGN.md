@@ -26,12 +26,20 @@ Rellena solo estos campos al clonar el template.
 
 Use `H S L` values without `hsl()`.
 
-- `light_primary`: `<221 83% 53%>`
-- `light_background`: `<0 0% 100%>`
-- `light_foreground`: `<222 47% 11%>`
-- `dark_primary`: `<221 83% 60%>`
-- `dark_background`: `<222 47% 11%>`
-- `dark_foreground`: `<210 40% 98%>`
+- `light_primary`: `<49 100% 63%>`
+- `light_background`: `<0 0% 96%>`
+- `light_foreground`: `<0 2% 16%>`
+- `dark_primary`: `<46 65% 52%>`
+- `dark_background`: `<0 30% 8%>`
+- `dark_foreground`: `<0 0% 96%>`
+
+### Palette Reference (HSL)
+
+- `white-smoke`: `0 0% 96%`
+- `mustard`: `49 100% 63%`
+- `metallic-gold`: `46 65% 52%`
+- `shadow-grey`: `0 2% 16%`
+- `coffee-bean`: `0 30% 8%`
 
 ## Rules
 
