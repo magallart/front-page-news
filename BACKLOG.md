@@ -1,4 +1,4 @@
-# BACKLOG
+﻿# BACKLOG
 
 Backlog principal del proyecto Front Page News, enfocado en empezar a construir pantallas y componentes cuanto antes.
 
@@ -17,7 +17,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 | Ticket | Title | Description | Finalizado |
 | ------ | ----- | ----------- | ---------- |
-| [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [ ] |
+| [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [✔️] |
 | [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [ ] |
 | [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [ ] |
 | [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [ ] |
@@ -41,11 +41,11 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Lista inicial de 5-8 feeds RSS definida (aunque luego pueda cambiar).
   - Secciones editoriales iniciales definidas.
 - Tasks:
-  - [ ] Documentar propuesta de valor y limite del agregador (sin mostrar articulo completo).
-  - [ ] Confirmar campos minimos por noticia: `title`, `summary`, `image`, `author`, `source`, `publishedAt`, `url`.
-  - [ ] Definir secciones iniciales: `actualidad`, `economia`, `cultura`, `justicia` (ajustables).
-  - [ ] Definir lista inicial de periodicos objetivo y URL RSS candidata.
-  - [ ] Documentar restricciones legales basicas en `docs/product-scope.md`.
+  - [✔️] Documentar propuesta de valor y limite del agregador (sin mostrar articulo completo).
+  - [✔️] Confirmar campos minimos por noticia: `title`, `summary`, `image`, `author`, `source`, `publishedAt`, `url`.
+  - [✔️] Definir secciones iniciales: `actualidad`, `economia`, `cultura`, `justicia` (ajustables).
+  - [✔️] Definir lista inicial de periodicos objetivo y URL RSS candidata.
+  - [✔️] Documentar restricciones legales basicas en `docs/product-scope.md`.
 
 <a id="fpn-002"></a>
 
@@ -90,7 +90,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [ ] Implementar encabezado de seccion con metadatos.
   - [ ] Renderizar grid/lista de noticias de la seccion.
-  - [ ] A�adir bloque secundario de apoyo editorial.
+  - [ ] Añadir bloque secundario de apoyo editorial.
   - [ ] Conectar clics a pagina de detalle.
 
 <a id="fpn-005"></a>
@@ -106,7 +106,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Mostrar `title`, `summary`, `image`, `author`, `source`, `publishedAt`.
   - [ ] Mostrar enlace/CTA "Leer en el medio original".
   - [ ] Definir fallback de imagen y texto para datos ausentes.
-  - [ ] A�adir navegacion de retorno a portada o seccion.
+  - [ ] Añadir navegacion de retorno a portada o seccion.
 
 <a id="fpn-006"></a>
 
@@ -139,7 +139,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Hacer fetch concurrente con timeout (`AbortController`).
   - [ ] Parsear RSS/Atom y mapear al modelo comun.
   - [ ] Devolver `warnings[]` cuando una fuente falle.
-  - [ ] A�adir cache headers (`s-maxage` + `stale-while-revalidate`).
+  - [ ] Añadir cache headers (`s-maxage` + `stale-while-revalidate`).
 
 <a id="fpn-008"></a>
 
@@ -156,7 +156,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Conectar pagina de seccion por `slug`.
   - [ ] Conectar pagina de detalle por `id`.
   - [ ] Mostrar banners de warnings parciales.
-  - [ ] A�adir interceptor HTTP para manejo uniforme de errores.
+  - [ ] Añadir interceptor HTTP para manejo uniforme de errores.
 
 <a id="fpn-009"></a>
 
@@ -204,3 +204,4 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
   - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
+
