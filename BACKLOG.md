@@ -18,7 +18,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | Ticket | Title | Description | Finalizado |
 | ------ | ----- | ----------- | ---------- |
 | [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [✔️] |
-| [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [ ] |
+| [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [✔️] |
 | [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [ ] |
 | [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [ ] |
 | [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [ ] |
@@ -57,10 +57,10 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Rutas funcionales para portada, seccion y detalle.
   - Base visual alineada con `DESIGN.md`.
 - Tasks:
-  - [ ] Configurar rutas: `/`, `/seccion/:slug`, `/noticia/:id`.
-  - [ ] Crear componentes base: `navbar`, `footer`, `page-container`.
-  - [ ] Definir placeholders de contenido por ruta.
-  - [ ] Revisar responsive base (mobile-first).
+  - [✔️] Configurar rutas: `/`, `/seccion/:slug`, `/noticia/:id`.
+  - [✔️] Crear componentes base: `navbar`, `footer`, `page-container`.
+  - [✔️] Definir placeholders de contenido por ruta.
+  - [✔️] Revisar responsive base (mobile-first).
 
 <a id="fpn-003"></a>
 
