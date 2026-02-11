@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import {
+  FOOTER_INTEREST_LINKS,
+  FOOTER_LEGAL_LINKS,
+  FOOTER_NEWSPAPER_LINKS,
+  FOOTER_SECTION_LINKS,
+  FOOTER_SERVICE_LINKS,
+  FOOTER_SOCIAL_LINKS,
+} from '../../mocks/footer.mock';
 import { SocialIconComponent } from '../icons/social-icon.component';
 
 import { PageContainerComponent } from './page-container.component';
@@ -137,44 +145,10 @@ import { PageContainerComponent } from './page-container.component';
   `,
 })
 export class AppFooterComponent {
-  protected readonly socialLinks = [
-    { label: 'Facebook', icon: 'facebook', url: 'https://facebook.com' },
-    { label: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
-    { label: 'X', icon: 'x', url: 'https://x.com' },
-  ] as const;
-
-  protected readonly sectionLinks = [
-    { label: 'Actualidad', href: '/seccion/actualidad' },
-    { label: 'Economia', href: '/seccion/economia' },
-    { label: 'Deportes', href: '/seccion/deportes' },
-    { label: 'Tecnologia', href: '/seccion/tecnologia' },
-  ] as const;
-
-  protected readonly serviceLinks = [
-    { label: 'Hemeroteca', url: 'https://example.com/hemeroteca' },
-    { label: 'Podcasts', url: 'https://example.com/podcasts' },
-    { label: 'Newsletter', url: 'https://example.com/newsletter' },
-    { label: 'Anunciate', url: 'https://example.com/anunciate' },
-  ] as const;
-
-  protected readonly legalLinks = [
-    { label: 'Aviso legal', href: '/aviso-legal' },
-    { label: 'Privacidad', href: '/privacidad' },
-    { label: 'Cookies', href: '/cookies' },
-  ] as const;
-
-  protected readonly interestLinks = [
-    { label: 'Ultima hora', href: '/', fragment: 'breaking-news' },
-    { label: 'Lo mas leido', href: '/', fragment: 'most-read' },
-    { label: 'Actualidad', href: '/', fragment: 'current-news' },
-  ] as const;
-
-  protected readonly newspaperLinks = [
-    { label: 'El Pais', url: 'https://elpais.com' },
-    { label: 'El Mundo', url: 'https://www.elmundo.es' },
-    { label: 'ABC', url: 'https://www.abc.es' },
-    { label: 'La Vanguardia', url: 'https://www.lavanguardia.com' },
-    { label: '20 Minutos', url: 'https://www.20minutos.es' },
-    { label: 'elDiario.es', url: 'https://www.eldiario.es' },
-  ] as const;
+  protected readonly socialLinks = FOOTER_SOCIAL_LINKS;
+  protected readonly sectionLinks = FOOTER_SECTION_LINKS;
+  protected readonly serviceLinks = FOOTER_SERVICE_LINKS;
+  protected readonly legalLinks = FOOTER_LEGAL_LINKS;
+  protected readonly interestLinks = FOOTER_INTEREST_LINKS;
+  protected readonly newspaperLinks = FOOTER_NEWSPAPER_LINKS;
 }
