@@ -33,13 +33,15 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
         <app-news-carousel title="Destacadas" [articles]="featuredNews" />
 
-        <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div class="grid gap-6 lg:grid-cols-[2fr_1fr]" id="current-news">
           <app-current-news-block [articles]="currentAffairsNews" />
           <div class="space-y-6">
-            <div class="mb-2">
+            <div class="mb-2" id="breaking-news">
               <app-breaking-news [items]="breakingNews" />
             </div>
-            <app-most-read-list [items]="mostReadNews" />
+            <div id="most-read">
+              <app-most-read-list [items]="mostReadNews" />
+            </div>
           </div>
         </div>
 
