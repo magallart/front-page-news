@@ -20,17 +20,21 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
     NavbarSideMenuComponent,
   ],
   template: `
-    <header class="border-b border-border bg-background">
+    <header class="hidden border-b border-border bg-background lg:block">
       <app-navbar-main-header [links]="links" [topLinks]="topLinks" [topbarMeta]="topbarMeta()" />
       <app-navbar-ticker [headlines]="tickerHeadlines" />
     </header>
 
     <app-navbar-sticky-header
-      [visible]="stickyVisible()"
+      [visible]="shouldShowSticky()"
       [menuOpen]="menuOpen()"
-      [topbarMeta]="topbarMeta()"
+      [topbarMeta]="stickyTopbarMeta()"
       (menuToggle)="toggleMenu()"
     />
+
+    <div class="border-b border-border bg-background lg:hidden">
+      <app-navbar-ticker [headlines]="tickerHeadlines" />
+    </div>
 
     <app-navbar-side-menu
       [open]="menuOpen()"
@@ -44,9 +48,11 @@ export class AppNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly city = signal('Madrid');
   private readonly temperature = signal<number | null>(24);
+  private readonly isMobileViewport = signal(false);
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
+  protected readonly shouldShowSticky = computed(() => this.isMobileViewport() || this.stickyVisible());
 
   protected readonly links: readonly NavLink[] = [
     { label: 'Actualidad', href: '/seccion/actualidad', exact: false },
@@ -70,6 +76,11 @@ export class AppNavbarComponent {
 
   protected readonly topbarMeta = computed(() => {
     const dateLabel = formatDateLabel(new Date());
+    const tempLabel = this.temperature() === null ? '--' : `${this.temperature()}\u00BAC`;
+    return `${dateLabel} \u00B7 ${this.city().toUpperCase()} ${tempLabel}`;
+  });
+  protected readonly stickyTopbarMeta = computed(() => {
+    const dateLabel = this.isMobileViewport() ? formatCompactDateLabel(new Date()) : formatDateLabel(new Date());
     const tempLabel = this.temperature() === null ? '--' : `${this.temperature()}\u00BAC`;
     return `${dateLabel} \u00B7 ${this.city().toUpperCase()} ${tempLabel}`;
   });
@@ -102,6 +113,7 @@ export class AppNavbarComponent {
   ];
 
   constructor() {
+    this.initResponsiveMode();
     this.initStickyOnScroll();
     void this.loadCityAndWeather();
   }
@@ -121,6 +133,11 @@ export class AppNavbarComponent {
 
     const threshold = 220;
     const onScroll = (): void => {
+      if (this.isMobileViewport()) {
+        this.stickyVisible.set(false);
+        return;
+      }
+
       const shouldShowSticky = window.scrollY > threshold;
       this.stickyVisible.set(shouldShowSticky);
 
@@ -134,6 +151,35 @@ export class AppNavbarComponent {
 
     this.destroyRef.onDestroy(() => {
       window.removeEventListener('scroll', onScroll);
+    });
+  }
+
+  private initResponsiveMode(): void {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const onChange = (): void => {
+      this.isMobileViewport.set(mediaQuery.matches);
+      if (!mediaQuery.matches && this.menuOpen() && !this.stickyVisible()) {
+        this.menuOpen.set(false);
+      }
+    };
+
+    onChange();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', onChange);
+      this.destroyRef.onDestroy(() => {
+        mediaQuery.removeEventListener('change', onChange);
+      });
+      return;
+    }
+
+    mediaQuery.addListener(onChange);
+    this.destroyRef.onDestroy(() => {
+      mediaQuery.removeListener(onChange);
     });
   }
 
@@ -206,4 +252,11 @@ function formatDateLabel(date: Date): string {
   })
     .format(date)
     .toUpperCase();
+}
+
+function formatCompactDateLabel(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
 }

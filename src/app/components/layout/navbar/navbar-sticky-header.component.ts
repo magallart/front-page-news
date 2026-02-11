@@ -10,7 +10,7 @@ import { PageContainerComponent } from '../page-container.component';
   imports: [PageContainerComponent, RouterLink, IconMenuComponent],
   template: `
     <div
-      class="fixed inset-x-0 top-0 z-50 transition-all duration-300"
+      class="sticky top-0 z-50 transition-all duration-300 lg:fixed lg:inset-x-0 lg:top-0"
       [class.pointer-events-none]="!visible()"
       [class.opacity-0]="!visible()"
       [class.-translate-y-full]="!visible()"
@@ -22,7 +22,7 @@ import { PageContainerComponent } from '../page-container.component';
         style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));"
       >
         <app-page-container>
-          <div class="grid grid-cols-[auto_1fr] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr] sm:gap-4">
+          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr] sm:gap-4">
             <button
               type="button"
               class="mr-2 inline-flex h-10 w-10 items-center justify-center text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:mr-3"
@@ -41,9 +41,7 @@ import { PageContainerComponent } from '../page-container.component';
               />
             </a>
 
-            <p
-              class="justify-self-end text-right text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary-foreground sm:text-xs"
-            >
+            <p class="justify-self-end text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-secondary-foreground sm:text-xs">
               {{ topbarMeta() }}
             </p>
           </div>
