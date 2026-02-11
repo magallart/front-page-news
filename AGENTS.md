@@ -25,6 +25,7 @@ This file acts as the **single source of truth** for global conventions and deci
   - https://tabler.io/icons
   - Explicit imports only.
   - No barrel imports.
+  - Implement icons as SVG components in `src/app/components/icons`.
 - Enable TypeScript strict mode from the beginning.
 - Do not add dependencies until they are strictly necessary.
 
@@ -44,6 +45,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Avoid **any**.
 - `unknown` is allowed **only** when immediately narrowed (type guards, `zod`, manual checks).
 - Prefer type inference whenever possible.
+- Interfaces must be one-per-file and stored under an `interfaces` directory.
+- Only allow a nested/local interface when it is used exclusively inside that same file scope.
 - If types are unclear:
   - Stop.
   - Clarify before continuing.
