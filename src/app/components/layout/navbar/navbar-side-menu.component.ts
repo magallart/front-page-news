@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { IconCloseComponent } from '../../icons/icon-close.component';
 import { SocialIconComponent } from '../../icons/social-icon.component';
 
 import type { NavLink } from '../../../../interfaces/nav-link.interface';
@@ -9,7 +10,7 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
 @Component({
   selector: 'app-navbar-side-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SocialIconComponent],
+  imports: [RouterLink, SocialIconComponent, IconCloseComponent],
   template: `
     <div
       class="fixed inset-0 z-[60] transition"
@@ -38,21 +39,7 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
             (click)="closed.emit()"
             aria-label="Cerrar menu"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M18 6l-12 12" />
-              <path d="M6 6l12 12" />
-            </svg>
+            <app-icon-close />
           </button>
         </div>
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+import { IconSearchComponent } from '../../icons/icon-search.component';
 import { PageContainerComponent } from '../page-container.component';
 
 import type { NavLink } from '../../../../interfaces/nav-link.interface';
@@ -9,7 +10,7 @@ import type { TopLink } from '../../../../interfaces/top-link.interface';
 @Component({
   selector: 'app-navbar-main-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, RouterLink, RouterLinkActive],
+  imports: [PageContainerComponent, RouterLink, RouterLinkActive, IconSearchComponent],
   styles: [
     `
       .brand-title {
@@ -87,21 +88,7 @@ import type { TopLink } from '../../../../interfaces/top-link.interface';
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label="Buscador (proximamente)"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M4 11a7 7 0 1 1 14 0a7 7 0 0 1 -14 0" />
-            <path d="M20 20l-3 -3" />
-          </svg>
+          <app-icon-search />
         </button>
       </div>
     </app-page-container>

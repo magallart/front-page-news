@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { IconMenuComponent } from '../../icons/icon-menu.component';
 import { PageContainerComponent } from '../page-container.component';
 
 @Component({
   selector: 'app-navbar-sticky-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, RouterLink],
+  imports: [PageContainerComponent, RouterLink, IconMenuComponent],
   template: `
     <div
       class="fixed inset-x-0 top-0 z-50 transition-all duration-300"
@@ -29,22 +30,7 @@ import { PageContainerComponent } from '../page-container.component';
               [attr.aria-expanded]="menuOpen()"
               aria-label="Abrir menu"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 6l16 0" />
-                <path d="M4 12l16 0" />
-                <path d="M4 18l16 0" />
-              </svg>
+              <app-icon-menu />
             </button>
 
             <a routerLink="/" class="min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40">

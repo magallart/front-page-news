@@ -64,3 +64,4 @@ type SocialIconName = 'facebook' | 'instagram' | 'x';
 export class SocialIconComponent {
   readonly name = input.required<SocialIconName>();
 }
+
