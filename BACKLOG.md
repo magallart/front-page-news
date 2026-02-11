@@ -28,6 +28,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
 | [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
+| [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
 ## Ticket Details
 
@@ -82,6 +83,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Crear paginas legales mock (`/aviso-legal`, `/privacidad`, `/cookies`) y conectarlas desde footer.
   - [✔️] Extraer iconos sociales a componente reusable (`social-icon`).
   - [✔️] Ajustar footer responsive (columna unica centrada en movil).
+  - [✔️] Redisenar header/navbar editorial con topbar, secciones centradas, buscador placeholder y ticker rotativo.
 
 <a id="fpn-004"></a>
 
@@ -209,4 +211,17 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
   - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
+
+<a id="fpn-012"></a>
+
+### [FPN-012] Roadmap post-1.0
+
+- Description: Definir funcionalidades de evolucion para implementar despues de cerrar la version 1.0.
+- DoD:
+  - Lista de mejoras post-1.0 priorizada.
+  - Criterios de entrada y alcance de cada mejora definidos.
+  - Dependencias tecnicas y riesgos principales documentados.
+- Tasks:
+  - [ ] Mejorar geolocalizacion para detectar ciudad del usuario de forma robusta y mostrar el tiempo real en cabecera.
+  - [ ] Permitir que el usuario agregue sus propios enlaces RSS y construya un feed personalizado.
 
