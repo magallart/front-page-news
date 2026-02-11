@@ -35,7 +35,7 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
           <h2 class="font-heading text-xl font-semibold tracking-tight">Menu</h2>
           <button
             type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground/80 transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="closed.emit()"
             aria-label="Cerrar menu"
           >
@@ -45,7 +45,7 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
 
         <nav aria-label="Menu principal" class="space-y-2">
           <a
-            class="block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-foreground transition hover:bg-accent hover:text-accent-foreground"
+            class="block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-foreground transition duration-200 hover:bg-primary/10 hover:text-primary"
             routerLink="/"
             (click)="closed.emit()"
           >
@@ -54,7 +54,7 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
 
           @for (link of links(); track link.href) {
             <a
-              class="block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-foreground transition hover:bg-accent hover:text-accent-foreground"
+              class="block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-foreground transition duration-200 hover:bg-primary/10 hover:text-primary"
               [routerLink]="link.href"
               (click)="closed.emit()"
             >
@@ -65,17 +65,17 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
 
         <div class="mt-8 border-t border-border pt-6">
           <p class="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Redes sociales</p>
-          <ul class="space-y-2">
+          <ul class="flex items-center gap-2">
             @for (social of socialLinks(); track social.label) {
               <li>
                 <a
-                  class="inline-flex items-center gap-3 rounded-md px-2 py-2 text-sm text-foreground transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  class="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground/80 transition duration-200 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   [href]="social.url"
                   target="_blank"
                   rel="noopener noreferrer"
+                  [attr.aria-label]="social.label"
                 >
                   <app-social-icon [name]="social.icon" />
-                  <span>{{ social.label }}</span>
                 </a>
               </li>
             }
