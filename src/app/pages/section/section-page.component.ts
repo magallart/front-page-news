@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { MockNewsService } from '../../services/mock-news.service';
 
 @Component({
   selector: 'app-section-page',
@@ -23,7 +24,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
         </header>
 
         <div class="grid gap-4 lg:grid-cols-3">
-          @for (item of mockStories; track item.id) {
+          @for (item of sectionStories; track item.id) {
             <article class="rounded-lg border border-border bg-card p-4">
               <p class="text-xs uppercase tracking-wide text-muted-foreground">{{ sectionTitle() }}</p>
               <h2 class="mt-2 font-heading text-lg font-semibold">{{ item.title }}</h2>
@@ -43,6 +44,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
 })
 export class SectionPageComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly mockNewsService = inject(MockNewsService);
 
   protected readonly sectionSlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('slug') ?? 'actualidad')),
@@ -51,23 +53,7 @@ export class SectionPageComponent {
 
   protected readonly sectionTitle = computed(() => formatSectionLabel(this.sectionSlug()));
 
-  protected readonly mockStories = [
-    {
-      id: 'mock-001',
-      title: 'Titular de ejemplo para seccion',
-      summary: 'Este bloque validara la estructura visual mientras usamos datos mock.',
-    },
-    {
-      id: 'mock-002',
-      title: 'Segunda noticia de ejemplo',
-      summary: 'Mas adelante se sustituye por datos reales de RSS desde la API.',
-    },
-    {
-      id: 'mock-003',
-      title: 'Tercera noticia de ejemplo',
-      summary: 'Tarjeta base para iterar tipografia, espaciado y jerarquia.',
-    },
-  ] as const;
+  protected readonly sectionStories = this.mockNewsService.getSectionStories();
 }
 
 function formatSectionLabel(slug: string): string {
