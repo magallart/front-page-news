@@ -13,7 +13,7 @@ Rellena solo estos campos al clonar el template.
 ### Typography
 
 - `font_ui`: `<Inter>`
-- `font_heading`: `<Geist>`
+- `font_heading`: `<Limelight>`
 - `font_mono`: `<JetBrains Mono>`
 
 ### Shape and Depth
