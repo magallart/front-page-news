@@ -31,3 +31,23 @@ Brief continuity notes to recover context between terminal sessions.
   - Created and then removed temporary docs (`VERCEL.md`, `GITHUB.md`) after user moved content to Obsidian.
   - Committed approved changes incrementally.
 
+## 2026-02-11
+
+- What changed:
+  - Completed and stabilized header/navbar implementation for desktop + responsive:
+    - sticky behavior by scroll on desktop
+    - sticky-first mobile/tablet header with hamburger menu
+    - ticker interactions (rotation, pause, links)
+    - naming cleanup and component split for navbar subparts
+  - Centralized mock data into `src/app/mocks` and introduced `MockNewsService` to consume mocks from pages/layout.
+  - Refactored footer data to centralized mocks and validated responsive behavior.
+  - Added broad automated coverage for header and footer:
+    - unit tests for navbar/footer subcomponents and container behaviors
+    - e2e flows for desktop/mobile navigation and interactions
+    - visual snapshot coverage for header (desktop/tablet/mobile, open/closed states) and footer (desktop/mobile)
+  - Updated `BACKLOG.md` (FPN-003) with completed tasks from this session.
+  - Updated `AGENTS.md` with new rules:
+    - interfaces in individual files under `interfaces` (with scoped local exception)
+    - icons as SVG components in `src/app/components/icons`
+
+
