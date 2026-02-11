@@ -84,6 +84,15 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Extraer iconos sociales a componente reusable (`social-icon`).
   - [✔️] Ajustar footer responsive (columna unica centrada en movil).
   - [✔️] Redisenar header/navbar editorial con topbar, secciones centradas, buscador placeholder y ticker rotativo.
+  - [✔️] Implementar ticker de "ultima hora" con rotacion continua, pausa en hover y enlaces a detalle.
+  - [✔️] Implementar variante sticky del header con menu hamburguesa y drawer lateral.
+  - [✔️] Aplicar responsive del header: sticky como variante principal en movil.
+  - [✔️] Mostrar metadata compacta en movil (`DD-MM-YY · CIUDAD · TEMPERATURA`).
+  - [✔️] Refactorizar `app-navbar` en subcomponentes (`main-header`, `sticky-header`, `ticker`, `side-menu`).
+  - [✔️] Migrar interfaces compartidas a archivos individuales en carpeta `interfaces`.
+  - [✔️] Extraer iconos SVG a componentes dedicados en `src/app/components/icons`.
+  - [✔️] Implementar bateria de tests unitarios para header/navbar y subcomponentes clave.
+  - [✔️] Implementar tests e2e para flujos desktop/mobile del header y guardas de branding (textos, colores e imagenes).
 
 <a id="fpn-004"></a>
 
