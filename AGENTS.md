@@ -102,6 +102,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Do not group unrelated file changes in a single commit.
 - Never create commits without explicit user approval in the current conversation.
 - Commit or push actions are allowed only after the user explicitly asks for them.
+- Global commit approval rule: before every `git commit`, always ask for explicit confirmation in that exact moment.
+  This rule is permanent and does not depend on user reminders.
 - Commit and PR descriptions must be explicit and self-contained, not terse.
 - Avoid vague messages like "fix stuff", "updates", or "cleanup".
 - If the project uses `BACKLOG.md`, commit subjects must include the ticket id.
