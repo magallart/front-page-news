@@ -1,291 +1,206 @@
-﻿# BACKLOG
+# BACKLOG
 
-Backlog principal del proyecto Front Page News.
+Backlog principal del proyecto Front Page News, enfocado en empezar a construir pantallas y componentes cuanto antes.
+
+## Contexto de producto (resumen)
+
+- Objetivo: portal unico para ver titulares/fotos/resumenes RSS de varios periodicos y abrir la noticia original.
+- Stack principal: Angular 21 + Vercel Functions + RSS/Atom.
+- Alcance MVP:
+  - Pagina principal tipo diario digital.
+  - Pagina de seccion (economia, cultura, justicia, actualidad, etc.).
+  - Pagina de detalle de noticia (contenido parcial + enlace al medio).
+- Fuentes: 5-8 periodicos por definir.
+- Nota UX: usar boceto visual existente como orientacion de layout de portada.
 
 ## Tickets
 
 | Ticket | Title | Description | Finalizado |
 | ------ | ----- | ----------- | ---------- |
-| [FPN-001](#fpn-001) | Fase 0 - Definicion de producto y alcance | Definir alcance, objetivos, restricciones y metricas. | ⬜ |
-| [FPN-002](#fpn-002) | Fase 1 - UX/UI foundation | Definir layout, estados, tokens visuales y responsive baseline. | ⬜ |
-| [FPN-003](#fpn-003) | Fase 2 - Branding | Definir naming, conceptos de logo y SVG final. | ⬜ |
-| [FPN-004](#fpn-004) | Fase 3 - Arquitectura base repo | Estructurar Angular + Vercel Functions y base de rutas. | ⬜ |
-| [FPN-005](#fpn-005) | Fase 4 - Modelo de datos y normalizacion RSS | Definir contratos y mapeo RSS/Atom a modelo unificado. | ⬜ |
-| [FPN-006](#fpn-006) | Fase 5 - Backend Vercel Functions | Implementar `/api/sources` y `/api/news` con resiliencia. | ⬜ |
-| [FPN-007](#fpn-007) | Fase 6 - Frontend Angular 21 | Implementar rutas, UI reutilizable y servicios de datos. | ⬜ |
-| [FPN-008](#fpn-008) | Fase 7 - Estados y resiliencia | Cubrir loading/empty/error total/parcial con retry. | ⬜ |
-| [FPN-009](#fpn-009) | Fase 8 - Testing | Implementar unit tests y e2e de flujos principales. | ⬜ |
-| [FPN-010](#fpn-010) | Fase 9 - A11y, performance y SEO basico | Mejorar accesibilidad, rendimiento y metadata SEO. | ⬜ |
-| [FPN-011](#fpn-011) | Fase 10 - Refactors planificados | Reducir deuda tecnica y ordenar capas internas. | ⬜ |
-| [FPN-012](#fpn-012) | Fase 11 - Calidad y workflow | Consolidar linting, scripts, convenciones y reglas PR. | ⬜ |
-| [FPN-013](#fpn-013) | Fase 12 - Documentacion final | Cerrar README, ADRs, guias de uso y despliegue. | ⬜ |
-| [FPN-014](#fpn-014) | Fase 13 - Roadmap nice-to-have | Priorizar mejoras opcionales posteriores al MVP. | ⬜ |
-| [FPN-015](#fpn-015) | Fase 14 - Gate final de done | Verificar cumplimiento integral de requisitos minimos. | ⬜ |
+| [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [ ] |
+| [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [ ] |
+| [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [ ] |
+| [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [ ] |
+| [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [ ] |
+| [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
+| [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
+| [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [ ] |
+| [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
+| [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
+| [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
+
 ## Ticket Details
 
 <a id="fpn-001"></a>
 
-### [FPN-001] Fase 0 - Definicion de producto y alcance
+### [FPN-001] MVP y fuentes iniciales
 
-- Description: Cerrar alcance funcional y no funcional del portfolio RSS.
+- Description: Alinear alcance practico para no bloquear el desarrollo de UI.
 - DoD:
-  - Alcance incluye/excluye documentado.
-  - Restricciones legales y tecnicas explicitadas.
-  - Metricas de exito definidas.
+  - Alcance MVP cerrado y documentado.
+  - Lista inicial de 5-8 feeds RSS definida (aunque luego pueda cambiar).
+  - Secciones editoriales iniciales definidas.
 - Tasks:
-  - [ ] Definir propuesta de valor del producto.
-  - [ ] Definir publico objetivo del portfolio.
-  - [ ] Confirmar includes: portada, filtros, busqueda `q`, enlaces a fuente.
-  - [ ] Confirmar excludes: scraping HTML, cuerpo completo de articulos, auth compleja.
-  - [ ] Documentar limitaciones legales del agregador en `docs/product-scope.md`.
-  - [ ] Definir metricas de exito (API, UX, resiliencia).
-  - [ ] Registrar riesgos iniciales y mitigaciones.
+  - [ ] Documentar propuesta de valor y limite del agregador (sin mostrar articulo completo).
+  - [ ] Confirmar campos minimos por noticia: `title`, `summary`, `image`, `author`, `source`, `publishedAt`, `url`.
+  - [ ] Definir secciones iniciales: `actualidad`, `economia`, `cultura`, `justicia` (ajustables).
+  - [ ] Definir lista inicial de periodicos objetivo y URL RSS candidata.
+  - [ ] Documentar restricciones legales basicas en `docs/product-scope.md`.
 
 <a id="fpn-002"></a>
 
-### [FPN-002] Fase 1 - UX/UI foundation
+### [FPN-002] Shell de aplicacion y rutas
 
-- Description: Definir base visual y de experiencia de usuario mobile-first.
+- Description: Dejar navegable la app desde el inicio para iterar UI rapido.
 - DoD:
-  - Layout principal definido.
-  - Estados UI obligatorios definidos.
-  - Tokens visuales reflejados en `DESIGN.md`.
+  - Layout base con `Navbar`, `Main`, `Footer`.
+  - Rutas funcionales para portada, seccion y detalle.
+  - Base visual alineada con `DESIGN.md`.
 - Tasks:
-  - [ ] Definir layout con `Header`, `FiltersBar`, `NewsList`, `Footer`.
-  - [ ] Definir estados: loading, empty, error parcial, error total.
-  - [ ] Definir tokens de color tipografia y espaciado.
-  - [ ] Definir iconografia con `@tabler/icons-angular` por imports explicitos.
-  - [ ] Definir reglas responsive mobile-first por breakpoint.
-  - [ ] Actualizar `DESIGN.md` con recipes de componentes.
+  - [ ] Configurar rutas: `/`, `/seccion/:slug`, `/noticia/:id`.
+  - [ ] Crear componentes base: `navbar`, `footer`, `page-container`.
+  - [ ] Definir placeholders de contenido por ruta.
+  - [ ] Revisar responsive base (mobile-first).
 
 <a id="fpn-003"></a>
 
-### [FPN-003] Fase 2 - Branding
+### [FPN-003] Portada (mock first)
 
-- Description: Seleccionar identidad de marca ligera y profesional.
+- Description: Construir primero la portada con datos mock para validar estructura visual.
 - DoD:
-  - Nombre del portal final decidido.
-  - Concepto de logo elegido entre 3 opciones.
-  - SVG final aplicado y favicon generado.
+  - Portada renderiza bloques principales del boceto.
+  - Componentes reutilizables listos para conectar a API.
+  - Navegacion a seccion/detalle operativa.
 - Tasks:
-  - [ ] Evaluar naming: `Pulso24`, `Titularia`, `Portada Sur`.
-  - [ ] Diseñar 3 conceptos de logo (RSS+periodico, inicial titular, radar).
-  - [ ] Seleccionar un concepto final.
-  - [ ] Exportar `src/assets/brand/logo.svg`.
-  - [ ] Exportar `public/favicon.svg`.
-  - [ ] Integrar marca en header y metadatos.
+  - [ ] Crear componentes de UI: `news-card`, `news-carousel`, `section-block`, `trending-list`.
+  - [ ] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
+  - [ ] Implementar bloque "actualidad".
+  - [ ] Implementar bloque "2-3 noticias por seccion".
+  - [ ] Implementar bloque "lo mas leido" con criterio temporal mock.
 
 <a id="fpn-004"></a>
 
-### [FPN-004] Fase 3 - Arquitectura base repo
+### [FPN-004] Pagina de seccion (mock first)
 
-- Description: Montar estructura base del repo con frontend Angular y backend `/api`.
+- Description: Permitir al usuario abrir una seccion y explorar sus noticias.
 - DoD:
-  - Arbol de carpetas acordado implementado.
-  - Rewrites SPA configurados.
-  - `vercel dev` funciona en local para frontend y API.
+  - Pagina `/seccion/:slug` funcional con listado filtrado.
+  - Incluye bloques secundarios (actualidad o lo mas leido).
+  - Estados vacio/error definidos aunque sean mock.
 - Tasks:
-  - [ ] Crear estructura `api/_lib` con modulos de soporte.
-  - [ ] Crear estructura `src/app/core`, `features`, `shared/ui`.
-  - [ ] Configurar `vercel.json` con fallback SPA y functions.
-  - [ ] Verificar llamadas relativas `/api/*` en local.
-  - [ ] Documentar estructura en README.
+  - [ ] Implementar encabezado de seccion con metadatos.
+  - [ ] Renderizar grid/lista de noticias de la seccion.
+  - [ ] A�adir bloque secundario de apoyo editorial.
+  - [ ] Conectar clics a pagina de detalle.
 
 <a id="fpn-005"></a>
 
-### [FPN-005] Fase 4 - Modelo de datos y normalizacion RSS
+### [FPN-005] Pagina de noticia (mock first)
 
-- Description: Definir contratos de datos y pipeline de normalizacion RSS/Atom.
+- Description: Mostrar ficha ampliada de noticia sin replicar el contenido completo.
 - DoD:
-  - Interfaces tipadas sin `any` para source/article/response.
-  - Reglas de mapeo RSS/Atom implementadas y testeables.
-  - Deduplicacion y orden temporal definidos.
+  - Pagina de detalle con campos informativos clave.
+  - Boton visible para abrir noticia original.
+  - Manejo de faltantes (sin imagen/sin autor).
 - Tasks:
-  - [ ] Definir `Source`, `Category`, `Article`, `Warning`, `NewsResponse`.
-  - [ ] Implementar conversion de fechas a ISO.
-  - [ ] Implementar mapeo de summary con sanitizacion a texto plano.
-  - [ ] Definir estrategia de ID estable por hash.
-  - [ ] Implementar dedupe por link canonical y fallback por titulo+fecha.
-  - [ ] Definir orden por fecha descendente.
+  - [ ] Mostrar `title`, `summary`, `image`, `author`, `source`, `publishedAt`.
+  - [ ] Mostrar enlace/CTA "Leer en el medio original".
+  - [ ] Definir fallback de imagen y texto para datos ausentes.
+  - [ ] A�adir navegacion de retorno a portada o seccion.
 
 <a id="fpn-006"></a>
 
-### [FPN-006] Fase 5 - Backend Vercel Functions
+### [FPN-006] Modelo RSS unificado
 
-- Description: Implementar API serverless robusta con parciales, cache y timeout.
+- Description: Pasar de mocks a contrato real de datos para RSS/Atom.
 - DoD:
-  - `GET /api/sources` operativo.
-  - `GET /api/news` operativo con filtros y validaciones.
-  - Cache headers correctos + warnings parciales en fallos.
-  - Timeouts y dedupe aplicados.
+  - Tipos TypeScript estrictos definidos sin `any`.
+  - Normalizacion RSS/Atom documentada y testeable.
+  - Estrategia de dedupe y orden temporal definida.
 - Tasks:
-  - [ ] Implementar `api/sources.ts` con listado de fuentes y categorias.
-  - [ ] Implementar `api/news.ts` con query params `source`, `category`, `q`, `page`, `limit`.
-  - [ ] Validar params y limitar valores invalidos.
-  - [ ] Fetch concurrente a feeds con `AbortController`.
-  - [ ] Parsear XML y normalizar a `Article`.
-  - [ ] Sanitizar summary a texto plano seguro.
-  - [ ] Devolver resultados parciales con `warnings[]`.
-  - [ ] Implementar cache de function + `Cache-Control: public, s-maxage=600, stale-while-revalidate=300`.
-  - [ ] Implementar rate limit best-effort.
+  - [ ] Definir tipos `Source`, `Section`, `Article`, `NewsResponse`, `Warning`.
+  - [ ] Definir reglas de normalizacion de fecha a ISO.
+  - [ ] Definir extraccion de `summary` a texto seguro.
+  - [ ] Definir id estable (`hash(url)` + fallback).
+  - [ ] Definir dedupe por URL canonica y fallback por `title + publishedAt`.
 
 <a id="fpn-007"></a>
 
-### [FPN-007] Fase 6 - Frontend Angular 21
+### [FPN-007] Vercel Functions RSS
 
-- Description: Construir UI en Angular 21 con rutas lazy y componentes reutilizables.
+- Description: Implementar agregacion RSS y exponer endpoints para frontend.
 - DoD:
-  - Rutas principales funcionales.
-  - Servicios de datos conectados a `/api/*`.
-  - Estado UI consistente y responsive.
+  - `GET /api/sources` devuelve fuentes y secciones.
+  - `GET /api/news` devuelve noticias agregadas/normalizadas.
+  - Soporta fallos parciales sin romper respuesta.
 - Tasks:
-  - [ ] Configurar routing + lazy loading.
-  - [ ] Implementar rutas `/`, `/fuente/:id`, `/about`.
-  - [ ] Crear `HeaderComponent`, `FiltersBarComponent`, `ArticleCardComponent`, `NewsListComponent`, `StatePanelsComponent`.
-  - [ ] Implementar `NewsService` y `SourcesService`.
-  - [ ] Implementar estado con signals + RxJS para I/O.
-  - [ ] Añadir interceptor de errores HTTP.
-  - [ ] Implementar cache cliente TTL por query key.
+  - [ ] Crear `api/sources.ts` con catalogo de fuentes inicial.
+  - [ ] Crear `api/news.ts` con filtros: `section`, `source`, `q`, `page`, `limit`.
+  - [ ] Hacer fetch concurrente con timeout (`AbortController`).
+  - [ ] Parsear RSS/Atom y mapear al modelo comun.
+  - [ ] Devolver `warnings[]` cuando una fuente falle.
+  - [ ] A�adir cache headers (`s-maxage` + `stale-while-revalidate`).
 
 <a id="fpn-008"></a>
 
-### [FPN-008] Fase 7 - Estados y resiliencia
+### [FPN-008] Integracion Angular + API
 
-- Description: Cubrir UX resiliente ante errores parciales y fallos totales.
+- Description: Conectar UI ya construida a endpoints reales y retirar mocks.
 - DoD:
-  - Estados de carga, vacio y error implementados.
-  - Warning de parciales visible sin romper listado.
-  - Retry funcional.
+  - Portada, seccion y detalle consumen API real.
+  - Estados `loading`, `empty`, `error total`, `error parcial` implementados.
+  - Reintento manual disponible.
 - Tasks:
-  - [ ] Mostrar banner de warnings por fuente caida.
-  - [ ] Mostrar `meta.generatedAt` en UI.
-  - [ ] Implementar retry manual en error total.
-  - [ ] Implementar retry automatico acotado.
-  - [ ] Mantener render parcial cuando existan articulos validos.
-  - [ ] Definir CTA para reset en empty state.
+  - [ ] Implementar `NewsService` y `SourcesService`.
+  - [ ] Conectar portada a bloques reales desde `/api/news`.
+  - [ ] Conectar pagina de seccion por `slug`.
+  - [ ] Conectar pagina de detalle por `id`.
+  - [ ] Mostrar banners de warnings parciales.
+  - [ ] A�adir interceptor HTTP para manejo uniforme de errores.
 
 <a id="fpn-009"></a>
 
-### [FPN-009] Fase 8 - Testing
+### [FPN-009] Bloques editoriales de portada
 
-- Description: Garantizar calidad funcional con unit tests y e2e basicos.
+- Description: Refinar experiencia tipo periodico digital ya con datos reales.
 - DoD:
-  - Cobertura de funciones criticas de transformacion.
-  - Flujos principales cubiertos en e2e.
-  - Suite estable y repetible.
+  - Carousel con seleccion estable y usable.
+  - Bloques de portada coherentes en jerarquia visual.
+  - "Lo mas leido" definido con criterio implementable.
 - Tasks:
-  - [ ] Unit backend para `normalize.ts`, `dedupe.ts`, `sanitize.ts`, `news.ts`.
-  - [ ] Unit frontend para `news.service`, home page y filtros.
-  - [ ] E2E smoke: carga inicial, filtros, warning parcial, busqueda.
-  - [ ] Aislar pruebas de feeds externos con mocks/fixtures.
+  - [ ] Definir criterio MVP de "lo mas leido" (proxy por recencia/repeticion de fuente).
+  - [ ] Ajustar algoritmo de seleccion para destacadas.
+  - [ ] Revisar equilibrio de noticias por seccion en portada.
+  - [ ] Ajustar copy y enlaces para mejorar escaneo rapido.
 
 <a id="fpn-010"></a>
 
-### [FPN-010] Fase 9 - A11y, performance y SEO basico
+### [FPN-010] Calidad MVP
 
-- Description: Mejorar calidad de experiencia y descubribilidad sin sobre-ingenieria.
+- Description: Subir calidad tecnica antes de publicar una primera version usable.
 - DoD:
-  - Landmarks y navegacion teclado correctos.
-  - Lighthouse documentado con objetivos alcanzables.
-  - Metadatos SEO basicos por ruta.
+  - `pnpm run lint`, `pnpm test`, `pnpm run build` en verde.
+  - Casos criticos cubiertos por unit/e2e.
+  - A11y y SEO basico aceptables para MVP.
 - Tasks:
-  - [ ] Aplicar HTML semantico y foco visible.
-  - [ ] Revisar contraste y `aria-live` en cambios dinamicos.
-  - [ ] Optimizar render de listas (`trackBy`) y carga por rutas.
-  - [ ] Configurar title/meta description y OpenGraph minimo.
-  - [ ] Documentar resultados en `docs/performance.md`.
+  - [ ] Unit tests para normalizacion RSS y servicios frontend.
+  - [ ] E2E smoke: portada, seccion, detalle, enlace externo.
+  - [ ] Revisar accesibilidad: landmarks, foco, teclado, contraste.
+  - [ ] Revisar performance basica de listas y carga inicial.
+  - [ ] Configurar metadatos SEO minimos por ruta.
 
 <a id="fpn-011"></a>
 
-### [FPN-011] Fase 10 - Refactors planificados
+### [FPN-011] Documentacion y cierre MVP
 
-- Description: Consolidar arquitectura interna y reducir deuda tecnica.
+- Description: Cerrar primera entrega con documentacion clara y siguiente paso definido.
 - DoD:
-  - Utilidades compartidas extraidas.
-  - Mappers y cliente de feed desacoplados.
-  - Estado UI mas claro y mantenible.
+  - README actualizado con setup, arquitectura y despliegue.
+  - Limitaciones y decisiones registradas.
+  - Siguiente iteracion priorizada.
 - Tasks:
-  - [ ] Extraer parser/validator de query params compartido.
-  - [ ] Introducir `FeedClient` centralizado con timeout/retry.
-  - [ ] Separar mappers RSS vs Atom.
-  - [ ] Unificar `NewsViewState` en frontend.
-  - [ ] Consolidar clases Tailwind repetidas.
-  - [ ] Revisar si conviene unificar tipos compartidos.
-
-<a id="fpn-012"></a>
-
-### [FPN-012] Fase 11 - Calidad y workflow
-
-- Description: Cerrar herramientas y convenciones de calidad del repo.
-- DoD:
-  - Lint/test/build configurados y estables.
-  - Convencion de commits acordada y usable.
-  - Checklist de calidad documentada.
-- Tasks:
-  - [ ] Confirmar TypeScript strict.
-  - [ ] Configurar ESLint + Prettier.
-  - [ ] Verificar scripts `pnpm run lint`, `pnpm test`, `pnpm run build`.
-  - [ ] Definir ejemplos de Conventional Commits con ticket.
-  - [ ] Configurar hook pre-commit opcional si aporta.
-  - [ ] Crear `docs/quality-checklist.md`.
-
-<a id="fpn-013"></a>
-
-### [FPN-013] Fase 12 - Documentacion final
-
-- Description: Dejar documentacion de nivel portfolio lista para evaluacion tecnica.
-- DoD:
-  - README completo de setup, arquitectura y deploy.
-  - Contrato API documentado con ejemplos.
-  - Sesion registrada en `SESSION.md`.
-- Tasks:
-  - [ ] Redactar README con setup local (`pnpm install`, `vercel dev`).
-  - [ ] Documentar despliegue y estructura del proyecto.
-  - [ ] Documentar decisiones tecnicas y tradeoffs.
-  - [ ] Incluir limitaciones legales del agregador.
-  - [ ] Anadir capturas desktop/mobile.
-  - [ ] Crear/actualizar `docs/adr/`.
+  - [ ] Actualizar `README.md` con flujo local (`pnpm install`, `vercel dev`).
+  - [ ] Documentar contrato de `/api/sources` y `/api/news`.
+  - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
+  - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
-
-<a id="fpn-014"></a>
-
-### [FPN-014] Fase 13 - Roadmap nice-to-have
-
-- Description: Priorizacion de mejoras posteriores al MVP.
-- DoD:
-  - Lista priorizada de mejoras opcionales.
-  - Criterios de entrada para siguientes iteraciones.
-- Tasks:
-  - [ ] Definir busqueda avanzada con debounce.
-  - [ ] Definir filtros persistidos por fuente/categoria.
-  - [ ] Definir favoritos locales.
-  - [ ] Definir modo oscuro por tokens.
-  - [ ] Definir tendencias por terminos.
-  - [ ] Definir compartir articulo (Web Share API).
-  - [ ] Definir i18n ES/EN.
-
-<a id="fpn-015"></a>
-
-### [FPN-015] Fase 14 - Gate final de done
-
-- Description: Validacion final integral de requerimientos minimos del proyecto.
-- DoD:
-  - Todos los criterios tecnicos minimos validados.
-  - Calidad y documentacion en estado publicable.
-- Tasks:
-  - [ ] Verificar Angular 21 + routing + lazy loading.
-  - [ ] Verificar componentes reutilizables en produccion.
-  - [ ] Verificar `NewsService` con `/api/news` relativo.
-  - [ ] Verificar endpoints `/api/sources` y `/api/news`.
-  - [ ] Verificar cache de function y headers.
-  - [ ] Verificar errores parciales con warnings.
-  - [ ] Verificar dedupe por link/titulo.
-  - [ ] Verificar normalizacion y orden de fechas.
-  - [ ] Verificar sanitizacion de description.
-  - [ ] Verificar timeouts en fetch de feeds.
-  - [ ] Ejecutar lint/test/build y registrar resultado.
-  - [ ] Verificar README, capturas y deploy en Vercel.
-
-
-
-
