@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
-import { CurrentNewsBlockComponent } from '../../components/news/current-news-block.component';
 import { MostReadListComponent } from '../../components/news/most-read-list.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
@@ -15,7 +14,6 @@ import { MockNewsService } from '../../services/mock-news.service';
     PageContainerComponent,
     NewsCarouselComponent,
     BreakingNewsComponent,
-    CurrentNewsBlockComponent,
     MostReadListComponent,
     SectionBlockComponent,
   ],
@@ -27,16 +25,23 @@ import { MockNewsService } from '../../services/mock-news.service';
           <app-breaking-news [items]="breakingNews" />
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[2fr_1fr]" id="current-news">
-          <app-current-news-block [articles]="currentAffairsNews" />
-          <div class="space-y-6">
-            <div id="most-read">
-              <app-most-read-list [items]="mostReadNews" />
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] lg:items-start" id="current-news">
+          <div>
+            <div class="mb-12">
+              <app-section-block title="Actualidad" sectionSlug="actualidad" [articles]="currentAffairsNews" />
+            </div>
+            <div class="mb-12">
+              <app-section-block title="Economia" sectionSlug="economia" [articles]="economyNews" />
+            </div>
+            <div>
+              <app-section-block title="Cultura" sectionSlug="cultura" [articles]="cultureNews" />
             </div>
           </div>
-        </div>
 
-        <app-section-block title="Economia" sectionSlug="economia" [articles]="economyNews" />
+          <div id="most-read">
+            <app-most-read-list [items]="mostReadNews" />
+          </div>
+        </div>
       </section>
     </app-page-container>
   `,
@@ -45,8 +50,9 @@ export class HomePageComponent {
   private readonly mockNewsService = inject(MockNewsService);
 
   protected readonly featuredNews = this.mockNewsService.getFeaturedNews();
-  protected readonly currentAffairsNews = this.mockNewsService.getCurrentAffairsNews();
+  protected readonly currentAffairsNews = this.mockNewsService.getCurrentAffairsNews(3);
   protected readonly breakingNews = this.mockNewsService.getBreakingNews();
   protected readonly economyNews = this.mockNewsService.getEconomyNews();
+  protected readonly cultureNews = this.mockNewsService.getCultureNews();
   protected readonly mostReadNews = this.mockNewsService.getMostReadNews();
 }

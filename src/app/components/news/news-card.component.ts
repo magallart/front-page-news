@@ -24,7 +24,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   `,
   template: `
     <article
-      class="group relative h-full overflow-hidden rounded-xl border border-border bg-card shadow-subtle transition duration-300 hover:shadow-medium"
+      class="group relative h-full overflow-hidden rounded-xl border border-border shadow-subtle transition duration-300 hover:shadow-medium"
     >
       <div class="absolute left-0 top-0 h-full w-1 bg-primary/60"></div>
 

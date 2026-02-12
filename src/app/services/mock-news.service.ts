@@ -15,15 +15,19 @@ export class MockNewsService {
   }
 
   getCurrentAffairsNews(limit = 4): readonly NewsItem[] {
-    return MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, limit);
+    return this.getNewsBySection('actualidad', limit);
   }
 
   getBreakingNews(limit = 6): readonly NewsItem[] {
-    return MOCK_NEWS.filter((item) => item.section === 'actualidad').slice(0, limit);
+    return this.getNewsBySection('actualidad', limit);
   }
 
   getEconomyNews(limit = 3): readonly NewsItem[] {
-    return MOCK_NEWS.filter((item) => item.section === 'economia').slice(0, limit);
+    return this.getNewsBySection('economia', limit);
+  }
+
+  getCultureNews(limit = 3): readonly NewsItem[] {
+    return this.getNewsBySection('cultura', limit);
   }
 
   getMostReadNews(limit = 5): readonly NewsItem[] {
@@ -36,5 +40,9 @@ export class MockNewsService {
 
   getSectionStories(): readonly SectionMockStory[] {
     return SECTION_MOCK_STORIES;
+  }
+
+  private getNewsBySection(section: string, limit: number): readonly NewsItem[] {
+    return MOCK_NEWS.filter((item) => item.section === section).slice(0, limit);
   }
 }
