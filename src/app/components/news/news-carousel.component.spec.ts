@@ -15,7 +15,6 @@ describe('NewsCarouselComponent', () => {
 
     const fixture = TestBed.createComponent(NewsCarouselComponent);
     fixture.componentRef.setInput('articles', MOCK_ARTICLES);
-    fixture.componentRef.setInput('breakingItems', MOCK_ARTICLES.slice(0, 3));
     fixture.detectChanges();
 
     const beforeTitle = getHeroTitle(fixture.nativeElement);

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { CurrentNewsBlockComponent } from '../../components/news/current-news-block.component';
 import { MostReadListComponent } from '../../components/news/most-read-list.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
@@ -13,6 +14,7 @@ import { MockNewsService } from '../../services/mock-news.service';
   imports: [
     PageContainerComponent,
     NewsCarouselComponent,
+    BreakingNewsComponent,
     CurrentNewsBlockComponent,
     MostReadListComponent,
     SectionBlockComponent,
@@ -20,7 +22,10 @@ import { MockNewsService } from '../../services/mock-news.service';
   template: `
     <app-page-container>
       <section class="space-y-6 py-4 sm:space-y-8">
-        <app-news-carousel title="Destacadas" [articles]="featuredNews" [breakingItems]="breakingNews" />
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] lg:items-stretch">
+          <app-news-carousel title="Destacadas" [articles]="featuredNews" />
+          <app-breaking-news [items]="breakingNews" />
+        </div>
 
         <div class="grid gap-6 lg:grid-cols-[2fr_1fr]" id="current-news">
           <app-current-news-block [articles]="currentAffairsNews" />
