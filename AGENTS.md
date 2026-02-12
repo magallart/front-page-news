@@ -34,6 +34,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Small components with a single responsibility.
 - Prefer composition over complex configuration.
 - Avoid premature abstractions.
+- Do not create one folder per component by default.
+- Create a dedicated folder for a component only when it grows beyond simple scope (multiple related files/helpers/variants) or becomes reused across multiple pages.
 - Shared code must live in clear directories:
   - components
   - layouts
