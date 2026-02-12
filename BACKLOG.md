@@ -248,4 +248,5 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [ ] Mejorar geolocalizacion para detectar ciudad del usuario de forma robusta y mostrar el tiempo real en cabecera.
   - [ ] Permitir que el usuario agregue sus propios enlaces RSS y construya un feed personalizado.
+  - [ ] Crear modo de lectura para dislexia (fuente adaptada para personas con dislexia y opcion de activacion).
 
