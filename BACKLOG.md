@@ -75,6 +75,15 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [✔️] Crear componentes de UI: `news-card`, `news-carousel`, `section-block`, `most-read-list`.
   - [✔️] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
+  - [✔️] Redisenar el carousel como hero editorial con layout de dos columnas en portada.
+  - [✔️] Integrar panel lateral de "en directo" dentro del bloque principal del hero.
+  - [✔️] Ajustar alturas y comportamiento responsive del hero y bloque lateral para mantener alineacion visual.
+  - [✔️] Refinar controles del carousel con iconos SVG dedicados (chevron-left/chevron-right).
+  - [✔️] Incorporar icono SVG de apoyo en CTA de bloque editorial ("news").
+  - [✔️] Mejorar legibilidad del hero (overlay oscuro, label de seccion, limites de lineas y truncado en textos largos).
+  - [✔️] Ajustar bloque de "en directo" sin scroll interno, 4 noticias visibles y espaciado uniforme.
+  - [✔️] Refinar separadores y marcadores visuales del bloque lateral para una jerarquia mas clara.
+  - [✔️] Ajustar estilo y contraste del CTA del bloque lateral con hover accesible.
   - [✔️] Implementar bloque "actualidad".
   - [✔️] Implementar bloque "2-3 noticias por seccion".
   - [✔️] Implementar bloque "lo mas leido" con criterio temporal mock.
