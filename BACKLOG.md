@@ -84,6 +84,13 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Ajustar bloque de "en directo" sin scroll interno, 4 noticias visibles y espaciado uniforme.
   - [✔️] Refinar separadores y marcadores visuales del bloque lateral para una jerarquia mas clara.
   - [✔️] Ajustar estilo y contraste del CTA del bloque lateral con hover accesible.
+  - [✔️] Separar `breaking-news` como componente independiente manteniendo el mismo layout visual junto al hero.
+  - [✔️] Redisenar `news-card` con estilo editorial (badge, imagen prioritaria, resumen acotado y metadatos compactos).
+  - [✔️] Unificar tipografia editorial en bloques de noticias (titulos con `DM Serif Text` y cuerpos con `Commissioner`).
+  - [✔️] Ajustar tipografia de `breaking-news` y jerarquia visual de titulares para mejorar legibilidad.
+  - [✔️] Reestructurar la portada inferior en dos columnas (izquierda: secciones por genero; derecha: "lo mas leido").
+  - [✔️] Reemplazar enlaces "Ver seccion" por CTA "Ver más" con estilo tipografico y microinteraccion de subrayado.
+  - [✔️] Anadir icono dedicado `arrow-right` para reforzar visualmente los CTA de seccion.
   - [✔️] Implementar bloque "actualidad".
   - [✔️] Implementar bloque "2-3 noticias por seccion".
   - [✔️] Implementar bloque "lo mas leido" con criterio temporal mock.
