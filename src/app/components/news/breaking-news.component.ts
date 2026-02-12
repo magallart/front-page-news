@@ -38,7 +38,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     <section class="rounded-xl px-5 py-0 shadow-subtle sm:px-6 sm:py-0 lg:flex lg:h-[30rem] lg:flex-col" id="breaking-news">
       <header class="mb-3 flex items-center gap-3">
         <span class="live-dot inline-flex h-3 w-3 rounded-full bg-destructive"></span>
-        <h2 class="text-lg font-semibold uppercase tracking-[0.22em] text-foreground">{{ title() }}</h2>
+        <h2 class="font-editorial-title text-lg font-semibold uppercase tracking-[0.22em] text-foreground">{{ title() }}</h2>
       </header>
 
       @if (visibleItems().length > 0) {
@@ -52,7 +52,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                 </p>
               </div>
               <a
-                class="breaking-title-clamp mt-1 block text-base font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                class="font-editorial-title breaking-title-clamp mt-1 block text-[1.2rem] font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 [routerLink]="['/noticia', item.id]"
               >
                 {{ item.title }}

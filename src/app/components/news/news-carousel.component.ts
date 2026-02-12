@@ -43,11 +43,11 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                 {{ article.section }}
               </p>
               <h2
-                class="hero-title-clamp font-heading text-3xl font-semibold leading-tight text-primary-foreground sm:text-4xl lg:max-w-3xl"
+                class="font-editorial-title hero-title-clamp text-3xl font-semibold leading-tight text-primary-foreground sm:text-4xl lg:max-w-3xl"
               >
                 {{ article.title }}
               </h2>
-              <p class="max-w-2xl truncate text-sm leading-6 text-primary-foreground/90 sm:text-base">
+              <p class="font-editorial-body max-w-2xl truncate text-sm leading-6 text-primary-foreground/90 sm:text-base">
                 {{ article.summary }}
               </p>
               <p class="text-xs font-medium uppercase tracking-[0.08em] text-primary-foreground/90 sm:text-sm">

@@ -1,8 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Eagle+Lake&family=Limelight&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Commissioner:wght@100..900&family=DM+Serif+Text:ital@0;1&family=Eagle+Lake&family=Limelight&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .font-editorial-title {
+    font-family: 'DM Serif Text', var(--font-heading), serif;
+  }
+
+  .font-editorial-body {
+    font-family: 'Commissioner', var(--font-sans), sans-serif;
+  }
+}
 
 :root {
   --font-sans: Inter;

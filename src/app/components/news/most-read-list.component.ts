@@ -10,7 +10,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   template: `
     <section class="rounded-lg border border-border bg-card p-4 shadow-subtle">
       <header class="mb-4">
-        <h2 class="font-heading text-2xl font-semibold tracking-tight">{{ title() }}</h2>
+        <h2 class="font-editorial-title text-2xl font-semibold tracking-tight">{{ title() }}</h2>
       </header>
 
       <ol class="space-y-4">
@@ -20,7 +20,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
             <div class="min-w-0 space-y-1">
               <a
-                class="line-clamp-2 text-sm font-medium leading-5 text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                class="font-editorial-body line-clamp-2 text-sm font-medium leading-5 text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 [routerLink]="['/noticia', item.id]"
               >
                 {{ item.title }}

@@ -54,7 +54,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           }
         </a>
 
-        <h3 class="title-clamp font-heading text-xl font-semibold leading-tight tracking-tight">
+        <h3 class="font-editorial-title title-clamp text-xl font-semibold leading-tight tracking-[0.01em]">
           <a
             class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             [routerLink]="['/noticia', article().id]"
@@ -63,7 +63,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           </a>
         </h3>
 
-        <p class="summary-clamp text-sm leading-6 text-muted-foreground">{{ article().summary }}</p>
+        <p class="font-editorial-body summary-clamp text-sm leading-6 text-muted-foreground">{{ article().summary }}</p>
 
         <p class="mt-auto text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().author }}</p>
       </div>
