@@ -17,6 +17,21 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/article/article-page.component').then((m) => m.ArticlePageComponent),
   },
   {
+    path: 'aviso-legal',
+    title: 'Front Page News | Aviso legal',
+    loadComponent: () => import('./pages/legal/legal-notice-page.component').then((m) => m.LegalNoticePageComponent),
+  },
+  {
+    path: 'privacidad',
+    title: 'Front Page News | Privacidad',
+    loadComponent: () => import('./pages/legal/privacy-page.component').then((m) => m.PrivacyPageComponent),
+  },
+  {
+    path: 'cookies',
+    title: 'Front Page News | Cookies',
+    loadComponent: () => import('./pages/legal/cookies-page.component').then((m) => m.CookiesPageComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

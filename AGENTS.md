@@ -25,6 +25,7 @@ This file acts as the **single source of truth** for global conventions and deci
   - https://tabler.io/icons
   - Explicit imports only.
   - No barrel imports.
+  - Implement icons as SVG components in `src/app/components/icons`.
 - Enable TypeScript strict mode from the beginning.
 - Do not add dependencies until they are strictly necessary.
 
@@ -33,6 +34,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Small components with a single responsibility.
 - Prefer composition over complex configuration.
 - Avoid premature abstractions.
+- Do not create one folder per component by default.
+- Create a dedicated folder for a component only when it grows beyond simple scope (multiple related files/helpers/variants) or becomes reused across multiple pages.
 - Shared code must live in clear directories:
   - components
   - layouts
@@ -44,6 +47,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Avoid **any**.
 - `unknown` is allowed **only** when immediately narrowed (type guards, `zod`, manual checks).
 - Prefer type inference whenever possible.
+- Interfaces must be one-per-file and stored under an `interfaces` directory.
+- Only allow a nested/local interface when it is used exclusively inside that same file scope.
 - If types are unclear:
   - Stop.
   - Clarify before continuing.
@@ -102,6 +107,8 @@ This file acts as the **single source of truth** for global conventions and deci
 - Do not group unrelated file changes in a single commit.
 - Never create commits without explicit user approval in the current conversation.
 - Commit or push actions are allowed only after the user explicitly asks for them.
+- Global commit approval rule: before every `git commit`, always ask for explicit confirmation in that exact moment.
+  This rule is permanent and does not depend on user reminders.
 - Commit and PR descriptions must be explicit and self-contained, not terse.
 - Avoid vague messages like "fix stuff", "updates", or "cleanup".
 - If the project uses `BACKLOG.md`, commit subjects must include the ticket id.

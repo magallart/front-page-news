@@ -1,10 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Commissioner:wght@100..900&family=DM+Serif+Text:ital@0;1&family=Eagle+Lake&family=Limelight&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .font-editorial-title {
+    font-family: 'DM Serif Text', var(--font-heading), serif;
+  }
+
+  .font-editorial-body {
+    font-family: 'Commissioner', var(--font-sans), sans-serif;
+  }
+}
+
 :root {
   --font-sans: Inter;
   --font-heading: Geist;
+  --font-brand: Limelight;
   --font-mono: 'JetBrains Mono';
 
   --radius-sm: 0.375rem;
@@ -15,27 +28,41 @@
   --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 1px 1px -1px rgb(0 0 0 / 0.06);
   --shadow-medium: 0 10px 15px -3px rgb(0 0 0 / 0.12), 0 4px 6px -4px rgb(0 0 0 / 0.12);
 
+  /* Base brand palette (preview-friendly) */
+  --white-smoke: hsla(0, 0%, 96%, 1);
+  --mustard: hsla(49, 100%, 35%, 1);
+  --metallic-gold: hsla(46, 65%, 52%, 1);
+  --shadow-grey: hsla(0, 2%, 16%, 1);
+  --coffee-bean: hsla(0, 30%, 8%, 1);
+
+  /* HSL channels for semantic tokens */
+  --white-smoke-hsl: 0 0% 96%;
+  --mustard-hsl: 49 100% 35%;
+  --metallic-gold-hsl: 46 65% 52%;
+  --shadow-grey-hsl: 0 2% 16%;
+  --coffee-bean-hsl: 0 30% 8%;
+
   /* Core colors (edit these first) */
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  --primary: 221 83% 53%;
+  --background: var(--white-smoke-hsl);
+  --foreground: var(--shadow-grey-hsl);
+  --primary: var(--metallic-gold-hsl);
 
   /* Derived semantic tokens */
   --card: 0 0% 100%;
   --card-foreground: var(--foreground);
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted: 0 0% 92%;
+  --muted-foreground: 0 2% 30%;
 
-  --border: 214 32% 91%;
+  --border: 46 42% 82%;
 
-  --primary-foreground: 210 40% 98%;
+  --primary-foreground: var(--white-smoke-hsl);
 
-  --secondary: 210 40% 96%;
-  --secondary-foreground: var(--foreground);
+  --secondary: var(--shadow-grey-hsl);
+  --secondary-foreground: var(--white-smoke-hsl);
 
-  --accent: 210 40% 96%;
-  --accent-foreground: var(--foreground);
+  --accent: var(--mustard-hsl);
+  --accent-foreground: var(--coffee-bean-hsl);
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
@@ -43,26 +70,26 @@
 
 .dark {
   /* Core colors (edit these first) */
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --primary: 221 83% 60%;
+  --background: var(--coffee-bean-hsl);
+  --foreground: var(--white-smoke-hsl);
+  --primary: var(--metallic-gold-hsl);
 
   /* Derived semantic tokens */
-  --card: 222 47% 13%;
+  --card: 0 26% 10%;
   --card-foreground: var(--foreground);
 
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 0 18% 14%;
+  --muted-foreground: 0 0% 78%;
 
-  --border: 217 33% 20%;
+  --border: 0 15% 22%;
 
-  --primary-foreground: 222 47% 11%;
+  --primary-foreground: var(--coffee-bean-hsl);
 
-  --secondary: 217 33% 17%;
-  --secondary-foreground: var(--foreground);
+  --secondary: var(--shadow-grey-hsl);
+  --secondary-foreground: var(--white-smoke-hsl);
 
-  --accent: 217 33% 17%;
-  --accent-foreground: var(--foreground);
+  --accent: var(--metallic-gold-hsl);
+  --accent-foreground: var(--coffee-bean-hsl);
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;

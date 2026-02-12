@@ -19,7 +19,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | ------ | ----- | ----------- | ---------- |
 | [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [✔️] |
 | [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [✔️] |
-| [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [ ] |
+| [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [✔️] |
 | [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [ ] |
 | [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [ ] |
 | [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
@@ -28,6 +28,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
 | [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
+| [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
 ## Ticket Details
 
@@ -72,11 +73,54 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Componentes reutilizables listos para conectar a API.
   - Navegacion a seccion/detalle operativa.
 - Tasks:
-  - [ ] Crear componentes de UI: `news-card`, `news-carousel`, `section-block`, `trending-list`.
-  - [ ] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
-  - [ ] Implementar bloque "actualidad".
-  - [ ] Implementar bloque "2-3 noticias por seccion".
-  - [ ] Implementar bloque "lo mas leido" con criterio temporal mock.
+  - [✔️] Crear componentes de UI: `news-card`, `news-carousel`, `section-block`, `most-read-list`.
+  - [✔️] Implementar bloque "carousel de destacadas" (noticias aleatorias del mock).
+  - [✔️] Redisenar el carousel como hero editorial con layout de dos columnas en portada.
+  - [✔️] Integrar panel lateral de "en directo" dentro del bloque principal del hero.
+  - [✔️] Ajustar alturas y comportamiento responsive del hero y bloque lateral para mantener alineacion visual.
+  - [✔️] Refinar controles del carousel con iconos SVG dedicados (chevron-left/chevron-right).
+  - [✔️] Incorporar icono SVG de apoyo en CTA de bloque editorial ("news").
+  - [✔️] Mejorar legibilidad del hero (overlay oscuro, label de seccion, limites de lineas y truncado en textos largos).
+  - [✔️] Ajustar bloque de "en directo" sin scroll interno, 4 noticias visibles y espaciado uniforme.
+  - [✔️] Refinar separadores y marcadores visuales del bloque lateral para una jerarquia mas clara.
+  - [✔️] Ajustar estilo y contraste del CTA del bloque lateral con hover accesible.
+  - [✔️] Separar `breaking-news` como componente independiente manteniendo el mismo layout visual junto al hero.
+  - [✔️] Redisenar `news-card` con estilo editorial (badge, imagen prioritaria, resumen acotado y metadatos compactos).
+  - [✔️] Unificar tipografia editorial en bloques de noticias (titulos con `DM Serif Text` y cuerpos con `Commissioner`).
+  - [✔️] Ajustar tipografia de `breaking-news` y jerarquia visual de titulares para mejorar legibilidad.
+  - [✔️] Reestructurar la portada inferior en dos columnas (izquierda: secciones por genero; derecha: "lo mas leido").
+  - [✔️] Reemplazar enlaces "Ver seccion" por CTA "Ver más" con estilo tipografico y microinteraccion de subrayado.
+  - [✔️] Anadir icono dedicado `arrow-right` para reforzar visualmente los CTA de seccion.
+  - [✔️] Renombrar y redisenar el bloque "lo mas leido" como componente `most-read-news` con estilo editorial coherente.
+  - [✔️] Sustituir fecha por hora de publicacion en "lo mas leido" y adaptar mocks para soportar formato con hora.
+  - [✔️] Explorar variantes visuales para "lo mas leido" (fondo oscuro y fondo dorado) y seleccionar variante final.
+  - [✔️] Integrar icono `trending-up` en el titulo de "Lo más leído" para reforzar jerarquia visual.
+  - [✔️] Ajustar anchura y separacion lateral de la columna derecha para alinear visualmente "breaking-news" y "lo mas leido".
+  - [✔️] Ampliar listado mock de "lo mas leido" a 10 elementos para validar densidad del bloque.
+  - [✔️] Implementar bloque "actualidad".
+  - [✔️] Implementar bloque "2-3 noticias por seccion".
+  - [✔️] Implementar bloque "lo mas leido" con criterio temporal mock.
+  - [✔️] Redisenar footer editorial con columnas, logo e identidad visual.
+  - [✔️] Implementar enlaces de interes y columna de periodicos en footer.
+  - [✔️] Crear paginas legales mock (`/aviso-legal`, `/privacidad`, `/cookies`) y conectarlas desde footer.
+  - [✔️] Extraer iconos sociales a componente reusable (`social-icon`).
+  - [✔️] Ajustar footer responsive (columna unica centrada en movil).
+  - [✔️] Redisenar header/navbar editorial con topbar, secciones centradas, buscador placeholder y ticker rotativo.
+  - [✔️] Implementar ticker de "ultima hora" con rotacion continua, pausa en hover y enlaces a detalle.
+  - [✔️] Implementar variante sticky del header con menu hamburguesa y drawer lateral.
+  - [✔️] Aplicar responsive del header: sticky como variante principal en movil.
+  - [✔️] Mostrar metadata compacta en movil (`DD-MM-YY · CIUDAD · TEMPERATURA`).
+  - [✔️] Refactorizar `app-navbar` en subcomponentes (`main-header`, `sticky-header`, `ticker`, `side-menu`).
+  - [✔️] Migrar interfaces compartidas a archivos individuales en carpeta `interfaces`.
+  - [✔️] Extraer iconos SVG a componentes dedicados en `src/app/components/icons`.
+  - [✔️] Implementar bateria de tests unitarios para header/navbar y subcomponentes clave.
+  - [✔️] Implementar tests e2e para flujos desktop/mobile del header y guardas de branding (textos, colores e imagenes).
+  - [✔️] Implementar snapshots visuales del header para desktop/tablet/mobile con estados cerrado/abierto en responsive.
+  - [✔️] Centralizar mocks editoriales en `src/app/mocks` para reducir ruido en componentes.
+  - [✔️] Crear `mock-news.service.ts` para encapsular acceso a datos mock y facilitar futura sustitucion por API real.
+  - [✔️] Refactorizar footer para consumir datos mock centralizados (`footer.mock.ts`).
+  - [✔️] Implementar bateria de tests unitarios para footer (contenido, enlaces legales, enlaces externos).
+  - [✔️] Implementar tests e2e y snapshots visuales del footer (desktop y mobile).
 
 <a id="fpn-004"></a>
 
@@ -204,4 +248,18 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
   - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
+
+<a id="fpn-012"></a>
+
+### [FPN-012] Roadmap post-1.0
+
+- Description: Definir funcionalidades de evolucion para implementar despues de cerrar la version 1.0.
+- DoD:
+  - Lista de mejoras post-1.0 priorizada.
+  - Criterios de entrada y alcance de cada mejora definidos.
+  - Dependencias tecnicas y riesgos principales documentados.
+- Tasks:
+  - [ ] Mejorar geolocalizacion para detectar ciudad del usuario de forma robusta y mostrar el tiempo real en cabecera.
+  - [ ] Permitir que el usuario agregue sus propios enlaces RSS y construya un feed personalizado.
+  - [ ] Crear modo de lectura para dislexia (fuente adaptada para personas con dislexia y opcion de activacion).
 

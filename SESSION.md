@@ -31,3 +31,43 @@ Brief continuity notes to recover context between terminal sessions.
   - Created and then removed temporary docs (`VERCEL.md`, `GITHUB.md`) after user moved content to Obsidian.
   - Committed approved changes incrementally.
 
+## 2026-02-11
+
+- What changed:
+  - Completed and stabilized header/navbar implementation for desktop + responsive:
+    - sticky behavior by scroll on desktop
+    - sticky-first mobile/tablet header with hamburger menu
+    - ticker interactions (rotation, pause, links)
+    - naming cleanup and component split for navbar subparts
+  - Centralized mock data into `src/app/mocks` and introduced `MockNewsService` to consume mocks from pages/layout.
+  - Refactored footer data to centralized mocks and validated responsive behavior.
+  - Added broad automated coverage for header and footer:
+    - unit tests for navbar/footer subcomponents and container behaviors
+    - e2e flows for desktop/mobile navigation and interactions
+    - visual snapshot coverage for header (desktop/tablet/mobile, open/closed states) and footer (desktop/mobile)
+  - Updated `BACKLOG.md` (FPN-003) with completed tasks from this session.
+  - Updated `AGENTS.md` with new rules:
+    - interfaces in individual files under `interfaces` (with scoped local exception)
+    - icons as SVG components in `src/app/components/icons`
+
+## 2026-02-12
+
+- What changed:
+  - Reworked hero carousel section to match editorial layout reference:
+    - converted `app-news-carousel` from 3-card grid into a single hero slide with image overlay text
+    - added inline carousel controls and dot navigation on hero
+    - added right-side `En directo` panel for `Ultima hora` style headlines inside the same carousel section
+    - kept anchor compatibility by preserving `id=\"breaking-news\"` in the right panel
+  - Updated home page composition to feed breaking items directly into `app-news-carousel` and remove duplicate standalone breaking block.
+  - Updated carousel unit tests to validate hero title rotation (manual and timed).
+- Files touched:
+  - `src/app/components/news/news-carousel.component.ts`
+  - `src/app/pages/home/home-page.component.ts`
+  - `src/app/components/news/news-carousel.component.spec.ts`
+  - `SESSION.md`
+- Verification performed:
+  - `pnpm run lint` (pass)
+  - `pnpm test` (pass)
+- Next pending step (if any):
+  - Review spacing/typography details in-browser against target screenshot and fine-tune visual parity.
+

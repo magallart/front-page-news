@@ -27,6 +27,7 @@ Specialized in git workflows, commits, and pull requests.
 - Follow the defined PR title format.
 - Ensure lint and tests pass before merging.
 - Never commit unless the user explicitly requests or approves the commit in the current conversation.
+- Before every `git commit`, always ask for explicit confirmation in that exact moment.
 - If commit intent is ambiguous, stop and ask for confirmation before running any `git commit` command.
 
 ## Branching
