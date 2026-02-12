@@ -91,6 +91,12 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Reestructurar la portada inferior en dos columnas (izquierda: secciones por genero; derecha: "lo mas leido").
   - [✔️] Reemplazar enlaces "Ver seccion" por CTA "Ver más" con estilo tipografico y microinteraccion de subrayado.
   - [✔️] Anadir icono dedicado `arrow-right` para reforzar visualmente los CTA de seccion.
+  - [✔️] Renombrar y redisenar el bloque "lo mas leido" como componente `most-read-news` con estilo editorial coherente.
+  - [✔️] Sustituir fecha por hora de publicacion en "lo mas leido" y adaptar mocks para soportar formato con hora.
+  - [✔️] Explorar variantes visuales para "lo mas leido" (fondo oscuro y fondo dorado) y seleccionar variante final.
+  - [✔️] Integrar icono `trending-up` en el titulo de "Lo más leído" para reforzar jerarquia visual.
+  - [✔️] Ajustar anchura y separacion lateral de la columna derecha para alinear visualmente "breaking-news" y "lo mas leido".
+  - [✔️] Ampliar listado mock de "lo mas leido" a 10 elementos para validar densidad del bloque.
   - [✔️] Implementar bloque "actualidad".
   - [✔️] Implementar bloque "2-3 noticias por seccion".
   - [✔️] Implementar bloque "lo mas leido" con criterio temporal mock.

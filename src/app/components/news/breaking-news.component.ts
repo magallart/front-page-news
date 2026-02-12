@@ -35,7 +35,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     }
   `,
   template: `
-    <section class="rounded-xl px-5 py-0 shadow-subtle sm:px-6 sm:py-0 lg:flex lg:h-[30rem] lg:flex-col" id="breaking-news">
+    <section class="rounded-xl py-0 shadow-subtle lg:flex lg:h-[30rem] lg:flex-col" id="breaking-news">
       <header class="mb-3 flex items-center gap-3">
         <span class="live-dot inline-flex h-3 w-3 rounded-full bg-destructive"></span>
         <h2 class="font-editorial-title text-lg font-semibold uppercase tracking-[0.22em] text-foreground">{{ title() }}</h2>

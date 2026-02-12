@@ -20,12 +20,14 @@ import { MockNewsService } from '../../services/mock-news.service';
   template: `
     <app-page-container>
       <section class="space-y-6 py-4 sm:space-y-8">
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] lg:items-stretch">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-stretch">
           <app-news-carousel title="Destacadas" [articles]="featuredNews" />
-          <app-breaking-news [items]="breakingNews" />
+          <div class="lg:pl-5">
+            <app-breaking-news [items]="breakingNews" />
+          </div>
         </div>
 
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] lg:items-start" id="current-news">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start" id="current-news">
           <div>
             <div class="mb-12">
               <app-section-block title="Actualidad" sectionSlug="actualidad" [articles]="currentAffairsNews" />
@@ -38,7 +40,7 @@ import { MockNewsService } from '../../services/mock-news.service';
             </div>
           </div>
 
-          <div id="most-read">
+          <div class="lg:pl-5" id="most-read">
             <app-most-read-news [items]="mostReadNews" />
           </div>
         </div>
@@ -54,5 +56,5 @@ export class HomePageComponent {
   protected readonly breakingNews = this.mockNewsService.getBreakingNews();
   protected readonly economyNews = this.mockNewsService.getEconomyNews();
   protected readonly cultureNews = this.mockNewsService.getCultureNews();
-  protected readonly mostReadNews = this.mockNewsService.getMostReadNews();
+  protected readonly mostReadNews = this.mockNewsService.getMostReadNews(10);
 }
