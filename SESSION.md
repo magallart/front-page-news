@@ -71,3 +71,21 @@ Brief continuity notes to recover context between terminal sessions.
 - Next pending step (if any):
   - Review spacing/typography details in-browser against target screenshot and fine-tune visual parity.
 
+## 2026-02-12 (continued)
+
+- What changed:
+  - Finalized homepage editorial mockup for `FPN-003` with iterative UI refinements:
+    - hero carousel polish (overlay contrast, height tuning, controls/icons, text clamping)
+    - breaking-news polish (spacing/separators, live badge pulse, CTA behavior/accessibility contrast)
+    - section blocks and CTA link polish (`Ver más` + arrow icon alignment)
+    - most-read redesign and rename to `app-most-read-news`, including right-column width alignment and 10 items
+    - news-card consolidation to selected variant and typography/spacing adjustments
+  - Added/updated SVG icon components in `src/app/components/icons` for carousel/CTA/most-read actions.
+  - Expanded automated test coverage for homepage:
+    - new unit tests for `current-news-block`, `section-block`, `most-read-news`, and `home-page`
+    - e2e checks for homepage structure/styles/layout consistency
+    - responsive visual snapshots (desktop and mobile) for homepage content
+  - Added architecture guidance in `AGENTS.md` for when to create per-component folders.
+  - Opened PR with GitHub CLI and merged changes into `main`.
+
+
