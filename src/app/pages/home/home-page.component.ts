@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
-import { MostReadListComponent } from '../../components/news/most-read-list.component';
+import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { MockNewsService } from '../../services/mock-news.service';
@@ -14,7 +14,7 @@ import { MockNewsService } from '../../services/mock-news.service';
     PageContainerComponent,
     NewsCarouselComponent,
     BreakingNewsComponent,
-    MostReadListComponent,
+    MostReadNewsComponent,
     SectionBlockComponent,
   ],
   template: `
@@ -39,7 +39,7 @@ import { MockNewsService } from '../../services/mock-news.service';
           </div>
 
           <div id="most-read">
-            <app-most-read-list [items]="mostReadNews" />
+            <app-most-read-news [items]="mostReadNews" />
           </div>
         </div>
       </section>
