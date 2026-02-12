@@ -7,7 +7,7 @@ import { NewsCarouselComponent } from './news-carousel.component';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 describe('NewsCarouselComponent', () => {
-  it('shows three stories and moves to next group when clicking next button', async () => {
+  it('shows hero story and moves to next one when clicking next button', async () => {
     await TestBed.configureTestingModule({
       imports: [NewsCarouselComponent],
       providers: [provideRouter([])],
@@ -15,10 +15,11 @@ describe('NewsCarouselComponent', () => {
 
     const fixture = TestBed.createComponent(NewsCarouselComponent);
     fixture.componentRef.setInput('articles', MOCK_ARTICLES);
+    fixture.componentRef.setInput('breakingItems', MOCK_ARTICLES.slice(0, 3));
     fixture.detectChanges();
 
-    const beforeTitles = getVisibleTitles(fixture.nativeElement);
-    expect(beforeTitles.length).toBe(3);
+    const beforeTitle = getHeroTitle(fixture.nativeElement);
+    expect(beforeTitle).toBeTruthy();
 
     const nextButton = fixture.nativeElement.querySelector(
       'button[aria-label="Siguiente noticia"]',
@@ -26,12 +27,11 @@ describe('NewsCarouselComponent', () => {
     nextButton.click();
     fixture.detectChanges();
 
-    const afterTitles = getVisibleTitles(fixture.nativeElement);
-    expect(afterTitles.length).toBe(3);
-    expect(beforeTitles[0]).not.toEqual(afterTitles[0]);
+    const afterTitle = getHeroTitle(fixture.nativeElement);
+    expect(beforeTitle).not.toEqual(afterTitle);
   });
 
-  it('rotates stories automatically over time', async () => {
+  it('rotates hero story automatically over time', async () => {
     vi.useFakeTimers();
 
     await TestBed.configureTestingModule({
@@ -43,19 +43,19 @@ describe('NewsCarouselComponent', () => {
     fixture.componentRef.setInput('articles', MOCK_ARTICLES);
     fixture.detectChanges();
 
-    const beforeTitles = getVisibleTitles(fixture.nativeElement);
+    const beforeTitle = getHeroTitle(fixture.nativeElement);
     vi.advanceTimersByTime(5000);
     fixture.detectChanges();
 
-    const afterTitles = getVisibleTitles(fixture.nativeElement);
-    expect(beforeTitles[0]).not.toEqual(afterTitles[0]);
+    const afterTitle = getHeroTitle(fixture.nativeElement);
+    expect(beforeTitle).not.toEqual(afterTitle);
 
     vi.useRealTimers();
   });
 });
 
-function getVisibleTitles(rootElement: HTMLElement): string[] {
-  return Array.from(rootElement.querySelectorAll('h3')).map((heading) => heading.textContent?.trim() ?? '');
+function getHeroTitle(rootElement: HTMLElement): string {
+  return rootElement.querySelector('[data-testid="carousel-hero"] h2')?.textContent?.trim() ?? '';
 }
 
 const MOCK_ARTICLES: readonly NewsItem[] = [
