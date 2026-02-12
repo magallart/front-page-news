@@ -28,10 +28,11 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
         <div class="grid gap-4 md:grid-cols-3">
           @for (article of secondaryArticles(); track article.id) {
-            <app-news-card [article]="article" [showSummary]="false" />
+            <app-news-card [article]="article" />
           }
         </div>
       </div>
+
     </section>
   `,
 })

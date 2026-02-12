@@ -7,48 +7,69 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   selector: 'app-news-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
-  template: `
-    <article class="overflow-hidden rounded-lg border border-border bg-card shadow-subtle">
-      <div class="aspect-[16/10] w-full bg-muted">
-        @if (article().imageUrl) {
-          <img [src]="article().imageUrl" [alt]="article().title" class="h-full w-full object-cover" />
-        } @else {
-          <div class="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Imagen no disponible
-          </div>
-        }
-      </div>
+  styles: `
+    .title-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
-      <div class="space-y-3 p-4">
-        <div class="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <a
-            class="rounded px-1 py-0.5 uppercase tracking-wide hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            [routerLink]="['/seccion', article().section]"
+    .summary-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  `,
+  template: `
+    <article
+      class="group relative h-full overflow-hidden rounded-xl border border-border bg-card shadow-subtle transition duration-300 hover:shadow-medium"
+    >
+      <div class="absolute left-0 top-0 h-full w-1 bg-primary/60"></div>
+
+      <div class="flex h-full flex-col gap-3 p-4 pl-5">
+        <div class="flex items-center justify-between gap-3">
+          <p
+            class="inline-flex rounded-sm bg-primary px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-secondary"
           >
             {{ article().section }}
-          </a>
-          <span>{{ article().source }}</span>
+          </p>
+          <p class="text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().source }}</p>
         </div>
 
-        <h3 class="font-heading text-lg font-semibold leading-tight tracking-tight">
+        <a
+          [routerLink]="['/noticia', article().id]"
+          class="block overflow-hidden rounded-lg bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          @if (article().imageUrl) {
+            <img
+              [src]="article().imageUrl"
+              [alt]="article().title"
+              class="aspect-[16/9] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              loading="lazy"
+            />
+          } @else {
+            <div class="flex aspect-[16/9] items-center justify-center text-sm text-muted-foreground">Imagen no disponible</div>
+          }
+        </a>
+
+        <h3 class="title-clamp font-heading text-xl font-semibold leading-tight tracking-tight">
           <a
-            class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             [routerLink]="['/noticia', article().id]"
           >
             {{ article().title }}
           </a>
         </h3>
 
-        @if (showSummary()) {
-          <p class="text-sm text-muted-foreground">
-            {{ article().summary }}
-          </p>
-        }
+        <p class="summary-clamp text-sm leading-6 text-muted-foreground">{{ article().summary }}</p>
+
+        <p class="mt-auto text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().author }}</p>
       </div>
     </article>
   `,
 })
 export class NewsCardComponent {
   readonly article = input.required<NewsItem>();
-  readonly showSummary = input(true);
 }
