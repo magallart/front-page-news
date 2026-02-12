@@ -50,4 +50,24 @@ Brief continuity notes to recover context between terminal sessions.
     - interfaces in individual files under `interfaces` (with scoped local exception)
     - icons as SVG components in `src/app/components/icons`
 
+## 2026-02-12
+
+- What changed:
+  - Reworked hero carousel section to match editorial layout reference:
+    - converted `app-news-carousel` from 3-card grid into a single hero slide with image overlay text
+    - added inline carousel controls and dot navigation on hero
+    - added right-side `En directo` panel for `Ultima hora` style headlines inside the same carousel section
+    - kept anchor compatibility by preserving `id=\"breaking-news\"` in the right panel
+  - Updated home page composition to feed breaking items directly into `app-news-carousel` and remove duplicate standalone breaking block.
+  - Updated carousel unit tests to validate hero title rotation (manual and timed).
+- Files touched:
+  - `src/app/components/news/news-carousel.component.ts`
+  - `src/app/pages/home/home-page.component.ts`
+  - `src/app/components/news/news-carousel.component.spec.ts`
+  - `SESSION.md`
+- Verification performed:
+  - `pnpm run lint` (pass)
+  - `pnpm test` (pass)
+- Next pending step (if any):
+  - Review spacing/typography details in-browser against target screenshot and fine-tune visual parity.
 
