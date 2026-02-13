@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
+import { IconFilterComponent } from '../../components/icons/icon-filter.component';
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
@@ -12,35 +13,48 @@ import { MockNewsService } from '../../services/mock-news.service';
 @Component({
   selector: 'app-section-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, NewsCardComponent, ErrorStateComponent, SectionFiltersComponent],
+  imports: [PageContainerComponent, NewsCardComponent, ErrorStateComponent, SectionFiltersComponent, IconFilterComponent],
   template: `
     <app-page-container>
       <section class="pt-1 pb-4 sm:pb-6">
         <h1 class="sr-only">{{ sectionTitle() }}</h1>
 
         @if (sectionNews().length > 0) {
-          <div class="grid gap-5 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
-            <app-section-filters
-              [sources]="availableSources()"
-              [selectedSources]="activeSelectedSources()"
-              [sortDirection]="sortDirection()"
-              (selectedSourcesChange)="onSelectedSourcesChange($event)"
-              (sortDirectionChange)="sortDirection.set($event)"
-            />
-
-            @if (filteredSectionNews().length > 0) {
-              <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                @for (item of filteredSectionNews(); track item.id) {
-                  <app-news-card [article]="item" />
-                }
-              </div>
-            } @else {
-              <app-error-state
-                headline="Algo ha salido mal..."
-                message="Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento."
-              />
-            }
+          <div class="mb-4 flex justify-start">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              (click)="toggleFilters()"
+            >
+              <app-icon-filter />
+              {{ filtersOpen() ? 'Ocultar filtros' : 'Mostrar filtros' }}
+            </button>
           </div>
+
+          @if (filtersOpen()) {
+            <div class="mb-5">
+              <app-section-filters
+                [sources]="availableSources()"
+                [selectedSources]="activeSelectedSources()"
+                [sortDirection]="sortDirection()"
+                (selectedSourcesChange)="onSelectedSourcesChange($event)"
+                (sortDirectionChange)="sortDirection.set($event)"
+              />
+            </div>
+          }
+
+          @if (filteredSectionNews().length > 0) {
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              @for (item of filteredSectionNews(); track item.id) {
+                <app-news-card [article]="item" />
+              }
+            </div>
+          } @else {
+            <app-error-state
+              headline="Algo ha salido mal..."
+              message="Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento."
+            />
+          }
         } @else {
           <app-error-state
             headline="Algo ha salido mal..."
@@ -55,6 +69,7 @@ export class SectionPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly mockNewsService = inject(MockNewsService);
   private readonly selectedSources = signal<readonly string[]>([]);
+  protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
   private readonly hasCustomSourceSelection = signal(false);
 
@@ -94,9 +109,14 @@ export class SectionPageComponent {
     effect(() => {
       this.sectionSlug();
       this.selectedSources.set([]);
+      this.filtersOpen.set(false);
       this.hasCustomSourceSelection.set(false);
       this.sortDirection.set('desc');
     });
+  }
+
+  protected toggleFilters(): void {
+    this.filtersOpen.update((value) => !value);
   }
 
   protected onSelectedSourcesChange(nextSources: readonly string[]): void {
