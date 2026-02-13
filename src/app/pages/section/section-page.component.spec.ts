@@ -15,7 +15,7 @@ describe('SectionPageComponent', () => {
     const fixture = TestBed.createComponent(SectionPageComponent);
     fixture.detectChanges();
 
-    const heading = fixture.nativeElement.querySelector('h1') as HTMLElement;
+    const heading = fixture.nativeElement.querySelector('h1.sr-only') as HTMLElement;
     expect(heading.textContent?.trim()).toBe('Economia');
 
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');

@@ -132,7 +132,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Incluye bloques secundarios (actualidad o lo mas leido).
   - Estados vacio/error definidos aunque sean mock.
 - Tasks:
-  - [ ] Implementar encabezado de seccion con metadatos.
+  - [✔️] Implementar encabezado de seccion con metadatos.
   - [✔️] Renderizar grid/lista de noticias de la seccion.
   - [ ] Añadir bloque secundario de apoyo editorial.
   - [ ] Conectar clics a pagina de detalle.

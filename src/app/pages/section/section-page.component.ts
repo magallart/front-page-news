@@ -13,16 +13,8 @@ import { MockNewsService } from '../../services/mock-news.service';
   imports: [PageContainerComponent, NewsCardComponent],
   template: `
     <app-page-container>
-      <section class="space-y-6 py-4 sm:space-y-8">
-        <header class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Seccion</p>
-          <h1 class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            {{ sectionTitle() }}
-          </h1>
-          <p class="text-sm text-muted-foreground sm:text-base">
-            Cobertura actualizada de la seccion {{ sectionTitle() }}.
-          </p>
-        </header>
+      <section class="pt-1 pb-4 sm:pb-6">
+        <h1 class="sr-only">{{ sectionTitle() }}</h1>
 
         @if (sectionNews().length > 0) {
           <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
