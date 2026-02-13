@@ -59,8 +59,7 @@ Recommended structure:
 ## PR Checklist (REQUIRED)
 
 - Linked issue/ticket (if available)
-- Clear description: what/why/how verified
-- Screenshots for UI changes (if applicable)
+- Concise summary of what changed
 - `pnpm run lint` and `pnpm test` pass
 - No unrelated changes bundled in the PR
 

@@ -89,3 +89,20 @@ Brief continuity notes to recover context between terminal sessions.
   - Opened PR with GitHub CLI and merged changes into `main`.
 
 
+## 2026-02-13
+
+- What changed:
+  - Completed ticket `FPN-004` for section-page UX and behavior:
+    - implemented collapsible filters panel with `Mostrar/Ocultar filtros` button
+    - added local Tabler SVG icon component (`filter`) and integrated it in the toggle button
+    - finalized filters layout with source selection, sort options, and bulk actions (`SELECCIONAR TODO` / `QUITAR TODO`)
+    - ensured filters are hidden when the section has no news and preserved centered empty/error state behavior
+  - Expanded automated coverage for filters and section-page interactions:
+    - stronger unit tests for `section-filters` events and UI states
+    - additional section-page tests for filter toggle/empty outcomes
+    - new e2e flow for section filters behavior
+  - Updated backlog scope for `FPN-004`:
+    - removed pending task `Anadir bloque secundario de apoyo editorial`
+    - marked detail navigation task as completed
+  - Opened PR `#2`, refined it to concise summary format, and merged to `main`.
+  - Synced local `main` with remote after merge.

@@ -119,10 +119,7 @@ This file acts as the **single source of truth** for global conventions and deci
 - Before committing or opening a PR:
   - pnpm run lint.
   - pnpm test.
-- PR descriptions must explain:
-  - What changed.
-  - Why it changed.
-  - How it was verified.
+- PR descriptions must be concise and focused on a high-level summary of what changed.
 - If a new global restriction is introduced (e.g. “never X”, “always Y”), it must be documented **in this file**.
 
 ## Agent Behavior Rules
@@ -140,9 +137,6 @@ This file acts as the **single source of truth** for global conventions and deci
 - Each session entry should include:
   - Date
   - What changed
-  - Files touched
-  - Verification performed
-  - Next pending step (if any)
 
 ## Backlog Workflow
 
