@@ -24,8 +24,13 @@ describe('SectionPageComponent', () => {
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');
     expect(cards.length).toBe(3);
 
+    const toggle = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(toggle).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-icon-filter')).toBeTruthy();
+    expect(toggle.textContent).toContain('Mostrar filtros');
+
     const filters = fixture.nativeElement.querySelector('app-section-filters');
-    expect(filters).toBeTruthy();
+    expect(filters).toBeFalsy();
   });
 
   it('renders an empty state when section has no news', async () => {
@@ -40,6 +45,9 @@ describe('SectionPageComponent', () => {
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');
     expect(cards.length).toBe(0);
 
+    const toggle = fixture.nativeElement.querySelector('button');
+    expect(toggle).toBeFalsy();
+
     const filters = fixture.nativeElement.querySelector('app-section-filters');
     expect(filters).toBeFalsy();
 
@@ -51,7 +59,8 @@ describe('SectionPageComponent', () => {
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Algo ha salido mal...');
-    expect(text).toContain('Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento.');
+    expect(text).toContain('Nuestros periodistas');
+    expect(text).toContain('WiFi. Vuelve en un momento.');
   });
 
   it('filters section news by selected source', async () => {
@@ -62,6 +71,8 @@ describe('SectionPageComponent', () => {
 
     const fixture = TestBed.createComponent(SectionPageComponent);
     fixture.detectChanges();
+
+    openFiltersPanel(fixture);
 
     const filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
     const filters = filtersDebug.componentInstance as SectionFiltersComponent;
@@ -85,6 +96,8 @@ describe('SectionPageComponent', () => {
     const fixture = TestBed.createComponent(SectionPageComponent);
     fixture.detectChanges();
 
+    openFiltersPanel(fixture);
+
     const filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
     const filters = filtersDebug.componentInstance as SectionFiltersComponent;
 
@@ -95,6 +108,54 @@ describe('SectionPageComponent', () => {
     const firstCard = fixture.nativeElement.querySelector('app-news-card') as HTMLElement;
     expect(firstCard.textContent).toContain('Tecnologia sanitaria acelera el diagnostico en centros publicos');
   });
+
+  it('toggles filters panel open and close', async () => {
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [provideRouter([]), provideRouteSlug('actualidad')],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    const toggle = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(toggle.textContent).toContain('Mostrar filtros');
+    expect(fixture.nativeElement.querySelector('app-section-filters')).toBeFalsy();
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.textContent).toContain('Ocultar filtros');
+    expect(fixture.nativeElement.querySelector('app-section-filters')).toBeTruthy();
+
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.textContent).toContain('Mostrar filtros');
+    expect(fixture.nativeElement.querySelector('app-section-filters')).toBeFalsy();
+  });
+
+  it('shows error state when all sources are cleared from filters', async () => {
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [provideRouter([]), provideRouteSlug('actualidad')],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    openFiltersPanel(fixture);
+
+    const filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
+    const filters = filtersDebug.componentInstance as SectionFiltersComponent;
+
+    filters.selectedSourcesChange.emit([]);
+    fixture.detectChanges();
+
+    const cards = fixture.nativeElement.querySelectorAll('app-news-card');
+    const errorState = fixture.nativeElement.querySelector('app-error-state');
+
+    expect(cards.length).toBe(0);
+    expect(errorState).toBeTruthy();
+  });
 });
 
 function provideRouteSlug(slug: string) {
@@ -104,4 +165,10 @@ function provideRouteSlug(slug: string) {
       paramMap: of(convertToParamMap({ slug })),
     },
   };
+}
+
+function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: () => void }) {
+  const toggle = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+  toggle.click();
+  fixture.detectChanges();
 }
