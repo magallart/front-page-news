@@ -37,8 +37,15 @@ describe('SectionPageComponent', () => {
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');
     expect(cards.length).toBe(0);
 
-    const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No hay noticias disponibles para esta seccion.');
+    const errorState = fixture.nativeElement.querySelector('app-error-state');
+    expect(errorState).toBeTruthy();
+
+    const image = fixture.nativeElement.querySelector('img[src="/images/error.png"]') as HTMLImageElement;
+    expect(image).toBeTruthy();
+
+    const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
+    expect(text).toContain('Algo ha salido mal...');
+    expect(text).toContain('Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento.');
   });
 });
 

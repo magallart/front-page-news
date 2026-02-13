@@ -4,13 +4,14 @@ import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { MockNewsService } from '../../services/mock-news.service';
 
 @Component({
   selector: 'app-section-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, NewsCardComponent],
+  imports: [PageContainerComponent, NewsCardComponent, ErrorStateComponent],
   template: `
     <app-page-container>
       <section class="pt-1 pb-4 sm:pb-6">
@@ -23,9 +24,10 @@ import { MockNewsService } from '../../services/mock-news.service';
             }
           </div>
         } @else {
-          <p class="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-            No hay noticias disponibles para esta seccion.
-          </p>
+          <app-error-state
+            headline="Algo ha salido mal..."
+            message="Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento."
+          />
         }
       </section>
     </app-page-container>
