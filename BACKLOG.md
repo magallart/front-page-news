@@ -129,15 +129,13 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Description: Permitir al usuario abrir una seccion y explorar sus noticias.
 - DoD:
   - Pagina `/seccion/:slug` funcional con listado filtrado.
-  - Incluye bloques secundarios (actualidad o lo mas leido).
   - Estados vacio/error definidos aunque sean mock.
 - Tasks:
   - [✔️] Implementar encabezado de seccion con metadatos.
   - [✔️] Renderizar grid/lista de noticias de la seccion.
   - [✔️] Diseñar estado vacio con imagen y copy editorial para secciones sin noticias.
   - [✔️] Añadir filtros por periodico y orden por fecha en la pagina de seccion.
-  - [ ] Añadir bloque secundario de apoyo editorial.
-  - [ ] Conectar clics a pagina de detalle.
+  - [✔️] Conectar clics a pagina de detalle.
 
 <a id="fpn-005"></a>
 
