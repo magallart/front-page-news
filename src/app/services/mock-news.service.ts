@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 
 import { FEATURED_STORIES_COUNT, MOCK_NEWS, pickRandomItems } from '../mocks/news.mock';
-import { SECTION_MOCK_STORIES } from '../mocks/section-stories.mock';
 import { TICKER_HEADLINES } from '../mocks/ticker-headlines.mock';
 
 import type { TickerHeadline } from '../../interfaces/ticker-headline.interface';
 import type { NewsItem } from '../interfaces/news-item.interface';
-import type { SectionMockStory } from '../mocks/section-stories.mock';
 
 @Injectable({ providedIn: 'root' })
 export class MockNewsService {
@@ -38,11 +36,11 @@ export class MockNewsService {
     return TICKER_HEADLINES;
   }
 
-  getSectionStories(): readonly SectionMockStory[] {
-    return SECTION_MOCK_STORIES;
+  getSectionNews(section: string, limit = 9): readonly NewsItem[] {
+    return this.getNewsBySection(section, limit);
   }
 
   private getNewsBySection(section: string, limit: number): readonly NewsItem[] {
-    return MOCK_NEWS.filter((item) => item.section === section).slice(0, limit);
+    return MOCK_NEWS.filter((item) => item.section === section.toLowerCase()).slice(0, limit);
   }
 }

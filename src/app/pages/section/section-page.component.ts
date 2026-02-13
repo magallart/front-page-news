@@ -1,43 +1,66 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
+import { IconFilterComponent } from '../../components/icons/icon-filter.component';
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { ErrorStateComponent } from '../../components/news/error-state.component';
+import { NewsCardComponent } from '../../components/news/news-card.component';
+import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { MockNewsService } from '../../services/mock-news.service';
 
 @Component({
   selector: 'app-section-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageContainerComponent],
+  imports: [PageContainerComponent, NewsCardComponent, ErrorStateComponent, SectionFiltersComponent, IconFilterComponent],
   template: `
     <app-page-container>
-      <section class="space-y-6 py-4 sm:space-y-8">
-        <header class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Seccion</p>
-          <h1 class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-            {{ sectionTitle() }}
-          </h1>
-          <p class="text-sm text-muted-foreground sm:text-base">
-            Placeholder para mostrar noticias filtradas por la seccion {{ sectionSlug() }}.
-          </p>
-        </header>
+      <section class="pt-1 pb-4 sm:pb-6">
+        <h1 class="sr-only">{{ sectionTitle() }}</h1>
 
-        <div class="grid gap-4 lg:grid-cols-3">
-          @for (item of sectionStories; track item.id) {
-            <article class="rounded-lg border border-border bg-card p-4">
-              <p class="text-xs uppercase tracking-wide text-muted-foreground">{{ sectionTitle() }}</p>
-              <h2 class="mt-2 font-heading text-lg font-semibold">{{ item.title }}</h2>
-              <p class="mt-2 text-sm text-muted-foreground">{{ item.summary }}</p>
-              <a
-                class="mt-4 inline-flex items-center text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                [routerLink]="['/noticia', item.id]"
-              >
-                Ver noticia
-              </a>
-            </article>
+        @if (sectionNews().length > 0) {
+          <div class="mb-4 flex justify-start">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              (click)="toggleFilters()"
+            >
+              <app-icon-filter />
+              {{ filtersOpen() ? 'Ocultar filtros' : 'Mostrar filtros' }}
+            </button>
+          </div>
+
+          @if (filtersOpen()) {
+            <div class="mb-5">
+              <app-section-filters
+                [sources]="availableSources()"
+                [selectedSources]="activeSelectedSources()"
+                [sortDirection]="sortDirection()"
+                (selectedSourcesChange)="onSelectedSourcesChange($event)"
+                (sortDirectionChange)="sortDirection.set($event)"
+              />
+            </div>
           }
-        </div>
+
+          @if (filteredSectionNews().length > 0) {
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              @for (item of filteredSectionNews(); track item.id) {
+                <app-news-card [article]="item" />
+              }
+            </div>
+          } @else {
+            <app-error-state
+              headline="Algo ha salido mal..."
+              message="Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento."
+            />
+          }
+        } @else {
+          <app-error-state
+            headline="Algo ha salido mal..."
+            message="Nuestros periodistas están peleándose con el WiFi. Vuelve en un momento."
+          />
+        }
       </section>
     </app-page-container>
   `,
@@ -45,6 +68,10 @@ import { MockNewsService } from '../../services/mock-news.service';
 export class SectionPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly mockNewsService = inject(MockNewsService);
+  private readonly selectedSources = signal<readonly string[]>([]);
+  protected readonly filtersOpen = signal(false);
+  protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
+  private readonly hasCustomSourceSelection = signal(false);
 
   protected readonly sectionSlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('slug') ?? 'actualidad')),
@@ -52,14 +79,57 @@ export class SectionPageComponent {
   );
 
   protected readonly sectionTitle = computed(() => formatSectionLabel(this.sectionSlug()));
+  protected readonly sectionNews = computed(() => this.mockNewsService.getSectionNews(this.sectionSlug()));
 
-  protected readonly sectionStories = this.mockNewsService.getSectionStories();
+  protected readonly availableSources = computed(() => {
+    const uniqueSources = new Set(this.sectionNews().map((item) => item.source));
+    return [...uniqueSources].sort((left, right) => left.localeCompare(right, 'es'));
+  });
+
+  protected readonly activeSelectedSources = computed(() => {
+    if (!this.hasCustomSourceSelection()) {
+      return this.availableSources();
+    }
+
+    return this.selectedSources();
+  });
+
+  protected readonly filteredSectionNews = computed(() => {
+    const selectedSourceSet = new Set(this.activeSelectedSources());
+    const filteredNews = this.sectionNews().filter((item) => selectedSourceSet.has(item.source));
+
+    return [...filteredNews].sort((left, right) => {
+      const leftTime = Date.parse(left.publishedAt);
+      const rightTime = Date.parse(right.publishedAt);
+      return this.sortDirection() === 'desc' ? rightTime - leftTime : leftTime - rightTime;
+    });
+  });
+
+  constructor() {
+    effect(() => {
+      this.sectionSlug();
+      this.selectedSources.set([]);
+      this.filtersOpen.set(false);
+      this.hasCustomSourceSelection.set(false);
+      this.sortDirection.set('desc');
+    });
+  }
+
+  protected toggleFilters(): void {
+    this.filtersOpen.update((value) => !value);
+  }
+
+  protected onSelectedSourcesChange(nextSources: readonly string[]): void {
+    this.hasCustomSourceSelection.set(true);
+    this.selectedSources.set(nextSources);
+  }
 }
 
 function formatSectionLabel(slug: string): string {
-  if (!slug) {
-    return 'Actualidad';
-  }
+  const words = slug
+    .split('-')
+    .filter((part) => part.length > 0)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`);
 
-  return `${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
+  return words.length > 0 ? words.join(' ') : 'Actualidad';
 }
