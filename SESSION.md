@@ -106,3 +106,21 @@ Brief continuity notes to recover context between terminal sessions.
     - marked detail navigation task as completed
   - Opened PR `#2`, refined it to concise summary format, and merged to `main`.
   - Synced local `main` with remote after merge.
+
+## 2026-02-16
+
+- What changed:
+  - Completed ticket `FPN-005` and merged PR `#3` to `main`.
+  - Built the article detail page with editorial two-column layout and responsive behavior:
+    - main article content in the center
+    - right sidebar with `breaking-news` and `most-read-news` on desktop only
+  - Added new article components and supporting icons:
+    - `article-content`, `article-metadata`, `article-preview-cta`, `article-locked-preview`, `article-not-found`
+    - `icon-external-link`, `icon-exclamation-circle`
+  - Implemented mobile/desktop metadata behavior:
+    - mobile date format `DD-MM-YY`
+    - centered metadata labels on mobile and left-aligned on desktop
+  - Added fallback handling for missing article fields, including image fallback to `/images/no-image.jpg`.
+  - Extended unit tests for article page and new components, including responsive and fallback scenarios.
+  - Updated `BACKLOG.md` to mark `FPN-005` completed and keep task list aligned with delivered scope.
+  - Synced local `main` with remote and removed local branch `feat/fpn-005-news-page`.
