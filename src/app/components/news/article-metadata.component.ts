@@ -5,17 +5,17 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <dl class="grid grid-cols-3 gap-3 border-y-2 border-border py-4 text-sm">
-      <div class="text-center">
+      <div class="text-center lg:text-left">
         <dt class="text-[0.65rem] font-black uppercase tracking-[0.1em] text-muted-foreground">Autor</dt>
         <dd class="font-editorial-body mt-1 text-foreground">{{ author() }}</dd>
       </div>
 
-      <div class="text-center">
+      <div class="text-center lg:text-left">
         <dt class="text-[0.65rem] font-black uppercase tracking-[0.1em] text-muted-foreground">Publicado en</dt>
         <dd class="font-editorial-body mt-1 text-foreground">{{ source() }}</dd>
       </div>
 
-      <div class="text-center">
+      <div class="text-center lg:text-left">
         <dt class="text-[0.65rem] font-black uppercase tracking-[0.1em] text-muted-foreground">Fecha</dt>
         <dd class="font-editorial-body mt-1 text-foreground">
           <span class="sm:hidden">{{ formattedDateShort() }}</span>
