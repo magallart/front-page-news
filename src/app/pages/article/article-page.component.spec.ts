@@ -29,6 +29,10 @@ describe('ArticlePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-article-content')).toBeTruthy();
+
+    const sidebar = fixture.nativeElement.querySelector('aside') as HTMLElement;
+    expect(sidebar.className).toContain('hidden');
+    expect(sidebar.className).toContain('lg:block');
   });
 
   it('renders not-found state when article id does not exist', async () => {
