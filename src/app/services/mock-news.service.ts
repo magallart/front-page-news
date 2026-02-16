@@ -8,6 +8,10 @@ import type { NewsItem } from '../interfaces/news-item.interface';
 
 @Injectable({ providedIn: 'root' })
 export class MockNewsService {
+  getNewsById(id: string): NewsItem | undefined {
+    return MOCK_NEWS.find((item) => item.id === id);
+  }
+
   getFeaturedNews(): readonly NewsItem[] {
     return pickRandomItems(MOCK_NEWS, FEATURED_STORIES_COUNT);
   }

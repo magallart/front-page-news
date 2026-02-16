@@ -4,82 +4,119 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { ArticleMetadataComponent } from '../../components/news/article-metadata.component';
+import { ArticlePreviewCtaComponent } from '../../components/news/article-preview-cta.component';
+import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
+import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
+import { MockNewsService } from '../../services/mock-news.service';
 
 @Component({
   selector: 'app-article-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageContainerComponent],
+  imports: [
+    RouterLink,
+    PageContainerComponent,
+    ArticleMetadataComponent,
+    ArticlePreviewCtaComponent,
+    BreakingNewsComponent,
+    MostReadNewsComponent,
+  ],
   template: `
     <app-page-container>
       <section class="space-y-6 py-4 sm:space-y-8">
-        <nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
-          <a
-            class="hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            routerLink="/"
-          >
-            Portada
-          </a>
-          <span class="px-2">/</span>
-          <a
-            class="hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            routerLink="/seccion/actualidad"
-          >
-            Actualidad
-          </a>
-          <span class="px-2">/</span>
-          <span class="text-foreground">Noticia</span>
-        </nav>
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start">
+          <div>
+            @if (article(); as item) {
+              <article class="space-y-6 sm:space-y-7">
+                <header class="space-y-4">
+                  <a
+                    class="inline-flex rounded-sm bg-secondary px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-secondary-foreground transition hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    [routerLink]="['/seccion', item.section]"
+                  >
+                    {{ formatSection(item.section) }}
+                  </a>
 
-        <article class="rounded-lg border border-border bg-card p-6 shadow-subtle">
-          <header class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Detalle de noticia</p>
-            <h1 class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-              Noticia {{ articleId() }}
-            </h1>
-            <p class="text-sm text-muted-foreground sm:text-base">
-              Placeholder para mostrar resumen, autor, medio, fecha e imagen de la noticia RSS.
-            </p>
-          </header>
+                  <h1 class="font-editorial-title text-3xl font-semibold leading-[1.2] tracking-tight text-foreground sm:text-5xl">
+                    {{ item.title }}
+                  </h1>
 
-          <dl class="mt-6 grid gap-4 text-sm sm:grid-cols-2">
-            <div>
-              <dt class="font-medium text-foreground">Autor</dt>
-              <dd class="text-muted-foreground">{{ author() }}</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-foreground">Medio</dt>
-              <dd class="text-muted-foreground">Pendiente de API</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-foreground">Fecha</dt>
-              <dd class="text-muted-foreground">Pendiente de API</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-foreground">Seccion</dt>
-              <dd class="text-muted-foreground">Actualidad</dd>
-            </div>
-          </dl>
+                  <div class="pt-2 sm:pt-3">
+                    <app-article-metadata [author]="item.author" [source]="item.source" [publishedAt]="item.publishedAt" />
+                  </div>
+                </header>
 
-          <a
-            class="mt-8 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            href="https://example.com/noticia-original"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Leer en el medio original
-          </a>
-        </article>
+                <div class="overflow-hidden rounded-xl border border-border bg-muted">
+                  <img [src]="item.imageUrl" [alt]="item.title" class="aspect-[16/9] w-full object-cover" loading="eager" />
+                </div>
+
+                <div class="font-editorial-body space-y-5 text-lg leading-8 text-muted-foreground">
+                  @for (paragraph of articleParagraphs(); track $index) {
+                    <p>{{ paragraph }}</p>
+                  }
+                </div>
+
+                <div class="pt-2 sm:pt-4">
+                  <app-article-preview-cta [url]="item.url" [source]="item.source" />
+                </div>
+              </article>
+            } @else {
+              <article class="rounded-xl border border-border bg-card p-6 shadow-subtle">
+                <h1 class="font-editorial-title text-3xl font-semibold text-foreground sm:text-4xl">Noticia no encontrada</h1>
+                <p class="mt-4 text-base text-muted-foreground">
+                  No hemos encontrado la noticia solicitada. Vuelve a portada para seguir navegando.
+                </p>
+                <a
+                  class="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  routerLink="/"
+                >
+                  Ir a portada
+                </a>
+              </article>
+            }
+          </div>
+
+          <aside class="space-y-6 sm:space-y-8 lg:pl-5">
+            <app-breaking-news [items]="breakingNews" />
+            <div class="mt-8">
+              <app-most-read-news [items]="mostReadNews" />
+            </div>
+          </aside>
+        </div>
       </section>
     </app-page-container>
   `,
 })
 export class ArticlePageComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly mockNewsService = inject(MockNewsService);
 
   protected readonly articleId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('id') ?? 'sin-id')),
     { initialValue: 'sin-id' },
   );
 
-  protected readonly author = computed(() => `Autor pendiente para ${this.articleId()}`);
+  protected readonly article = computed(() => this.mockNewsService.getNewsById(this.articleId()));
+  protected readonly breakingNews = this.mockNewsService.getBreakingNews();
+  protected readonly mostReadNews = this.mockNewsService.getMostReadNews(10);
+
+  protected readonly articleParagraphs = computed(() => {
+    const item = this.article();
+    if (!item) {
+      return [] as readonly string[];
+    }
+
+    return [
+      item.summary,
+      `Segun fuentes de ${item.source}, este avance refuerza la cobertura en ${this.formatSection(item.section).toLowerCase()} y abre nuevas lineas de seguimiento editorial en los proximos dias.`,
+      `El equipo de redaccion mantendra esta historia en actualizacion constante para aportar contexto, datos verificados y el impacto directo en la audiencia.`,
+    ] as const;
+  });
+
+  protected formatSection(section: string): string {
+    if (!section) {
+      return 'Actualidad';
+    }
+
+    return `${section.charAt(0).toUpperCase()}${section.slice(1)}`;
+  }
 }
