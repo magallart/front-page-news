@@ -40,7 +40,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         }
       </div>
 
-      <app-article-locked-preview />
+      <div class="mt-3 sm:mt-4">
+        <app-article-locked-preview />
+      </div>
 
       <div class="pt-2 sm:pt-4">
         <app-article-preview-cta [url]="article().url" [source]="article().source" />

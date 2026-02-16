@@ -32,7 +32,7 @@ import { MockNewsService } from '../../services/mock-news.service';
             }
           </div>
 
-          <aside class="lg:pl-5">
+          <aside class="hidden lg:block lg:pl-5">
             <app-breaking-news [items]="breakingNews" />
             <div class="mt-8">
               <app-most-read-news [items]="mostReadNews" />
