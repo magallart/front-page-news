@@ -16,22 +16,26 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
       <header class="space-y-4">
         <a
           class="inline-flex rounded-sm bg-secondary px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-secondary-foreground transition hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          [routerLink]="['/seccion', article().section]"
+          [routerLink]="['/seccion', safeArticle().section]"
         >
           {{ formattedSection() }}
         </a>
 
         <h1 class="font-editorial-title text-3xl font-semibold leading-[1.2] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-          {{ article().title }}
+          {{ safeArticle().title }}
         </h1>
 
         <div class="pt-2 sm:pt-3">
-          <app-article-metadata [author]="article().author" [source]="article().source" [publishedAt]="article().publishedAt" />
+          <app-article-metadata
+            [author]="safeArticle().author"
+            [source]="safeArticle().source"
+            [publishedAt]="safeArticle().publishedAt"
+          />
         </div>
       </header>
 
       <div class="overflow-hidden rounded-xl border border-border bg-muted">
-        <img [src]="article().imageUrl" [alt]="article().title" class="aspect-[16/9] w-full object-cover" loading="eager" />
+        <img [src]="safeArticle().imageUrl" [alt]="safeArticle().title" class="aspect-[16/9] w-full object-cover" loading="eager" />
       </div>
 
       <div class="font-editorial-body space-y-5 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
@@ -45,7 +49,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
       </div>
 
       <div class="pt-2 sm:pt-4">
-        <app-article-preview-cta [url]="article().url" [source]="article().source" />
+        <app-article-preview-cta [url]="safeArticle().url" [source]="safeArticle().source" />
       </div>
     </article>
   `,
@@ -53,9 +57,26 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 export class ArticleContentComponent {
   readonly article = input.required<NewsItem>();
 
-  protected readonly formattedSection = computed(() => formatSectionLabel(this.article().section));
-  protected readonly articleParagraphs = computed(() => {
+  protected readonly safeArticle = computed(() => {
     const item = this.article();
+    const section = normalizeOrFallback(item.section, 'actualidad');
+    const source = normalizeOrFallback(item.source, 'Front Page News');
+
+    return {
+      title: normalizeOrFallback(item.title, 'Noticia sin titular disponible'),
+      summary: normalizeOrFallback(item.summary, 'Esta noticia no incluye resumen disponible en este momento.'),
+      imageUrl: normalizeOrFallback(item.imageUrl, '/images/no-image.jpg'),
+      source,
+      section,
+      publishedAt: item.publishedAt,
+      author: normalizeOrFallback(item.author, 'Redaccion Front Page News'),
+      url: normalizeOrFallback(item.url, '/'),
+    } as const;
+  });
+
+  protected readonly formattedSection = computed(() => formatSectionLabel(this.safeArticle().section));
+  protected readonly articleParagraphs = computed(() => {
+    const item = this.safeArticle();
 
     return [
       item.summary,
@@ -71,4 +92,9 @@ function formatSectionLabel(section: string): string {
   }
 
   return `${section.charAt(0).toUpperCase()}${section.slice(1)}`;
+}
+
+function normalizeOrFallback(value: string, fallback: string): string {
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : fallback;
 }
