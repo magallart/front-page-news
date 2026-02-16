@@ -29,6 +29,7 @@ describe('ArticlePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-article-metadata')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-article-locked-preview')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-article-preview-cta')).toBeTruthy();
   });
 

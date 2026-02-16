@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { ArticleLockedPreviewComponent } from '../../components/news/article-locked-preview.component';
 import { ArticleMetadataComponent } from '../../components/news/article-metadata.component';
 import { ArticlePreviewCtaComponent } from '../../components/news/article-preview-cta.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
@@ -16,6 +17,7 @@ import { MockNewsService } from '../../services/mock-news.service';
   imports: [
     RouterLink,
     PageContainerComponent,
+    ArticleLockedPreviewComponent,
     ArticleMetadataComponent,
     ArticlePreviewCtaComponent,
     BreakingNewsComponent,
@@ -53,6 +55,10 @@ import { MockNewsService } from '../../services/mock-news.service';
                   @for (paragraph of articleParagraphs(); track $index) {
                     <p>{{ paragraph }}</p>
                   }
+                </div>
+
+                <div>
+                  <app-article-locked-preview />
                 </div>
 
                 <div class="pt-2 sm:pt-4">
