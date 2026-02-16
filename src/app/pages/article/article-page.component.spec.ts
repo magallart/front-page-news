@@ -28,9 +28,7 @@ describe('ArticlePageComponent', () => {
 
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-article-metadata')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-article-locked-preview')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-article-preview-cta')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-article-content')).toBeTruthy();
   });
 
   it('renders not-found state when article id does not exist', async () => {
@@ -45,6 +43,7 @@ describe('ArticlePageComponent', () => {
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Noticia no encontrada');
     expect(text).toContain('Ir a portada');
+    expect(fixture.nativeElement.querySelector('app-article-not-found')).toBeTruthy();
 
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
