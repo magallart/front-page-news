@@ -1,85 +1,58 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
+import { ArticleContentComponent } from '../../components/news/article-content.component';
+import { ArticleNotFoundComponent } from '../../components/news/article-not-found.component';
+import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
+import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
+import { MockNewsService } from '../../services/mock-news.service';
 
 @Component({
   selector: 'app-article-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, PageContainerComponent],
+  imports: [
+    PageContainerComponent,
+    ArticleContentComponent,
+    ArticleNotFoundComponent,
+    BreakingNewsComponent,
+    MostReadNewsComponent,
+  ],
   template: `
     <app-page-container>
       <section class="space-y-6 py-4 sm:space-y-8">
-        <nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
-          <a
-            class="hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            routerLink="/"
-          >
-            Portada
-          </a>
-          <span class="px-2">/</span>
-          <a
-            class="hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            routerLink="/seccion/actualidad"
-          >
-            Actualidad
-          </a>
-          <span class="px-2">/</span>
-          <span class="text-foreground">Noticia</span>
-        </nav>
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start">
+          <div>
+            @if (article(); as item) {
+              <app-article-content [article]="item" />
+            } @else {
+              <app-article-not-found />
+            }
+          </div>
 
-        <article class="rounded-lg border border-border bg-card p-6 shadow-subtle">
-          <header class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Detalle de noticia</p>
-            <h1 class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
-              Noticia {{ articleId() }}
-            </h1>
-            <p class="text-sm text-muted-foreground sm:text-base">
-              Placeholder para mostrar resumen, autor, medio, fecha e imagen de la noticia RSS.
-            </p>
-          </header>
-
-          <dl class="mt-6 grid gap-4 text-sm sm:grid-cols-2">
-            <div>
-              <dt class="font-medium text-foreground">Autor</dt>
-              <dd class="text-muted-foreground">{{ author() }}</dd>
+          <aside class="hidden lg:block lg:pl-5">
+            <app-breaking-news [items]="breakingNews" />
+            <div class="mt-8">
+              <app-most-read-news [items]="mostReadNews" />
             </div>
-            <div>
-              <dt class="font-medium text-foreground">Medio</dt>
-              <dd class="text-muted-foreground">Pendiente de API</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-foreground">Fecha</dt>
-              <dd class="text-muted-foreground">Pendiente de API</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-foreground">Seccion</dt>
-              <dd class="text-muted-foreground">Actualidad</dd>
-            </div>
-          </dl>
-
-          <a
-            class="mt-8 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            href="https://example.com/noticia-original"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Leer en el medio original
-          </a>
-        </article>
+          </aside>
+        </div>
       </section>
     </app-page-container>
   `,
 })
 export class ArticlePageComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly mockNewsService = inject(MockNewsService);
 
   protected readonly articleId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('id') ?? 'sin-id')),
     { initialValue: 'sin-id' },
   );
 
-  protected readonly author = computed(() => `Autor pendiente para ${this.articleId()}`);
+  protected readonly article = computed(() => this.mockNewsService.getNewsById(this.articleId()));
+  protected readonly breakingNews = this.mockNewsService.getBreakingNews();
+  protected readonly mostReadNews = this.mockNewsService.getMostReadNews(10);
 }

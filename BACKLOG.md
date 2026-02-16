@@ -20,8 +20,8 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-001](#fpn-001) | MVP y fuentes iniciales | Cerrar alcance real del MVP y lista corta de periodicos RSS. | [✔️] |
 | [FPN-002](#fpn-002) | Shell de aplicacion y rutas | Montar navbar/footer/layout y rutas base de las 3 paginas. | [✔️] |
 | [FPN-003](#fpn-003) | Portada (mock first) | Implementar portada tipo portal con bloques y componentes reutilizables con datos mock. | [✔️] |
-| [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [ ] |
-| [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [ ] |
+| [FPN-004](#fpn-004) | Pagina de seccion (mock first) | Implementar pagina por seccion y navegacion desde portada. | [✔️] |
+| [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [✔️] |
 | [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [ ] |
@@ -147,10 +147,19 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Boton visible para abrir noticia original.
   - Manejo de faltantes (sin imagen/sin autor).
 - Tasks:
-  - [ ] Mostrar `title`, `summary`, `image`, `author`, `source`, `publishedAt`.
-  - [ ] Mostrar enlace/CTA "Leer en el medio original".
-  - [ ] Definir fallback de imagen y texto para datos ausentes.
-  - [ ] Añadir navegacion de retorno a portada o seccion.
+  - [✔️] Mostrar `title`, `summary`, `image`, `author`, `source`, `publishedAt`.
+  - [✔️] Mostrar enlace/CTA "Leer en el medio original".
+  - [✔️] Definir fallback de imagen y texto para datos ausentes.
+  - [✔️] Añadir navegacion de retorno a portada o seccion.
+  - [✔️] Reestructurar pagina de noticia con layout editorial de dos columnas (`articulo` + `sidebar`).
+  - [✔️] Reutilizar componentes existentes en sidebar (`breaking-news`, `most-read-news`) y ocultarlos en movil.
+  - [✔️] Crear componente `article-metadata` con formato de fecha responsive (`DD-MM-YY` en movil).
+  - [✔️] Crear componente `article-preview-cta` con icono externo y estilos editoriales coherentes.
+  - [✔️] Crear componente `article-locked-preview` para simular continuidad de contenido bloqueado.
+  - [✔️] Crear componente `article-not-found` con imagen de error y CTA de retorno a portada.
+  - [✔️] Refactorizar detalle en componentes pequenos (`article-content`, `article-not-found`) para simplificar mantenimiento.
+  - [✔️] Añadir fallback de imagen local `/images/no-image.jpg` para feeds sin imagen.
+  - [✔️] Anadir tests unitarios para pagina de noticia y nuevos componentes (`article-content`, `article-metadata`, `article-not-found`, `article-locked-preview`).
 
 <a id="fpn-006"></a>
 
