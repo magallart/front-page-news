@@ -18,8 +18,9 @@ import { IconExclamationCircleComponent } from '../icons/icon-exclamation-circle
 
       <h1 class="font-editorial-title text-3xl font-semibold text-foreground sm:text-4xl">Noticia no encontrada</h1>
       <p class="mt-4 max-w-xl text-base text-muted-foreground">
-        Revisa el enlace de la noticia, si la has escrito mal y sigues sin ver la noticia puede ser debido a que algunas noticias dejan de estar disponibles cuando la fuente original actualiza su contenido o modifica
-     Puedes regresar a portada para seguir navegando por el resto de noticias.
+        Revisa el enlace de la noticia, porque puede haber un error en la URL. Si el enlace es correcto, es posible
+        que esta noticia ya no este disponible porque la fuente original ha actualizado o modificado su publicacion.
+        Puedes regresar a portada para seguir navegando por el resto de noticias.
       </p>
       <a
         class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-500 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"
