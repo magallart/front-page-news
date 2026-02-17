@@ -190,7 +190,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - `GET /api/news` devuelve noticias agregadas/normalizadas.
   - Soporta fallos parciales sin romper respuesta.
 - Tasks:
-  - [ ] Crear `api/sources.ts` con catalogo de fuentes inicial.
+  - [✔️] Crear `api/sources.ts` con catalogo de fuentes inicial.
   - [ ] Crear `api/news.ts` con filtros: `section`, `source`, `q`, `page`, `limit`.
   - [ ] Hacer fetch concurrente con timeout (`AbortController`).
   - [ ] Parsear RSS/Atom y mapear al modelo comun.
