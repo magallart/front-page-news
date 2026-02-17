@@ -350,15 +350,7 @@ async function checkFeed(record, timeoutMs) {
 }
 
 async function requestWithFallback(url, timeoutMs) {
-  try {
-    const headResponse = await fetchWithTimeout(url, { method: 'HEAD', redirect: 'follow' }, timeoutMs);
-    if (headResponse.status === 405) {
-      return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
-    }
-    return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
-  } catch {
-    return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
-  }
+  return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
 }
 
 async function fetchWithTimeout(url, init, timeoutMs) {
