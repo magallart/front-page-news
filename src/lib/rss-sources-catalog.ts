@@ -1,18 +1,18 @@
+import type { RssSourceRecord } from '../interfaces/rss-source-record.interface';
 import type { Section } from '../interfaces/section.interface';
 import type { SourceFeedTarget } from '../interfaces/source-feed-target.interface';
 import type { Source } from '../interfaces/source.interface';
 import type { SourcesResponse } from '../interfaces/sources-response.interface';
 
-interface CatalogRecord {
-  readonly sourceName: string;
-  readonly feedUrl: string;
-  readonly sectionName: string;
-}
-
 export function buildSourcesResponse(markdown: string): SourcesResponse {
   const records = parseCatalogRecords(markdown);
-  const sections = buildSections(records);
-  const sources = buildSources(records);
+  return buildSourcesResponseFromRecords(records);
+}
+
+export function buildSourcesResponseFromRecords(records: readonly RssSourceRecord[]): SourcesResponse {
+  const normalizedRecords = normalizeCatalogRecords(records);
+  const sections = buildSections(normalizedRecords);
+  const sources = buildSources(normalizedRecords);
 
   return {
     sources,
@@ -22,9 +22,14 @@ export function buildSourcesResponse(markdown: string): SourcesResponse {
 
 export function buildSourceFeedTargets(markdown: string): readonly SourceFeedTarget[] {
   const records = parseCatalogRecords(markdown);
+  return buildSourceFeedTargetsFromRecords(records);
+}
+
+export function buildSourceFeedTargetsFromRecords(records: readonly RssSourceRecord[]): readonly SourceFeedTarget[] {
+  const normalizedRecords = normalizeCatalogRecords(records);
   const uniqueTargets = new Map<string, SourceFeedTarget>();
 
-  for (const record of records) {
+  for (const record of normalizedRecords) {
     const sourceSlug = toSlug(record.sourceName);
     const sectionSlug = toSlug(record.sectionName);
     if (!sourceSlug || !sectionSlug) {
@@ -56,9 +61,9 @@ export function buildSourceFeedTargets(markdown: string): readonly SourceFeedTar
   });
 }
 
-function parseCatalogRecords(markdown: string): readonly CatalogRecord[] {
+function parseCatalogRecords(markdown: string): readonly RssSourceRecord[] {
   const lines = markdown.split(/\r?\n/);
-  const records: CatalogRecord[] = [];
+  const records: RssSourceRecord[] = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = (lines[index] ?? '').trim();
@@ -94,7 +99,7 @@ function parseCatalogRecords(markdown: string): readonly CatalogRecord[] {
   return records;
 }
 
-function buildSections(records: readonly CatalogRecord[]): readonly Section[] {
+function buildSections(records: readonly RssSourceRecord[]): readonly Section[] {
   const sectionBySlug = new Map<string, Section>();
 
   for (const record of records) {
@@ -113,7 +118,7 @@ function buildSections(records: readonly CatalogRecord[]): readonly Section[] {
   return Array.from(sectionBySlug.values()).sort((first, second) => first.name.localeCompare(second.name, 'es'));
 }
 
-function buildSources(records: readonly CatalogRecord[]): readonly Source[] {
+function buildSources(records: readonly RssSourceRecord[]): readonly Source[] {
   const sourceMap = new Map<string, { source: Source; sectionSlugs: Set<string> }>();
 
   for (const record of records) {
@@ -152,6 +157,16 @@ function buildSources(records: readonly CatalogRecord[]): readonly Source[] {
       sectionSlugs: Array.from(entry.sectionSlugs).sort(),
     }))
     .sort((first, second) => first.name.localeCompare(second.name, 'es'));
+}
+
+function normalizeCatalogRecords(records: readonly RssSourceRecord[]): readonly RssSourceRecord[] {
+  return records
+    .map((record) => ({
+      sourceName: sanitizeCatalogText(record.sourceName),
+      feedUrl: record.feedUrl.trim(),
+      sectionName: sanitizeCatalogText(record.sectionName),
+    }))
+    .filter((record) => Boolean(record.sourceName) && Boolean(record.feedUrl) && Boolean(record.sectionName));
 }
 
 function valueAfterColon(line: string): string {

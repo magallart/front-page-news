@@ -1,0 +1,482 @@
+[
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/espana/",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/portada/",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "Expansión",
+    "feedUrl": "https://e01-expansion.uecdn.es/rss/portada.xml",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/home.xml",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/home.xml",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/index.xml",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/portada/",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "AS",
+    "feedUrl": "https://feeds.as.com/mrss-s/pages/as/site/as.com/section/actualidad/portada/",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/ultima-hora/",
+    "sectionName": "Actualidad"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/ultimas-noticias.xml",
+    "sectionName": "Última hora"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/las-ultimas-noticias.xml",
+    "sectionName": "Última hora"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=ultima-hora",
+    "sectionName": "Última hora"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/sociedad/portada",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/sociedad/",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/sociedad/",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/sociedad/rss.xml",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/vida.xml",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=sociedad",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22012",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "Expansión",
+    "feedUrl": "https://e01-expansion.uecdn.es/rss/sociedad.xml",
+    "sectionName": "Sociedad"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/internacional.xml",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/mundo/",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/internacional/",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/internacional/rss.xml",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/internacional.xml",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/internacional.xml",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/internacional/index.xml",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=internacional",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22027",
+    "sectionName": "Internacional"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/list/ep/site/elpais.com/section/opinion",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.blogs.elconfidencial.com/",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/opinion/",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/opinion/rss.xml",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/opinion.xml",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/opinion.xml",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=opinion",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22014",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "Expansión",
+    "feedUrl": "https://e01-expansion.uecdn.es/rss/opinion.xml",
+    "sectionName": "Opinión"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/espana/",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/espana/rss.xml",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/nacional.xml",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/espana/index.xml",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/1574138",
+    "sectionName": "España"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/economia/portada",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/economia.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/economia/",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/economia/",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/libremercado/rss.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/economia.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/economia.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/economia/index.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=economia",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El Economista",
+    "feedUrl": "https://www.eleconomista.es/rss/rss-economia.php",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22023",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "Expansión",
+    "feedUrl": "https://e01-expansion.uecdn.es/rss/economia.xml",
+    "sectionName": "Economía"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/ciencia/portada",
+    "sectionName": "Ciencia"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/ciencia.xml",
+    "sectionName": "Ciencia"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/ciencia/",
+    "sectionName": "Ciencia"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/ciencia-tecnologia/ciencia/rss.xml",
+    "sectionName": "Ciencia"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=ciencia",
+    "sectionName": "Ciencia"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/tecnologia/",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/tecnologia/",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/ciencia-tecnologia/tecnologia/rss.xml",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=tecnologia",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "El Economista",
+    "feedUrl": "https://www.eleconomista.es/rss/rss-category.php?category=tecnologia",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "Expansión",
+    "feedUrl": "https://e01-expansion.uecdn.es/rss/tecnologia.xml",
+    "sectionName": "Tecnología"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/cultura/portada",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundo/rss/cultura.xml",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/cultura/",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/cultura/",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/cultura/rss.xml",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/cultura.xml",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/cultura/index.xml",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=culturas",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22052",
+    "sectionName": "Cultura"
+  },
+  {
+    "sourceName": "El País",
+    "feedUrl": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/deportes/portada",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "El Mundo",
+    "feedUrl": "https://e00-elmundo.uecdn.es/elmundodeporte/rss/portada.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "El Confidencial",
+    "feedUrl": "https://rss.elconfidencial.com/deportes/",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "ABC",
+    "feedUrl": "https://www.abc.es/rss/2.0/deportes/",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "Libertad Digital",
+    "feedUrl": "https://www.libertaddigital.com/deportes/rss.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "La Vanguardia",
+    "feedUrl": "https://www.lavanguardia.com/rss/deportes.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "EsDiario",
+    "feedUrl": "https://www.esdiario.com/rss/deportes.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "La Voz de Galicia",
+    "feedUrl": "https://www.lavozdegalicia.es/deportes/index.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "El Correo",
+    "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=deportes",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "El Periódico Mediterráneo",
+    "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22006",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "AS",
+    "feedUrl": "https://feeds.as.com/mrss-s/pages/as/site/as.com/section/futbol/portada/",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "MARCA",
+    "feedUrl": "https://e00-xlk-ue-marca.uecdn.es/rss/googlenews/portada.xml",
+    "sectionName": "Deportes"
+  },
+  {
+    "sourceName": "El Diario.es",
+    "feedUrl": "https://www.eldiario.es/rss",
+    "sectionName": "Todas"
+  },
+  {
+    "sourceName": "El Español",
+    "feedUrl": "https://www.elespanol.com/rss/temas/el_espanol/",
+    "sectionName": "Todas"
+  },
+  {
+    "sourceName": "OkDiario",
+    "feedUrl": "https://okdiario.com/feed",
+    "sectionName": "Todas"
+  }
+]
