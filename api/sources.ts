@@ -7,6 +7,7 @@ import { buildSourcesResponse } from '../src/lib/rss-sources-catalog';
 import type { SourcesResponse } from '../src/interfaces/sources-response.interface';
 
 const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'docs/rss-sources.md');
+const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=300, stale-while-revalidate=900';
 
 interface ApiErrorResponse {
   readonly error: string;
@@ -36,5 +37,6 @@ export default async function handler(request: ApiRequest, response: ServerRespo
 function sendJson(response: ServerResponse, statusCode: number, body: SourcesApiResponse): void {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
+  response.setHeader('cache-control', CACHE_CONTROL_HEADER_VALUE);
   response.end(JSON.stringify(body));
 }

@@ -16,6 +16,7 @@ import type { Warning } from '../src/interfaces/warning.interface';
 
 const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'docs/rss-sources.md');
 const FEED_FETCH_TIMEOUT_MS = 8000;
+const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=120, stale-while-revalidate=600';
 
 interface ApiErrorResponse {
   readonly error: string;
@@ -155,5 +156,6 @@ function selectSourcesForFetch(
 function sendJson(response: ServerResponse, statusCode: number, body: NewsApiResponse): void {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
+  response.setHeader('cache-control', CACHE_CONTROL_HEADER_VALUE);
   response.end(JSON.stringify(body));
 }
