@@ -351,7 +351,11 @@ async function checkFeed(record, timeoutMs) {
 
 async function requestWithFallback(url, timeoutMs) {
   try {
-    return await fetchWithTimeout(url, { method: 'HEAD', redirect: 'follow' }, timeoutMs);
+    const headResponse = await fetchWithTimeout(url, { method: 'HEAD', redirect: 'follow' }, timeoutMs);
+    if (headResponse.status === 405) {
+      return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
+    }
+    return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
   } catch {
     return fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, timeoutMs);
   }
@@ -361,15 +365,7 @@ async function fetchWithTimeout(url, init, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { ...init, signal: controller.signal });
-    if (init.method === 'HEAD' && response.status === 405) {
-      throw new Error('method-not-allowed');
-    }
-    if (init.method === 'HEAD') {
-      const getResponse = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal });
-      return getResponse;
-    }
-    return response;
+    return await fetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }

@@ -27,6 +27,12 @@ describe('rss-normalization', () => {
     expect(extractSafeSummary(raw)).toBe('Ultima hora & analisis');
   });
 
+  it('keeps invalid numeric entities without throwing', () => {
+    const raw = '<p>Texto &#9999999999; y &#xD800; y &#x110000;</p>';
+
+    expect(extractSafeSummary(raw)).toBe('Texto &#9999999999; y &#xD800; y &#x110000;');
+  });
+
   it('builds deterministic id from canonical url and fallback key', () => {
     const idFromUrlA = buildStableArticleId(
       'https://example.com/news/a?utm=tracker#anchor',

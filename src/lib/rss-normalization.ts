@@ -26,6 +26,9 @@ const URL_PROTOCOL = {
   HTTP: 'http:',
   HTTPS: 'https:',
 } as const;
+const UNICODE_MAX_CODE_POINT = 0x10ffff;
+const SURROGATE_MIN = 0xd800;
+const SURROGATE_MAX = 0xdfff;
 
 export function normalizeDateToIso(value: string | null): string | null {
   if (!value) {
@@ -143,15 +146,15 @@ function decodeHtmlEntities(value: string): string {
 
     if (/^&#\d+;$/.test(entity)) {
       const numericValue = Number.parseInt(entity.slice(2, -1), 10);
-      if (Number.isFinite(numericValue)) {
-        return String.fromCodePoint(numericValue);
+      if (isValidCodePoint(numericValue)) {
+        return safeFromCodePoint(numericValue) ?? entity;
       }
     }
 
     if (/^&#x[0-9a-fA-F]+;$/.test(entity)) {
       const hexValue = Number.parseInt(entity.slice(3, -1), 16);
-      if (Number.isFinite(hexValue)) {
-        return String.fromCodePoint(hexValue);
+      if (isValidCodePoint(hexValue)) {
+        return safeFromCodePoint(hexValue) ?? entity;
       }
     }
 
@@ -178,4 +181,21 @@ function isMoreRecent(candidate: string | null, current: string | null): boolean
   const candidateTime = candidate ? Date.parse(candidate) : Number.NEGATIVE_INFINITY;
   const currentTime = current ? Date.parse(current) : Number.NEGATIVE_INFINITY;
   return candidateTime > currentTime;
+}
+
+function isValidCodePoint(value: number): boolean {
+  return (
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= UNICODE_MAX_CODE_POINT &&
+    (value < SURROGATE_MIN || value > SURROGATE_MAX)
+  );
+}
+
+function safeFromCodePoint(value: number): string | null {
+  try {
+    return String.fromCodePoint(value);
+  } catch {
+    return null;
+  }
 }
