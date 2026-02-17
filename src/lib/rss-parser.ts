@@ -141,7 +141,7 @@ function extractAttribute(tag: string, attributeName: string): string | null {
 }
 
 function stripCdata(value: string): string {
-  const cdataMatch = value.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/i);
+  const cdataMatch = value.trim().match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/i);
   return cdataMatch?.[1] ?? value;
 }
 

@@ -91,6 +91,31 @@ describe('rss-parser', () => {
     expect(rssResult.items[0]?.imageUrl).toBe('https://example.com/image-single-quote.jpg');
   });
 
+  it('strips CDATA wrappers even when surrounded by whitespace/newlines', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0">
+        <channel>
+          <item>
+            <guid>guid-3</guid>
+            <title>
+              <![CDATA[Titular CDATA]]>
+            </title>
+            <link>https://example.com/rss-3</link>
+            <description>
+              <![CDATA[<p>Resumen CDATA</p>]]>
+            </description>
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'actualidad' });
+    const first = result.items[0];
+
+    expect(first?.title).toBe('Titular CDATA');
+    expect(first?.summary).toBe('<p>Resumen CDATA</p>');
+  });
+
   it('throws for unsupported format', () => {
     const source = makeSource();
     expect(() => parseFeedItems({ xml: '<html>invalid</html>', source, sectionSlug: 'actualidad' })).toThrow(
