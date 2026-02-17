@@ -36,7 +36,14 @@ export default async function handler(request: ApiRequest, response: ServerRespo
     return;
   }
 
-  const availableSources = await loadSourcesCatalog();
+  let availableSources: readonly SourceFeedTarget[];
+  try {
+    availableSources = await loadSourcesCatalog();
+  } catch {
+    sendJson(response, 500, { error: 'Unable to load RSS sources catalog' });
+    return;
+  }
+
   const query = parseNewsQuery(request.url);
   const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
   const fetchSources = selectedFeedTargets.map(toSource);
@@ -131,12 +138,14 @@ function toErrorMessage(error: unknown): string {
 }
 
 async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
-  try {
-    const markdown = await readFile(RSS_SOURCES_FILE_PATH, 'utf8');
-    return buildSourceFeedTargets(markdown);
-  } catch {
-    return [];
+  const markdown = await readFile(RSS_SOURCES_FILE_PATH, 'utf8');
+  const feedTargets = buildSourceFeedTargets(markdown);
+
+  if (feedTargets.length === 0) {
+    throw new Error('RSS sources catalog has no valid entries');
   }
+
+  return feedTargets;
 }
 
 function selectFeedTargetsForFetch(
