@@ -37,6 +37,13 @@ export default async function handler(request: ApiRequest, response: ServerRespo
 function sendJson(response: ServerResponse, statusCode: number, body: SourcesApiResponse): void {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
-  response.setHeader('cache-control', CACHE_CONTROL_HEADER_VALUE);
+  response.setHeader(
+    'cache-control',
+    isCacheableStatus(statusCode) ? CACHE_CONTROL_HEADER_VALUE : 'no-store, max-age=0'
+  );
   response.end(JSON.stringify(body));
+}
+
+function isCacheableStatus(statusCode: number): boolean {
+  return statusCode >= 200 && statusCode < 300;
 }
