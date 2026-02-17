@@ -21,8 +21,8 @@
 - Sección: Actualidad
 
 ## 5
-- Nombre periódico: Libertad Digital
-- URL: https://www.libertaddigital.com/rss.xml
+- Nombre periódico: Expansión
+- URL: https://e01-expansion.uecdn.es/rss/portada.xml
 - Sección: Actualidad
 
 ## 6
@@ -46,11 +46,6 @@
 - Sección: Actualidad
 
 ## 10
-- Nombre periódico: Expansión
-- URL: https://e01-expansion.uecdn.es/rss/portada.xml
-- Sección: Actualidad
-
-## 11
 - Nombre periódico: AS
 - URL: https://feeds.as.com/mrss-s/pages/as/site/as.com/section/actualidad/portada/
 - Sección: Actualidad
