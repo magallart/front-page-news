@@ -1,4 +1,5 @@
 import type { Section } from '../interfaces/section.interface';
+import type { SourceFeedTarget } from '../interfaces/source-feed-target.interface';
 import type { Source } from '../interfaces/source.interface';
 import type { SourcesResponse } from '../interfaces/sources-response.interface';
 
@@ -17,6 +18,42 @@ export function buildSourcesResponse(markdown: string): SourcesResponse {
     sources,
     sections,
   };
+}
+
+export function buildSourceFeedTargets(markdown: string): readonly SourceFeedTarget[] {
+  const records = parseCatalogRecords(markdown);
+  const uniqueTargets = new Map<string, SourceFeedTarget>();
+
+  for (const record of records) {
+    const sourceSlug = toSlug(record.sourceName);
+    const sectionSlug = toSlug(record.sectionName);
+    if (!sourceSlug || !sectionSlug) {
+      continue;
+    }
+
+    const sourceId = `source-${sourceSlug}`;
+    const key = `${sourceId}|${sectionSlug}|${record.feedUrl}`;
+    if (uniqueTargets.has(key)) {
+      continue;
+    }
+
+    uniqueTargets.set(key, {
+      sourceId,
+      sourceName: record.sourceName,
+      sourceBaseUrl: toBaseUrl(record.feedUrl),
+      feedUrl: record.feedUrl,
+      sectionSlug,
+    });
+  }
+
+  return Array.from(uniqueTargets.values()).sort((first, second) => {
+    const sourceOrder = first.sourceName.localeCompare(second.sourceName, 'es');
+    if (sourceOrder !== 0) {
+      return sourceOrder;
+    }
+
+    return first.sectionSlug.localeCompare(second.sectionSlug, 'es');
+  });
 }
 
 function parseCatalogRecords(markdown: string): readonly CatalogRecord[] {

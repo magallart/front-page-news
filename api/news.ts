@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { buildSourcesResponse } from '../src/lib/rss-sources-catalog';
+import { buildSourceFeedTargets } from '../src/lib/rss-sources-catalog';
 import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher';
 import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query';
 import { parseFeedItems } from '../src/lib/rss-parser';
@@ -10,6 +10,7 @@ import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normali
 
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
+import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
 import { WARNING_CODE } from '../src/interfaces/warning.interface';
 import type { Warning } from '../src/interfaces/warning.interface';
@@ -37,10 +38,11 @@ export default async function handler(request: ApiRequest, response: ServerRespo
 
   const availableSources = await loadSourcesCatalog();
   const query = parseNewsQuery(request.url);
-  const selectedSources = selectSourcesForFetch(availableSources, query.section, query.sourceIds);
-  const fetchResult = await fetchFeedsConcurrently(selectedSources, FEED_FETCH_TIMEOUT_MS);
-  const sourcesById = new Map(selectedSources.map((source) => [source.id, source]));
-  const parseResult = parseFetchedFeeds(fetchResult.successes, sourcesById, query.section);
+  const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
+  const fetchSources = selectedFeedTargets.map(toSource);
+  const fetchResult = await fetchFeedsConcurrently(fetchSources, FEED_FETCH_TIMEOUT_MS);
+  const targetsByKey = new Map(selectedFeedTargets.map((target) => [toFeedTargetKey(target.sourceId, target.feedUrl), target]));
+  const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
   const deduped = dedupeAndSortArticles(parseResult.articles);
   const filtered = applyNewsFilters(deduped, query);
 
@@ -68,21 +70,23 @@ interface ParsedFeedsResult {
 
 function parseFetchedFeeds(
   feeds: readonly FeedSuccessLike[],
-  sourcesById: ReadonlyMap<string, Source>,
-  sectionFromQuery: string | null
+  targetsByKey: ReadonlyMap<string, SourceFeedTarget>
 ): ParsedFeedsResult {
   const articles: Article[] = [];
   const warnings: Warning[] = [];
 
   for (const feed of feeds) {
-    const source = sourcesById.get(feed.sourceId);
-    if (!source) {
+    const target = targetsByKey.get(toFeedTargetKey(feed.sourceId, feed.feedUrl));
+    if (!target) {
       continue;
     }
 
     try {
-      const sectionSlug = sectionFromQuery ?? source.sectionSlugs[0] ?? 'actualidad';
-      const parsed = parseFeedItems({ xml: feed.body, source, sectionSlug });
+      const parsed = parseFeedItems({
+        xml: feed.body,
+        source: toSource(target),
+        sectionSlug: target.sectionSlug,
+      });
 
       let skippedCount = 0;
       for (const rawItem of parsed.items) {
@@ -99,16 +103,16 @@ function parseFetchedFeeds(
         warnings.push({
           code: WARNING_CODE.INVALID_ITEM_SKIPPED,
           message: `${skippedCount} items were skipped due to invalid or empty fields`,
-          sourceId: source.id,
-          feedUrl: source.feedUrl,
+          sourceId: target.sourceId,
+          feedUrl: target.feedUrl,
         });
       }
     } catch (error) {
       warnings.push({
         code: WARNING_CODE.SOURCE_PARSE_FAILED,
         message: `Unable to parse feed XML: ${toErrorMessage(error)}`,
-        sourceId: source.id,
-        feedUrl: source.feedUrl,
+        sourceId: target.sourceId,
+        feedUrl: target.feedUrl,
       });
     }
   }
@@ -126,31 +130,45 @@ function toErrorMessage(error: unknown): string {
   return String(error);
 }
 
-async function loadSourcesCatalog(): Promise<readonly Source[]> {
+async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
   try {
     const markdown = await readFile(RSS_SOURCES_FILE_PATH, 'utf8');
-    return buildSourcesResponse(markdown).sources;
+    return buildSourceFeedTargets(markdown);
   } catch {
     return [];
   }
 }
 
-function selectSourcesForFetch(
-  sources: readonly Source[],
+function selectFeedTargetsForFetch(
+  sources: readonly SourceFeedTarget[],
   sectionSlug: string | null,
   sourceIds: readonly string[]
-): readonly Source[] {
+): readonly SourceFeedTarget[] {
   return sources.filter((source) => {
-    if (sourceIds.length > 0 && !sourceIds.includes(source.id)) {
+    if (sourceIds.length > 0 && !sourceIds.includes(source.sourceId)) {
       return false;
     }
 
-    if (sectionSlug && !source.sectionSlugs.includes(sectionSlug)) {
+    if (sectionSlug && source.sectionSlug !== sectionSlug) {
       return false;
     }
 
     return true;
   });
+}
+
+function toSource(target: SourceFeedTarget): Source {
+  return {
+    id: target.sourceId,
+    name: target.sourceName,
+    baseUrl: target.sourceBaseUrl,
+    feedUrl: target.feedUrl,
+    sectionSlugs: [target.sectionSlug],
+  };
+}
+
+function toFeedTargetKey(sourceId: string, feedUrl: string): string {
+  return `${sourceId}|${feedUrl}`;
 }
 
 function sendJson(response: ServerResponse, statusCode: number, body: NewsApiResponse): void {
