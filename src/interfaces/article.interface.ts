@@ -1,5 +1,6 @@
 export interface Article {
   readonly id: string;
+  readonly externalId: string | null;
   readonly title: string;
   readonly summary: string;
   readonly url: string;

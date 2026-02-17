@@ -92,6 +92,7 @@ describe('rss-normalization', () => {
 function makeArticle(overrides: Partial<Article>): Article {
   return {
     id: overrides.id ?? 'base-id',
+    externalId: overrides.externalId ?? null,
     title: overrides.title ?? 'base-title',
     summary: overrides.summary ?? '',
     url: overrides.url ?? 'https://example.com/base',

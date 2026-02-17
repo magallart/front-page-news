@@ -28,6 +28,7 @@ This document defines the shared data contract and normalization strategy used b
 - Primary strategy: canonicalize article URL and hash it (`url-${hash}`).
 - Canonicalization keeps protocol + lowercase host + cleaned path, drops query/fragment/trailing slash.
 - Fallback strategy when URL is not usable: hash of `title + publishedAt` (`fallback-${hash}`).
+- External feed id (`guid` or Atom `id`) is stored as `externalId` for traceability, but not used as the stable primary id.
 
 ## Dedupe Strategy
 

@@ -1,6 +1,7 @@
 import type { Article } from '../interfaces/article.interface';
 
 export interface RawFeedItem {
+  readonly externalId: string | null;
   readonly title: string | null;
   readonly summary: string | null;
   readonly url: string | null;
@@ -96,6 +97,7 @@ export function normalizeFeedItem(item: RawFeedItem): Article | null {
 
   return {
     id: stableId,
+    externalId: item.externalId?.trim() || null,
     title,
     summary: extractSafeSummary(item.summary),
     url: item.url?.trim() ?? '',
