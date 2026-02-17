@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "ng lint",
+    "rss:check": "node scripts/rss-health-check.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",

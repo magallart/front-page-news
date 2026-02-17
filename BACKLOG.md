@@ -171,11 +171,14 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Normalizacion RSS/Atom documentada y testeable.
   - Estrategia de dedupe y orden temporal definida.
 - Tasks:
-  - [ ] Definir tipos `Source`, `Section`, `Article`, `NewsResponse`, `Warning`.
-  - [ ] Definir reglas de normalizacion de fecha a ISO.
-  - [ ] Definir extraccion de `summary` a texto seguro.
-  - [ ] Definir id estable (`hash(url)` + fallback).
-  - [ ] Definir dedupe por URL canonica y fallback por `title + publishedAt`.
+  - [✔️] Definir tipos `Source`, `Section`, `Article`, `NewsResponse`, `Warning`.
+  - [✔️] Definir reglas de normalizacion de fecha a ISO.
+  - [✔️] Definir extraccion de `summary` a texto seguro.
+  - [✔️] Definir id estable (`hash(url)` + fallback).
+  - [✔️] Definir dedupe por URL canonica y fallback por `title + publishedAt`.
+  - [✔️] Añadir `externalId` (`guid` RSS / `id` Atom) al modelo `Article` para trazabilidad.
+  - [✔️] Crear script `pnpm rss:check` con validacion de catalogo y health-check real de feeds.
+  - [✔️] Generar reporte JSON en `reports/rss-health.json` con resumen de `ok/warn/fail`.
 
 <a id="fpn-007"></a>
 
