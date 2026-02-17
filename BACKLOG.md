@@ -196,6 +196,9 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Parsear RSS/Atom y mapear al modelo comun.
   - [✔️] Devolver `warnings[]` cuando una fuente falle.
   - [✔️] Añadir cache headers (`s-maxage` + `stale-while-revalidate`).
+  - [✔️] Separar catalogo operativo de API en `data/rss-sources.json` y mantener `docs/rss-sources.md` para validacion/manual.
+  - [✔️] Migrar `api/sources` y `api/news` para consumir catalogo tipado desde `data/rss-sources.json`.
+  - [✔️] Añadir interfaz tipada de registros RSS (`RssSourceRecord`) y adaptar utilidades de catalogo a registros JSON.
 
 <a id="fpn-008"></a>
 
