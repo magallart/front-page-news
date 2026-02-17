@@ -192,7 +192,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [✔️] Crear `api/sources.ts` con catalogo de fuentes inicial.
   - [✔️] Crear `api/news.ts` con filtros: `section`, `source`, `q`, `page`, `limit`.
-  - [ ] Hacer fetch concurrente con timeout (`AbortController`).
+  - [✔️] Hacer fetch concurrente con timeout (`AbortController`).
   - [ ] Parsear RSS/Atom y mapear al modelo comun.
   - [ ] Devolver `warnings[]` cuando una fuente falle.
   - [ ] Añadir cache headers (`s-maxage` + `stale-while-revalidate`).
