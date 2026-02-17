@@ -95,6 +95,53 @@ describe('api/news handler contract', () => {
     expect(warningCodes).toContain(WARNING_CODE.SOURCE_PARSE_FAILED);
   });
 
+  it('does not overwrite section mapping when multiple sections share the same source/feed key', async () => {
+    const sharedUrl = 'https://feeds.elpais.com/shared-feed';
+    const catalog: readonly SourceFeedTarget[] = [
+      {
+        sourceId: 'source-el-pais',
+        sourceName: 'El Pais',
+        sourceBaseUrl: 'https://feeds.elpais.com',
+        feedUrl: sharedUrl,
+        sectionSlug: 'actualidad',
+      },
+      {
+        sourceId: 'source-el-pais',
+        sourceName: 'El Pais',
+        sourceBaseUrl: 'https://feeds.elpais.com',
+        feedUrl: sharedUrl,
+        sectionSlug: 'cultura',
+      },
+    ];
+
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources) => {
+        expect(sources).toHaveLength(1);
+        return {
+          successes: [
+            {
+              sourceId: 'source-el-pais',
+              feedUrl: sharedUrl,
+              body: buildRssXml({
+                title: 'Shared Feed Article',
+                url: 'https://elpais.com/shared/article-1',
+              }),
+            },
+          ],
+          warnings: [],
+        };
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(createRequest('GET', '/api/news') as IncomingMessage, response as unknown as ServerResponse);
+
+    const payload = readJson<HandlerSuccessPayload>(response);
+    expect(payload.total).toBe(1);
+    expect(payload.articles[0]?.sectionSlug).toBe('actualidad');
+  });
+
   it('returns 500 and no-store when catalog loading fails', async () => {
     const handler = createNewsHandler({
       loadSourcesCatalog: async () => {

@@ -79,11 +79,9 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
 
     const query = parseNewsQuery(request.url);
     const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
-    const fetchSources = selectedFeedTargets.map(toSource);
+    const fetchSources = buildUniqueFetchSources(selectedFeedTargets);
     const fetchResult = await dependencies.fetchFeeds(fetchSources, FEED_FETCH_TIMEOUT_MS);
-    const targetsByKey = new Map(
-      selectedFeedTargets.map((target) => [toFeedTargetKey(target.sourceId, target.feedUrl), target])
-    );
+    const targetsByKey = buildTargetsLookup(selectedFeedTargets);
     const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
     const deduped = dedupeAndSortArticles(parseResult.articles);
     const filtered = applyNewsFilters(deduped, query);
@@ -102,49 +100,54 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
 
 export default createNewsHandler();
 
-function parseFetchedFeeds(feeds: readonly FeedSuccessLike[], targetsByKey: ReadonlyMap<string, SourceFeedTarget>): ParsedFeedsResult {
+function parseFetchedFeeds(
+  feeds: readonly FeedSuccessLike[],
+  targetsByKey: ReadonlyMap<string, readonly SourceFeedTarget[]>
+): ParsedFeedsResult {
   const articles: Article[] = [];
   const warnings: Warning[] = [];
 
   for (const feed of feeds) {
-    const target = targetsByKey.get(toFeedTargetKey(feed.sourceId, feed.feedUrl));
-    if (!target) {
+    const targets = targetsByKey.get(toFeedTargetKey(feed.sourceId, feed.feedUrl));
+    if (!targets || targets.length === 0) {
       continue;
     }
 
-    try {
-      const parsed = parseFeedItems({
-        xml: feed.body,
-        source: toSource(target),
-        sectionSlug: target.sectionSlug,
-      });
+    for (const target of targets) {
+      try {
+        const parsed = parseFeedItems({
+          xml: feed.body,
+          source: toSource(target),
+          sectionSlug: target.sectionSlug,
+        });
 
-      let skippedCount = 0;
-      for (const rawItem of parsed.items) {
-        const normalized = normalizeFeedItem(rawItem);
-        if (!normalized) {
-          skippedCount += 1;
-          continue;
+        let skippedCount = 0;
+        for (const rawItem of parsed.items) {
+          const normalized = normalizeFeedItem(rawItem);
+          if (!normalized) {
+            skippedCount += 1;
+            continue;
+          }
+
+          articles.push(normalized);
         }
 
-        articles.push(normalized);
-      }
-
-      if (skippedCount > 0) {
+        if (skippedCount > 0) {
+          warnings.push({
+            code: WARNING_CODE.INVALID_ITEM_SKIPPED,
+            message: `${skippedCount} items were skipped due to invalid or empty fields`,
+            sourceId: target.sourceId,
+            feedUrl: target.feedUrl,
+          });
+        }
+      } catch (error) {
         warnings.push({
-          code: WARNING_CODE.INVALID_ITEM_SKIPPED,
-          message: `${skippedCount} items were skipped due to invalid or empty fields`,
+          code: WARNING_CODE.SOURCE_PARSE_FAILED,
+          message: `Unable to parse feed XML: ${toErrorMessage(error)}`,
           sourceId: target.sourceId,
           feedUrl: target.feedUrl,
         });
       }
-    } catch (error) {
-      warnings.push({
-        code: WARNING_CODE.SOURCE_PARSE_FAILED,
-        message: `Unable to parse feed XML: ${toErrorMessage(error)}`,
-        sourceId: target.sourceId,
-        feedUrl: target.feedUrl,
-      });
     }
   }
 
@@ -238,6 +241,34 @@ function toSource(target: SourceFeedTarget): Source {
     feedUrl: target.feedUrl,
     sectionSlugs: [target.sectionSlug],
   };
+}
+
+function buildTargetsLookup(targets: readonly SourceFeedTarget[]): ReadonlyMap<string, readonly SourceFeedTarget[]> {
+  const grouped = new Map<string, SourceFeedTarget[]>();
+
+  for (const target of targets) {
+    const key = toFeedTargetKey(target.sourceId, target.feedUrl);
+    const current = grouped.get(key) ?? [];
+    current.push(target);
+    grouped.set(key, current);
+  }
+
+  return grouped;
+}
+
+function buildUniqueFetchSources(targets: readonly SourceFeedTarget[]): readonly Source[] {
+  const unique = new Map<string, Source>();
+
+  for (const target of targets) {
+    const key = toFeedTargetKey(target.sourceId, target.feedUrl);
+    if (unique.has(key)) {
+      continue;
+    }
+
+    unique.set(key, toSource(target));
+  }
+
+  return Array.from(unique.values());
 }
 
 function toFeedTargetKey(sourceId: string, feedUrl: string): string {
