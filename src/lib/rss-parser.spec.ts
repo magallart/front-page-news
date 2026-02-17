@@ -58,6 +58,39 @@ describe('rss-parser', () => {
     expect(first?.sectionSlug).toBe('cultura');
   });
 
+  it('supports single-quoted XML attributes for links and images', () => {
+    const source = makeSource();
+    const atomXml = `<?xml version="1.0"?>
+      <feed xmlns="http://www.w3.org/2005/Atom">
+        <entry>
+          <id>tag:example.com,2026:entry-2</id>
+          <title>Titular Atom Single Quote</title>
+          <link rel='alternate' href='https://example.com/atom-single-quote' />
+          <updated>2026-02-17T12:00:00Z</updated>
+          <summary>Resumen Atom</summary>
+        </entry>
+      </feed>`;
+    const atomResult = parseFeedItems({ xml: atomXml, source, sectionSlug: 'actualidad' });
+
+    expect(atomResult.items[0]?.url).toBe('https://example.com/atom-single-quote');
+
+    const rssXml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-2</guid>
+            <title>Titular RSS Single Quote</title>
+            <link>https://example.com/rss-2</link>
+            <description>Resumen RSS</description>
+            <media:content url='https://example.com/image-single-quote.jpg' />
+          </item>
+        </channel>
+      </rss>`;
+    const rssResult = parseFeedItems({ xml: rssXml, source, sectionSlug: 'actualidad' });
+
+    expect(rssResult.items[0]?.imageUrl).toBe('https://example.com/image-single-quote.jpg');
+  });
+
   it('throws for unsupported format', () => {
     const source = makeSource();
     expect(() => parseFeedItems({ xml: '<html>invalid</html>', source, sectionSlug: 'actualidad' })).toThrow(

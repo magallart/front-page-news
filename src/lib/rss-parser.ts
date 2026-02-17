@@ -81,19 +81,22 @@ function extractTagText(block: string, tagNames: readonly string[]): string | nu
 }
 
 function extractImageUrl(block: string): string | null {
-  const media = block.match(/<(media:content|media:thumbnail)\b[^>]*\burl="([^"]+)"[^>]*>/i);
-  if (media?.[2]) {
-    return decodeXmlEntities(media[2]);
+  const mediaTag = block.match(/<(media:content|media:thumbnail)\b[^>]*>/i)?.[0] ?? null;
+  const mediaUrl = mediaTag ? extractAttribute(mediaTag, 'url') : null;
+  if (mediaUrl) {
+    return mediaUrl;
   }
 
-  const enclosure = block.match(/<enclosure\b[^>]*\burl="([^"]+)"[^>]*>/i);
-  if (enclosure?.[1]) {
-    return decodeXmlEntities(enclosure[1]);
+  const enclosureTag = block.match(/<enclosure\b[^>]*>/i)?.[0] ?? null;
+  const enclosureUrl = enclosureTag ? extractAttribute(enclosureTag, 'url') : null;
+  if (enclosureUrl) {
+    return enclosureUrl;
   }
 
-  const imageFromHtml = block.match(/<img\b[^>]*\bsrc="([^"]+)"[^>]*>/i);
-  if (imageFromHtml?.[1]) {
-    return decodeXmlEntities(imageFromHtml[1]);
+  const imageTag = block.match(/<img\b[^>]*>/i)?.[0] ?? null;
+  const imageUrl = imageTag ? extractAttribute(imageTag, 'src') : null;
+  if (imageUrl) {
+    return imageUrl;
   }
 
   return null;
@@ -133,8 +136,8 @@ function extractAtomAuthor(block: string): string | null {
 
 function extractAttribute(tag: string, attributeName: string): string | null {
   const escaped = escapeRegExp(attributeName);
-  const match = tag.match(new RegExp(`\\b${escaped}="([^"]+)"`, 'i'));
-  return match?.[1] ? decodeXmlEntities(match[1]) : null;
+  const match = tag.match(new RegExp(`\\b${escaped}\\s*=\\s*(['"])([\\s\\S]*?)\\1`, 'i'));
+  return match?.[2] ? decodeXmlEntities(match[2]) : null;
 }
 
 function stripCdata(value: string): string {
