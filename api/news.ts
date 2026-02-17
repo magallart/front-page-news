@@ -30,44 +30,20 @@ interface ApiRequest extends IncomingMessage {
   readonly url?: string;
 }
 
-export default async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
-  if (request.method !== 'GET') {
-    sendJson(response, 405, { error: 'Method Not Allowed' });
-    return;
-  }
-
-  let availableSources: readonly SourceFeedTarget[];
-  try {
-    availableSources = await loadSourcesCatalog();
-  } catch {
-    sendJson(response, 500, { error: 'Unable to load RSS sources catalog' });
-    return;
-  }
-
-  const query = parseNewsQuery(request.url);
-  const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
-  const fetchSources = selectedFeedTargets.map(toSource);
-  const fetchResult = await fetchFeedsConcurrently(fetchSources, FEED_FETCH_TIMEOUT_MS);
-  const targetsByKey = new Map(selectedFeedTargets.map((target) => [toFeedTargetKey(target.sourceId, target.feedUrl), target]));
-  const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
-  const deduped = dedupeAndSortArticles(parseResult.articles);
-  const filtered = applyNewsFilters(deduped, query);
-
-  const payload: NewsResponse = {
-    articles: filtered.articles,
-    total: filtered.total,
-    page: filtered.page,
-    limit: filtered.limit,
-    warnings: [...fetchResult.warnings, ...parseResult.warnings],
-  };
-
-  sendJson(response, 200, payload);
-}
-
 interface FeedSuccessLike {
   readonly sourceId: string;
   readonly feedUrl: string;
   readonly body: string;
+}
+
+interface FeedFetchResultLike {
+  readonly successes: readonly FeedSuccessLike[];
+  readonly warnings: readonly Warning[];
+}
+
+interface NewsHandlerDependencies {
+  readonly loadSourcesCatalog: () => Promise<readonly SourceFeedTarget[]>;
+  readonly fetchFeeds: (sources: readonly Source[], timeoutMs: number) => Promise<FeedFetchResultLike>;
 }
 
 interface ParsedFeedsResult {
@@ -75,10 +51,57 @@ interface ParsedFeedsResult {
   readonly warnings: readonly Warning[];
 }
 
-function parseFetchedFeeds(
-  feeds: readonly FeedSuccessLike[],
-  targetsByKey: ReadonlyMap<string, SourceFeedTarget>
-): ParsedFeedsResult {
+const defaultDependencies: NewsHandlerDependencies = {
+  loadSourcesCatalog,
+  fetchFeeds: fetchFeedsConcurrently,
+};
+
+export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = {}) {
+  const dependencies: NewsHandlerDependencies = {
+    ...defaultDependencies,
+    ...overrides,
+  };
+
+  return async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
+    if (request.method !== 'GET') {
+      sendJson(response, 405, { error: 'Method Not Allowed' });
+      return;
+    }
+
+    let availableSources: readonly SourceFeedTarget[];
+    try {
+      availableSources = await dependencies.loadSourcesCatalog();
+    } catch {
+      sendJson(response, 500, { error: 'Unable to load RSS sources catalog' });
+      return;
+    }
+
+    const query = parseNewsQuery(request.url);
+    const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
+    const fetchSources = selectedFeedTargets.map(toSource);
+    const fetchResult = await dependencies.fetchFeeds(fetchSources, FEED_FETCH_TIMEOUT_MS);
+    const targetsByKey = new Map(
+      selectedFeedTargets.map((target) => [toFeedTargetKey(target.sourceId, target.feedUrl), target])
+    );
+    const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
+    const deduped = dedupeAndSortArticles(parseResult.articles);
+    const filtered = applyNewsFilters(deduped, query);
+
+    const payload: NewsResponse = {
+      articles: filtered.articles,
+      total: filtered.total,
+      page: filtered.page,
+      limit: filtered.limit,
+      warnings: [...fetchResult.warnings, ...parseResult.warnings],
+    };
+
+    sendJson(response, 200, payload);
+  };
+}
+
+export default createNewsHandler();
+
+function parseFetchedFeeds(feeds: readonly FeedSuccessLike[], targetsByKey: ReadonlyMap<string, SourceFeedTarget>): ParsedFeedsResult {
   const articles: Article[] = [];
   const warnings: Warning[] = [];
 
