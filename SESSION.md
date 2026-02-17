@@ -124,3 +124,27 @@ Brief continuity notes to recover context between terminal sessions.
   - Extended unit tests for article page and new components, including responsive and fallback scenarios.
   - Updated `BACKLOG.md` to mark `FPN-005` completed and keep task list aligned with delivered scope.
   - Synced local `main` with remote and removed local branch `feat/fpn-005-news-page`.
+
+## 2026-02-17
+
+- What changed:
+  - Completed ticket `FPN-007` and opened PR `#5` (`feat/fpn-007-vercel-rss-functions`), then merged it to `main`.
+  - Implemented and hardened RSS API endpoints:
+    - `GET /api/sources` and `GET /api/news` with filtering, pagination, parsing, warnings, and cache headers.
+    - Correct handling of per-feed section mapping to avoid wrong section attribution.
+    - Correct error behavior for catalog failures (`500`) and `no-store` cache policy for non-2xx responses.
+  - Improved parser robustness:
+    - support for XML attributes with single quotes and double quotes
+    - CDATA extraction when wrapped by whitespace/newlines
+  - Expanded test coverage with endpoint contract tests for `/api/news`:
+    - filters, warnings, cache headers, catalog errors
+    - shared feed key mapping scenarios to avoid section overwrite issues
+  - Separated catalog concerns:
+    - kept `docs/rss-sources.md` for manual validation and health-check script
+    - introduced `data/rss-sources.json` as typed runtime source for API
+    - added `RssSourceRecord` and adapted catalog utilities to consume typed records
+  - Updated `BACKLOG.md`:
+    - marked FPN-007 tasks as completed
+    - added explicit tasks for the catalog split/json migration
+    - reordered and expanded FPN-008 tasks for Angular API integration (`signals` + `shareReplay` strategy)
+  - Synced local `main` with `origin/main` after merge.
