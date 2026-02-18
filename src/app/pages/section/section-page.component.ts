@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 
+import { IconEyeComponent } from '../../components/icons/icon-eye.component';
 import { IconFilterComponent } from '../../components/icons/icon-filter.component';
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
@@ -17,7 +18,14 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
 @Component({
   selector: 'app-section-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, NewsCardComponent, ErrorStateComponent, SectionFiltersComponent, IconFilterComponent],
+  imports: [
+    PageContainerComponent,
+    NewsCardComponent,
+    ErrorStateComponent,
+    SectionFiltersComponent,
+    IconFilterComponent,
+    IconEyeComponent,
+  ],
   template: `
     <app-page-container>
       <section class="pt-1 pb-4 sm:pb-6">
@@ -66,13 +74,14 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
           </div>
 
           @if (hasMoreNews()) {
-            <div class="mt-6 flex justify-center">
+            <div class="mt-10 flex justify-center">
               <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-md border border-primary bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-300 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                class="inline-flex items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-500 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 (click)="loadMoreNews()"
               >
-                Ver mas
+                <app-icon-eye />
+                Ver más noticias
               </button>
             </div>
           }
