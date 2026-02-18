@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -9,6 +11,42 @@ import { NewsStore } from '../../stores/news.store';
 import { HomePageComponent } from './home-page.component';
 
 describe('HomePageComponent', () => {
+  it('integrates with /api/news and renders editorial blocks from real store data', async () => {
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    const httpController = TestBed.inject(HttpTestingController);
+
+    fixture.detectChanges();
+
+    const request = httpController.expectOne('/api/news?page=1&limit=1000');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      articles: [
+        createArticle('home-1', 'actualidad'),
+        createArticle('home-2', 'actualidad'),
+        createArticle('home-3', 'economia'),
+        createArticle('home-4', 'cultura'),
+      ],
+      total: 4,
+      page: 1,
+      limit: 1000,
+      warnings: [],
+    });
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(3);
+
+    httpController.verify();
+  });
+
   it('renders top hero+breaking and lower sections with most-read', async () => {
     const newsStoreMock = createNewsStoreMock();
 

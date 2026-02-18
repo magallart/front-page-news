@@ -224,7 +224,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
   - [✔️] Retirar dependencias de `MockNewsService` en paginas y layout afectados por la integracion (incluyendo navbar/ticker si aplica).
   - [✔️] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
-  - [ ] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
+  - [✔️] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
   - [ ] Documentar estrategia de cache cliente (TTL + invalidacion) y criterios de estados de error/parcial para mantenimiento futuro.
 
 <a id="fpn-009"></a>

@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -11,6 +13,46 @@ import { NewsStore } from '../../stores/news.store';
 import { SectionPageComponent } from './section-page.component';
 
 describe('SectionPageComponent', () => {
+  it('integrates with /api/news for section slug and renders filtered cards', async () => {
+    const routeMock = createRouteMock({ slug: 'economia' });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: routeMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    const httpController = TestBed.inject(HttpTestingController);
+
+    fixture.detectChanges();
+
+    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=1000');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      articles: [
+        createArticle('integration-1', 'economia', 'Fuente A'),
+        createArticle('integration-2', 'economia', 'Fuente B'),
+      ],
+      total: 2,
+      page: 1,
+      limit: 1000,
+      warnings: [],
+    });
+
+    fixture.detectChanges();
+
+    const cards = fixture.nativeElement.querySelectorAll('app-news-card');
+    expect(cards.length).toBe(2);
+    expect((fixture.nativeElement.textContent as string)).toContain('Titulo integration-1');
+
+    httpController.verify();
+  });
+
   it('loads section news using slug and query params', async () => {
     const routeMock = createRouteMock({ slug: 'economia' }, { source: 'source-a,source-b', q: 'inflacion', page: '2', limit: '10' });
     const newsStoreMock = createNewsStoreMock({

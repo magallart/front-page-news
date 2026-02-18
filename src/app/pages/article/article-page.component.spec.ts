@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
@@ -11,6 +13,83 @@ import { NewsStore } from '../../stores/news.store';
 import { ArticlePageComponent } from './article-page.component';
 
 describe('ArticlePageComponent', () => {
+  it('integrates with /api/news aggregated dataset and renders article content', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ArticlePageComponent],
+      providers: [provideRouter([]), provideRouteId('news-1'), provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticlePageComponent);
+    const httpController = TestBed.inject(HttpTestingController);
+
+    fixture.detectChanges();
+
+    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=1000');
+    aggregateRequest.flush({
+      articles: [
+        createArticle('news-1', 'actualidad'),
+        createArticle('news-2', 'actualidad'),
+      ],
+      total: 2,
+      page: 1,
+      limit: 1000,
+      warnings: [],
+    });
+
+    const fallbackRequest = httpController.expectOne('/api/news?id=news-1&page=1&limit=1');
+    fallbackRequest.flush({
+      articles: [],
+      total: 0,
+      page: 1,
+      limit: 1,
+      warnings: [],
+    });
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-article-content')).toBeTruthy();
+    expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
+
+    httpController.verify();
+  });
+
+  it('integrates fallback request by id when article is missing in aggregated dataset', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ArticlePageComponent],
+      providers: [provideRouter([]), provideRouteId('news-missing'), provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticlePageComponent);
+    const httpController = TestBed.inject(HttpTestingController);
+
+    fixture.detectChanges();
+
+    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=1000');
+    aggregateRequest.flush({
+      articles: [createArticle('news-1', 'actualidad')],
+      total: 1,
+      page: 1,
+      limit: 1000,
+      warnings: [],
+    });
+
+    const fallbackRequest = httpController.expectOne('/api/news?id=news-missing&page=1&limit=1');
+    fallbackRequest.flush({
+      articles: [createArticle('news-missing', 'actualidad')],
+      total: 1,
+      page: 1,
+      limit: 1,
+      warnings: [],
+    });
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-article-content')).toBeTruthy();
+    expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-missing');
+
+    httpController.verify();
+  });
+
   it('renders article content with metadata, preview cta and right sidebar', async () => {
     const newsStoreMock = createNewsStoreMock({
       data: [createArticle('news-1', 'actualidad'), createArticle('news-2', 'actualidad'), createArticle('news-3', 'economia')],
