@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 
@@ -29,7 +30,7 @@ describe('ArticlePageComponent', () => {
     const fixture = TestBed.createComponent(ArticlePageComponent);
     fixture.detectChanges();
 
-    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: 100 });
+    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
     expect(newsServiceMock.getNews).not.toHaveBeenCalled();
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();

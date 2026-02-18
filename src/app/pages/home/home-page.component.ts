@@ -6,6 +6,7 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -103,7 +104,7 @@ export class HomePageComponent implements OnInit {
   protected readonly mostReadNews = computed(() => this.newsItems().slice(0, 10));
 
   ngOnInit(): void {
-    this.newsStore.load({ page: 1, limit: 60 });
+    this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
   }
 
   private getNewsBySection(sectionSlug: string) {

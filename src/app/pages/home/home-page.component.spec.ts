@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
 import { HomePageComponent } from './home-page.component';
@@ -19,7 +20,7 @@ describe('HomePageComponent', () => {
     const fixture = TestBed.createComponent(HomePageComponent);
     fixture.detectChanges();
 
-    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: 60 });
+    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
 
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();

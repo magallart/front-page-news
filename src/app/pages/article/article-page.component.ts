@@ -9,6 +9,7 @@ import { ArticleNotFoundComponent } from '../../components/news/article-not-foun
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
@@ -103,7 +104,7 @@ export class ArticlePageComponent {
   );
 
   constructor() {
-    this.newsStore.load({ page: 1, limit: 100 });
+    this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
 
     effect(() => {
       const currentArticleId = this.articleId();
