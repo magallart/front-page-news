@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
-import { MockNewsService } from '../../services/mock-news.service';
+import { NewsStore } from '../../stores/news.store';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
 import { NavbarSideMenuComponent } from './navbar/navbar-side-menu.component';
@@ -24,7 +24,7 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
   template: `
     <header class="hidden border-b border-border bg-background lg:block">
       <app-navbar-main-header [links]="links" [topLinks]="topLinks" [topbarMeta]="topbarMeta()" />
-      <app-navbar-ticker [headlines]="tickerHeadlines" />
+      <app-navbar-ticker [headlines]="tickerHeadlines()" />
     </header>
 
     <app-navbar-sticky-header
@@ -35,7 +35,7 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
     />
 
     <div class="border-b border-border bg-background lg:hidden">
-      <app-navbar-ticker [headlines]="tickerHeadlines" />
+      <app-navbar-ticker [headlines]="tickerHeadlines()" />
     </div>
 
     <app-navbar-side-menu
@@ -48,10 +48,11 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
 })
 export class AppNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly mockNewsService = inject(MockNewsService);
+  private readonly newsStore = inject(NewsStore);
   private readonly city = signal('Madrid');
   private readonly temperature = signal<number | null>(24);
   private readonly isMobileViewport = signal(false);
+  private readonly tickerLimit = 12;
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
@@ -88,9 +89,15 @@ export class AppNavbarComponent {
     return `${dateLabel} \u00B7 ${this.city().toUpperCase()} ${tempLabel}`;
   });
 
-  protected readonly tickerHeadlines: readonly TickerHeadline[] = this.mockNewsService.getTickerHeadlines();
+  protected readonly tickerHeadlines = computed<readonly TickerHeadline[]>(() =>
+    this.newsStore
+      .data()
+      .slice(0, this.tickerLimit)
+      .map((item) => ({ id: item.id, title: item.title })),
+  );
 
   constructor() {
+    this.newsStore.load({ page: 1, limit: this.tickerLimit });
     this.initResponsiveMode();
     this.initStickyOnScroll();
     void this.loadCityAndWeather();

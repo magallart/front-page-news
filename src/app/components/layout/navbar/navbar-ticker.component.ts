@@ -19,7 +19,7 @@ import type { TickerHeadline } from '../../../../interfaces/ticker-headline.inte
       .ticker-marquee {
         display: flex;
         width: max-content;
-        animation: ticker-ltr 58s linear infinite;
+        animation: ticker-ltr 78s linear infinite;
       }
 
       .ticker-window:hover .ticker-marquee,

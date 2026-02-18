@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { NewsStore } from '../../stores/news.store';
+
 import { AppNavbarComponent } from './app-navbar.component';
 
 describe('AppNavbarComponent', () => {
@@ -12,7 +14,7 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -29,7 +31,7 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -52,7 +54,7 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -75,7 +77,7 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -96,7 +98,7 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -182,6 +184,34 @@ function mockFetchSuccess(city: string, temperature: number): void {
     });
 
   vi.stubGlobal('fetch', fetchMock);
+}
+
+function createNewsStoreMock() {
+  return {
+    data: vi.fn(() => [
+      createArticle('news-1', 'Titular 1'),
+      createArticle('news-2', 'Titular 2'),
+      createArticle('news-3', 'Titular 3'),
+    ]),
+    load: vi.fn(),
+  };
+}
+
+function createArticle(id: string, title: string) {
+  return {
+    id,
+    externalId: null,
+    title,
+    summary: 'Resumen',
+    url: 'https://example.com/noticia',
+    canonicalUrl: null,
+    imageUrl: null,
+    sourceId: 'source-1',
+    sourceName: 'Fuente',
+    sectionSlug: 'actualidad',
+    author: null,
+    publishedAt: null,
+  } as const;
 }
 
 interface NavbarTestInstance {

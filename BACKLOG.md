@@ -222,7 +222,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
   - [✔️] Conectar pagina de detalle por `id` sobre dataset agregado y definir fallback si no existe.
   - [✔️] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
-  - [ ] Retirar dependencias de `MockNewsService` en paginas y layout afectados por la integracion (incluyendo navbar/ticker si aplica).
+  - [✔️] Retirar dependencias de `MockNewsService` en paginas y layout afectados por la integracion (incluyendo navbar/ticker si aplica).
   - [ ] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
   - [ ] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
   - [ ] Documentar estrategia de cache cliente (TTL + invalidacion) y criterios de estados de error/parcial para mantenimiento futuro.
