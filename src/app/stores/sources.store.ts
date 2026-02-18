@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { SourcesService } from '../services/sources.service';
+import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
 import type { SourcesResponse } from '../../interfaces/sources-response.interface';
 
@@ -49,17 +50,9 @@ export class SourcesStore {
           this.loadingSignal.set(false);
         },
         error: (error: unknown) => {
-          this.errorSignal.set(toErrorMessage(error));
+          this.errorSignal.set(getUserErrorMessage(error, 'No se pudo cargar el catálogo de fuentes.'));
           this.loadingSignal.set(false);
         },
       });
   }
-}
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return 'No se pudo cargar el catalogo de fuentes.';
 }

@@ -15,6 +15,7 @@ import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticleToNewsItem } from '../../utils/api-ui-adapters';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { getUserErrorMessage } from '../../utils/app-http-error.utils';
 import { resolveDetailUiState } from '../../utils/ui-state-matrix';
 
 @Component({
@@ -137,18 +138,10 @@ export class ArticlePageComponent {
           },
           error: (error: unknown) => {
             this.fallbackArticleSignal.set(null);
-            this.fallbackErrorSignal.set(toErrorMessage(error));
+            this.fallbackErrorSignal.set(getUserErrorMessage(error, 'No se pudo cargar la noticia.'));
             this.fallbackLoadingSignal.set(false);
           },
         });
     });
   }
-}
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return 'No se pudo cargar la noticia.';
 }

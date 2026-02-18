@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { take } from 'rxjs';
 
 import { NewsService } from '../services/news.service';
+import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
 import type { NewsResponse } from '../../interfaces/news-response.interface';
 import type { Warning } from '../../interfaces/warning.interface';
@@ -60,17 +61,9 @@ export class NewsStore {
           this.loadingSignal.set(false);
         },
         error: (error: unknown) => {
-          this.errorSignal.set(toErrorMessage(error));
+          this.errorSignal.set(getUserErrorMessage(error, 'No se pudieron cargar las noticias.'));
           this.loadingSignal.set(false);
         },
       });
   }
-}
-
-function toErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return 'No se pudieron cargar las noticias.';
 }
