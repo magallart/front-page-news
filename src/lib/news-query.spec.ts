@@ -16,12 +16,12 @@ describe('news-query', () => {
     expect(query.limit).toBe(10);
   });
 
-  it('applies defaults when query params are invalid', () => {
+  it('applies defaults only for invalid numbers and keeps explicit limits', () => {
     const query = parseNewsQuery('/api/news?page=0&limit=1000');
 
     expect(query.id).toBeNull();
     expect(query.page).toBe(1);
-    expect(query.limit).toBe(100);
+    expect(query.limit).toBe(1000);
   });
 
   it('filters and paginates articles', () => {

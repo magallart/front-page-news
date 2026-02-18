@@ -4,7 +4,6 @@ import type { NewsQuery } from '../interfaces/news-query.interface';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
   if (!requestUrl) {
@@ -24,7 +23,7 @@ export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
   const searchQuery = normalizeQueryValue(parsedUrl.searchParams.get('q'));
   const sourceIds = parseSourceIds(parsedUrl.searchParams.get('source'));
   const page = parsePositiveNumber(parsedUrl.searchParams.get('page'), DEFAULT_PAGE);
-  const limit = parsePositiveNumber(parsedUrl.searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
+  const limit = parsePositiveNumber(parsedUrl.searchParams.get('limit'), DEFAULT_LIMIT);
 
   return {
     id,
@@ -82,7 +81,7 @@ function parseSourceIds(value: string | null): readonly string[] {
     .filter((item): item is string => Boolean(item));
 }
 
-function parsePositiveNumber(value: string | null, fallback: number, max?: number): number {
+function parsePositiveNumber(value: string | null, fallback: number): number {
   if (!value) {
     return fallback;
   }
@@ -90,10 +89,6 @@ function parsePositiveNumber(value: string | null, fallback: number, max?: numbe
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed < 1) {
     return fallback;
-  }
-
-  if (typeof max === 'number' && parsed > max) {
-    return max;
   }
 
   return parsed;
