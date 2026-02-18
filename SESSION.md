@@ -148,3 +148,46 @@ Brief continuity notes to recover context between terminal sessions.
     - added explicit tasks for the catalog split/json migration
     - reordered and expanded FPN-008 tasks for Angular API integration (`signals` + `shareReplay` strategy)
   - Synced local `main` with `origin/main` after merge.
+
+## 2026-02-18
+
+- What changed:
+  - Completed ticket `FPN-008` end-to-end (Angular integration with real API) and closed all remaining backlog subtasks.
+  - Replaced mock data flow in UI with real API consumption:
+    - homepage connected to `/api/news`
+    - section page connected by `slug` with typed filters (`source`, `q`, `page`, `limit`)
+    - article detail connected to aggregated dataset with fallback fetch by `id` when missing
+  - Implemented typed frontend data layer:
+    - `SourcesService` and `NewsService` with strict adapters and runtime validation
+    - request cache with `shareReplay` and explicit TTLs
+    - cache invalidation APIs (`clear`, `invalidateBySection`, `forceRefresh`)
+    - extracted service/store interfaces into dedicated interface files
+  - Added state stores with Angular signals:
+    - `SourcesStore`: `loading`, `data`, `error`, reusable initial load + refresh
+    - `NewsStore`: `loading`, `data`, `error`, `warnings`, `lastUpdated`, manual refresh
+  - Defined and integrated UI state matrix (`loading`, `empty`, `error total`, `error parcial`) for home/section/detail.
+  - Integrated global HTTP error handling:
+    - added typed `AppHttpError`
+    - added interceptor and shared user-facing error mapping utilities
+    - aligned store/article fallback error behavior
+  - Improved section UX and data behavior:
+    - removed hard API max limit and raised frontend feed request limit
+    - added progressive reveal in section lists (`24` initial + `12` per click)
+    - updated CTA styling/text (`Ver m�s noticias`) with eye icon and spacing adjustments
+  - Improved image resilience and feed compatibility:
+    - image proxy endpoint `api/image`
+    - fallback image handling in cards/content
+    - parser support to derive YouTube thumbnails from video links
+  - Removed legacy mock dependencies after API integration:
+    - removed `MockNewsService` and unused news mocks
+    - moved locked preview patterns to constants
+    - removed `footer.mock` and inlined static footer data in component
+  - Expanded and stabilized test coverage:
+    - service/store unit tests for cache hit, cache miss, TTL, invalidation, `forceRefresh`
+    - store state tests for `loading`/`error`/`success`
+    - integration tests for home/section/article pages with mocked HTTP API responses
+    - interceptor/error-mapper tests
+  - Documentation and backlog alignment:
+    - created `docs/cache-and-ui-states.md` (English) with cache strategy + UI state criteria
+    - updated `BACKLOG.md` to mark `FPN-008` completed and backfilled missing completed improvements
+  - Created multiple atomic commits across feature, refactor, test, and docs scopes, all tied to `FPN-008`.
