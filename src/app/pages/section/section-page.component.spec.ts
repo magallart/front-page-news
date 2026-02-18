@@ -101,6 +101,69 @@ describe('SectionPageComponent', () => {
     expect(cards.length).toBe(1);
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
   });
+
+  it('shows 24 cards initially and loads 12 more when clicking "Ver mas"', async () => {
+    const routeMock = createRouteMock({ slug: 'deportes' });
+    const newsStoreMock = createNewsStoreMock({
+      data: createSectionArticles('deportes', 'Fuente Deportes', 30),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(24);
+
+    const loadMoreButton = getLoadMoreButton(fixture.nativeElement);
+    expect(loadMoreButton).toBeTruthy();
+    loadMoreButton?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(30);
+    expect(getLoadMoreButton(fixture.nativeElement)).toBeNull();
+  });
+
+  it('resets visible cards to 24 when filters change after loading more', async () => {
+    const routeMock = createRouteMock({ slug: 'deportes' });
+    const newsStoreMock = createNewsStoreMock({
+      data: [
+        ...createSectionArticles('deportes', 'Fuente A', 30),
+        ...createSectionArticles('deportes', 'Fuente B', 30, 1000),
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    getLoadMoreButton(fixture.nativeElement)?.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(36);
+
+    openFiltersPanel(fixture);
+    const filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
+    const filters = filtersDebug.componentInstance as SectionFiltersComponent;
+    filters.selectedSourcesChange.emit(['Fuente A']);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(24);
+  });
 });
 
 function createRouteMock(params: Record<string, string>, query: Record<string, string> = {}) {
@@ -139,6 +202,16 @@ function createArticle(id: string, sectionSlug: string, sourceName: string) {
     author: null,
     publishedAt: null,
   } as const;
+}
+
+function createSectionArticles(sectionSlug: string, sourceName: string, count: number, startIndex = 1) {
+  return Array.from({ length: count }, (_, index) =>
+    createArticle(`news-${startIndex + index}`, sectionSlug, sourceName),
+  );
+}
+
+function getLoadMoreButton(container: HTMLElement): HTMLButtonElement | null {
+  return Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('Ver mas')) ?? null;
 }
 
 function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: () => void }) {

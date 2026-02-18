@@ -8,6 +8,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -59,19 +60,35 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
           }
 
           <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            @for (item of filteredSectionNews(); track item.id) {
+            @for (item of visibleSectionNews(); track item.id) {
               <app-news-card [article]="item" />
             }
           </div>
+
+          @if (hasMoreNews()) {
+            <div class="mt-6 flex justify-center">
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border border-primary bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-300 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                (click)="loadMoreNews()"
+              >
+                Ver mas
+              </button>
+            </div>
+          }
         }
       </section>
     </app-page-container>
   `,
 })
 export class SectionPageComponent {
+  private static readonly INITIAL_VISIBLE_NEWS_COUNT = 24;
+  private static readonly LOAD_MORE_NEWS_STEP = 12;
+
   private readonly route = inject(ActivatedRoute);
   private readonly newsStore = inject(NewsStore);
   private readonly selectedSources = signal<readonly string[]>([]);
+  private readonly visibleNewsCount = signal(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
   protected readonly uiViewState = UI_VIEW_STATE;
   protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
@@ -88,7 +105,7 @@ export class SectionPageComponent {
         sourceIds: parseSourceIds(params.get('source')),
         searchQuery: normalizeQueryValue(params.get('q')),
         page: parsePositiveNumber(params.get('page'), 1),
-        limit: parsePositiveNumber(params.get('limit'), 20),
+        limit: parsePositiveNumber(params.get('limit'), MAX_FEED_NEWS_LIMIT),
       })),
     ),
     {
@@ -96,7 +113,7 @@ export class SectionPageComponent {
         sourceIds: [] as readonly string[],
         searchQuery: null as string | null,
         page: 1,
-        limit: 20,
+        limit: MAX_FEED_NEWS_LIMIT,
       },
     },
   );
@@ -130,6 +147,12 @@ export class SectionPageComponent {
       return this.sortDirection() === 'desc' ? rightTime - leftTime : leftTime - rightTime;
     });
   });
+  protected readonly visibleSectionNews = computed(() =>
+    this.filteredSectionNews().slice(0, this.visibleNewsCount()),
+  );
+  protected readonly hasMoreNews = computed(() =>
+    this.filteredSectionNews().length > this.visibleSectionNews().length,
+  );
 
   protected readonly sectionUiState = computed(() =>
     resolveSectionUiState({
@@ -147,6 +170,14 @@ export class SectionPageComponent {
       this.filtersOpen.set(false);
       this.hasCustomSourceSelection.set(false);
       this.sortDirection.set('desc');
+    });
+
+    effect(() => {
+      this.sectionSlug();
+      this.queryFilters();
+      this.activeSelectedSources();
+      this.sortDirection();
+      this.visibleNewsCount.set(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
     });
 
     effect(() => {
@@ -170,6 +201,10 @@ export class SectionPageComponent {
   protected onSelectedSourcesChange(nextSources: readonly string[]): void {
     this.hasCustomSourceSelection.set(true);
     this.selectedSources.set(nextSources);
+  }
+
+  protected loadMoreNews(): void {
+    this.visibleNewsCount.update((count) => count + SectionPageComponent.LOAD_MORE_NEWS_STEP);
   }
 }
 
