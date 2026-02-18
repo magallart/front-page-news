@@ -1,30 +1,39 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+import { NewsStore } from '../../stores/news.store';
 
 import { ArticlePageComponent } from './article-page.component';
 
 describe('ArticlePageComponent', () => {
   it('renders article content with metadata, preview cta and right sidebar', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'actualidad'), createArticle('news-2', 'actualidad'), createArticle('news-3', 'economia')],
+    });
+
     await TestBed.configureTestingModule({
       imports: [ArticlePageComponent],
-      providers: [provideRouter([]), provideRouteId('demo-noticia-003')],
+      providers: [provideRouter([]), provideRouteId('news-1'), { provide: NewsStore, useValue: newsStoreMock }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ArticlePageComponent);
     fixture.detectChanges();
 
+    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: 100 });
+
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Actualidad');
-    expect(text).toContain('Actualizacion judicial sobre el caso de mayor impacto de la semana');
-    expect(text).toContain('Mario Ruiz');
-    expect(text).toContain('Boletin Justicia');
+    expect(text).toContain('Titulo news-1');
+    expect(text).toContain('Autor news-1');
+    expect(text).toContain('Fuente news');
     expect(text).toContain('Estas leyendo una vista previa de la noticia');
 
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
     expect(image).toBeTruthy();
-    expect(image.alt).toContain('Actualizacion judicial sobre el caso de mayor impacto de la semana');
+    expect(image.alt).toContain('Titulo news-1');
 
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
@@ -36,9 +45,13 @@ describe('ArticlePageComponent', () => {
   });
 
   it('renders not-found state when article id does not exist', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'actualidad')],
+    });
+
     await TestBed.configureTestingModule({
       imports: [ArticlePageComponent],
-      providers: [provideRouter([]), provideRouteId('id-inexistente')],
+      providers: [provideRouter([]), provideRouteId('id-inexistente'), { provide: NewsStore, useValue: newsStoreMock }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ArticlePageComponent);
@@ -52,6 +65,21 @@ describe('ArticlePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
   });
+
+  it('renders error state when api fails and article is not available', async () => {
+    const newsStoreMock = createNewsStoreMock({ data: [], error: 'Request failed' });
+
+    await TestBed.configureTestingModule({
+      imports: [ArticlePageComponent],
+      providers: [provideRouter([]), provideRouteId('news-missing'), { provide: NewsStore, useValue: newsStoreMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticlePageComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-error-state')).toBeTruthy();
+    expect(fixture.nativeElement.textContent as string).toContain('No se ha podido cargar la noticia');
+  });
 });
 
 function provideRouteId(id: string) {
@@ -61,4 +89,37 @@ function provideRouteId(id: string) {
       paramMap: of(convertToParamMap({ id })),
     },
   };
+}
+
+function createNewsStoreMock(
+  overrides?: Partial<{ data: readonly ReturnType<typeof createArticle>[]; error: string | null; loading: boolean }>,
+) {
+  const dataSignal = signal(overrides?.data ?? []);
+  const errorSignal = signal<string | null>(overrides?.error ?? null);
+  const loadingSignal = signal(overrides?.loading ?? false);
+
+  return {
+    loading: loadingSignal.asReadonly(),
+    data: dataSignal.asReadonly(),
+    error: errorSignal.asReadonly(),
+    warnings: signal([]).asReadonly(),
+    load: vi.fn(),
+  };
+}
+
+function createArticle(id: string, sectionSlug: string) {
+  return {
+    id,
+    externalId: null,
+    title: `Titulo ${id}`,
+    summary: `Resumen ${id}`,
+    url: `https://example.com/${id}`,
+    canonicalUrl: null,
+    imageUrl: 'https://example.com/image.jpg',
+    sourceId: 'source-news',
+    sourceName: 'Fuente news',
+    sectionSlug,
+    author: `Autor ${id}`,
+    publishedAt: '2026-02-18T10:30:00.000Z',
+  } as const;
 }
