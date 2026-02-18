@@ -1,17 +1,50 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import {
-  FOOTER_INTEREST_LINKS,
-  FOOTER_LEGAL_LINKS,
-  FOOTER_NEWSPAPER_LINKS,
-  FOOTER_SECTION_LINKS,
-  FOOTER_SERVICE_LINKS,
-  FOOTER_SOCIAL_LINKS,
-} from '../../mocks/footer.mock';
 import { SocialIconComponent } from '../icons/social-icon.component';
 
 import { PageContainerComponent } from './page-container.component';
+
+const FOOTER_SOCIAL_LINKS = [
+  { label: 'Facebook', icon: 'facebook', url: 'https://facebook.com' },
+  { label: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
+  { label: 'X', icon: 'x', url: 'https://x.com' },
+] as const;
+
+const FOOTER_SECTION_LINKS = [
+  { label: 'Actualidad', href: '/seccion/actualidad' },
+  { label: 'Economía', href: '/seccion/economia' },
+  { label: 'Deportes', href: '/seccion/deportes' },
+  { label: 'Tecnología', href: '/seccion/tecnologia' },
+] as const;
+
+const FOOTER_SERVICE_LINKS = [
+  { label: 'Hemeroteca', url: 'https://example.com/hemeroteca' },
+  { label: 'Podcasts', url: 'https://example.com/podcasts' },
+  { label: 'Newsletter', url: 'https://example.com/newsletter' },
+  { label: 'Anúnciate', url: 'https://example.com/anunciate' },
+] as const;
+
+const FOOTER_LEGAL_LINKS = [
+  { label: 'Aviso legal', href: '/aviso-legal' },
+  { label: 'Privacidad', href: '/privacidad' },
+  { label: 'Cookies', href: '/cookies' },
+] as const;
+
+const FOOTER_INTEREST_LINKS = [
+  { label: 'Última hora', href: '/', fragment: 'breaking-news' },
+  { label: 'Lo más leído', href: '/', fragment: 'most-read' },
+  { label: 'Actualidad', href: '/', fragment: 'current-news' },
+] as const;
+
+const FOOTER_NEWSPAPER_LINKS = [
+  { label: 'El País', url: 'https://elpais.com' },
+  { label: 'El Mundo', url: 'https://www.elmundo.es' },
+  { label: 'ABC', url: 'https://www.abc.es' },
+  { label: 'La Vanguardia', url: 'https://www.lavanguardia.com' },
+  { label: '20 Minutos', url: 'https://www.20minutos.es' },
+  { label: 'elDiario.es', url: 'https://www.eldiario.es' },
+] as const;
 
 @Component({
   selector: 'app-footer',
