@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { delay, Observable, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { NewsService } from '../services/news.service';
@@ -39,6 +39,49 @@ describe('NewsStore', () => {
     expect(store.loading()).toBe(false);
     expect(store.error()).toBe('API unavailable');
     expect(store.data()).toEqual([]);
+  });
+
+  it('sets loading while request is pending and clears it on success', () => {
+    vi.useFakeTimers();
+
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(of(createNewsResponse()).pipe(delay(1))),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'deportes' });
+
+    expect(store.loading()).toBe(true);
+    expect(store.error()).toBeNull();
+
+    vi.advanceTimersByTime(1);
+
+    expect(store.loading()).toBe(false);
+    expect(store.data()).toEqual(createNewsResponse().articles);
+    vi.useRealTimers();
+  });
+
+  it('sets loading while request is pending and stores error on failure', () => {
+    vi.useFakeTimers();
+
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(
+        new Observable<ReturnType<typeof createNewsResponse>>((subscriber) => {
+          setTimeout(() => subscriber.error(new Error('Timeout en feed')), 1);
+        }),
+      ),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'deportes' });
+
+    expect(store.loading()).toBe(true);
+
+    vi.advanceTimersByTime(1);
+
+    expect(store.loading()).toBe(false);
+    expect(store.error()).toBe('Timeout en feed');
+    vi.useRealTimers();
   });
 
   it('refreshes with forceRefresh using last query', () => {

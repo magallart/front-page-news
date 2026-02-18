@@ -148,6 +148,19 @@ describe('SourcesService', () => {
     ]);
   });
 
+  it('creates a request on cache miss', async () => {
+    configureTestingModule();
+    service = TestBed.inject(SourcesService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const requestPromise = firstValueFrom(service.getSources());
+    const request = httpController.expectOne('/api/sources');
+    expect(request.request.method).toBe('GET');
+    request.flush(createValidSourcesPayload());
+
+    await expect(requestPromise).resolves.toEqual(createValidSourcesPayload());
+  });
+
   it('creates a new request when cache entry TTL expires', async () => {
     configureTestingModule();
     service = TestBed.inject(SourcesService);

@@ -92,6 +92,20 @@ describe('NewsService', () => {
     ]);
   });
 
+  it('creates a request on cache miss for a query key', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const requestPromise = firstValueFrom(service.getNews({ section: 'deportes', page: 1, limit: 20 }));
+
+    const request = httpController.expectOne('/api/news?section=deportes&page=1&limit=20');
+    expect(request.request.method).toBe('GET');
+    request.flush(createValidNewsPayload());
+
+    await expect(requestPromise).resolves.toEqual(createValidNewsPayload());
+  });
+
   it('creates a new request when query changes', async () => {
     configureTestingModule();
     service = TestBed.inject(NewsService);

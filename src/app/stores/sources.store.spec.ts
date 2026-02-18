@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { delay, Observable, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { SourcesService } from '../services/sources.service';
@@ -38,6 +38,50 @@ describe('SourcesStore', () => {
     expect(store.loading()).toBe(false);
     expect(store.data()).toBeNull();
     expect(store.error()).toBe('Network down');
+  });
+
+  it('sets loading while request is pending and clears it on success', () => {
+    vi.useFakeTimers();
+
+    const sourcesServiceMock = {
+      getSources: vi.fn().mockReturnValue(of(createSourcesResponse()).pipe(delay(1))),
+    };
+
+    const store = configureStore(sourcesServiceMock);
+    store.loadInitial();
+
+    expect(store.loading()).toBe(true);
+    expect(store.error()).toBeNull();
+
+    vi.advanceTimersByTime(1);
+
+    expect(store.loading()).toBe(false);
+    expect(store.data()).toEqual(createSourcesResponse());
+    vi.useRealTimers();
+  });
+
+  it('sets loading while request is pending and stores error on failure', () => {
+    vi.useFakeTimers();
+
+    const sourcesServiceMock = {
+      getSources: vi.fn().mockReturnValue(
+        new Observable<ReturnType<typeof createSourcesResponse>>((subscriber) => {
+          setTimeout(() => subscriber.error(new Error('Sources timeout')), 1);
+        }),
+      ),
+    };
+
+    const store = configureStore(sourcesServiceMock);
+    store.loadInitial();
+
+    expect(store.loading()).toBe(true);
+
+    vi.advanceTimersByTime(1);
+
+    expect(store.loading()).toBe(false);
+    expect(store.error()).toBe('Sources timeout');
+    expect(store.data()).toBeNull();
+    vi.useRealTimers();
   });
 
   it('does not repeat initial load when data was already loaded', () => {
