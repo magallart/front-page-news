@@ -219,7 +219,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Crear store de noticias con `signals` (`loading`, `data`, `error`, `warnings`, `lastUpdated`) y refresco manual.
   - [✔️] Definir matriz de estados UI (`loading`, `empty`, `error total`, `error parcial`) por portada, seccion y detalle.
   - [✔️] Conectar portada a datos reales desde `/api/news` manteniendo estructura editorial actual.
-  - [ ] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
+  - [✔️] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
   - [ ] Conectar pagina de detalle por `id` sobre dataset agregado y definir fallback si no existe.
   - [ ] Mostrar banners de warning parcial cuando `warnings[]` no este vacio.
   - [ ] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
