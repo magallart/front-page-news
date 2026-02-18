@@ -210,7 +210,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Estados `loading`, `empty`, `error total`, `error parcial` implementados.
   - Reintento manual disponible.
 - Tasks:
-  - [ ] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
+  - [✔️] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
   - [ ] Implementar `NewsService` para `/api/news` con constructor de query params tipado.
   - [ ] Implementar adaptadores tipados API->UI (`Article`/`Source` -> modelos de componentes) con fallback seguro para campos nulos.
   - [ ] Implementar cache/deduplicacion en servicios HTTP con `shareReplay` por query (`section/source/q/page/limit`).
