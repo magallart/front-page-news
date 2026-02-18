@@ -6,26 +6,57 @@ import type { Article } from '../../interfaces/article.interface';
 import type { NewsQuery } from '../../interfaces/news-query.interface';
 import type { NewsResponse } from '../../interfaces/news-response.interface';
 import type { Warning, WarningCode } from '../../interfaces/warning.interface';
-import type { Observable } from 'rxjs';
+import type { NewsCacheEntry } from '../interfaces/news-cache-entry.interface';
+import type { NewsRequestOptions } from '../interfaces/news-request-options.interface';
 
 export type NewsRequestQuery = Partial<NewsQuery>;
+
+export const NEWS_CACHE_TTL_MS = 60_000;
 
 @Injectable({ providedIn: 'root' })
 export class NewsService {
   private readonly http = inject(HttpClient);
-  private readonly responseCache = new Map<string, Observable<NewsResponse>>();
+  private readonly responseCache = new Map<string, NewsCacheEntry>();
 
-  getNews(query: NewsRequestQuery = {}) {
+  getNews(query: NewsRequestQuery = {}, options: NewsRequestOptions = {}) {
     const params = buildNewsHttpParams(query);
     const cacheKey = toNewsCacheKey(params);
+    const section = params.get('section');
+
+    if (options.forceRefresh) {
+      this.responseCache.delete(cacheKey);
+    }
+
     const cached = this.responseCache.get(cacheKey);
+    if (cached && !isExpired(cached.expiresAt)) {
+      return cached.response$;
+    }
+
     if (cached) {
-      return cached;
+      this.responseCache.delete(cacheKey);
     }
 
     const request$ = this.createRequest(params, cacheKey);
-    this.responseCache.set(cacheKey, request$);
+    this.responseCache.set(cacheKey, {
+      section,
+      response$ : request$,
+      expiresAt: Date.now() + NEWS_CACHE_TTL_MS,
+    });
+
     return request$;
+  }
+
+  clear(): void {
+    this.responseCache.clear();
+  }
+
+  invalidateBySection(sectionSlug: string): void {
+    const normalizedSection = normalizeSection(sectionSlug);
+    for (const [cacheKey, cacheEntry] of this.responseCache.entries()) {
+      if (cacheEntry.section === normalizedSection) {
+        this.responseCache.delete(cacheKey);
+      }
+    }
   }
 
   private createRequest(params: HttpParams, cacheKey: string) {
@@ -178,4 +209,12 @@ function isNonEmptyString(value: string | null | undefined): value is string {
 
 function isPositiveInteger(value: number | undefined): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+function normalizeSection(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function isExpired(expiresAt: number): boolean {
+  return Date.now() >= expiresAt;
 }

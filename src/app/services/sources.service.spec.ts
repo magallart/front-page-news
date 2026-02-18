@@ -2,15 +2,21 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SourcesService } from './sources.service';
+import { SOURCES_CACHE_TTL_MS, SourcesService } from './sources.service';
 
 describe('SourcesService', () => {
   let service: SourcesService;
   let httpController: HttpTestingController;
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     httpController.verify();
   });
 
@@ -141,10 +147,83 @@ describe('SourcesService', () => {
       },
     ]);
   });
+
+  it('creates a new request when cache entry TTL expires', async () => {
+    configureTestingModule();
+    service = TestBed.inject(SourcesService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getSources());
+    const firstRequest = httpController.expectOne('/api/sources');
+    firstRequest.flush(createValidSourcesPayload());
+    await firstRequestPromise;
+
+    vi.setSystemTime(new Date(Date.now() + SOURCES_CACHE_TTL_MS + 1));
+
+    const secondRequestPromise = firstValueFrom(service.getSources());
+    const secondRequest = httpController.expectOne('/api/sources');
+    secondRequest.flush(createValidSourcesPayload());
+    await secondRequestPromise;
+  });
+
+  it('clears cached response with clear()', async () => {
+    configureTestingModule();
+    service = TestBed.inject(SourcesService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getSources());
+    const firstRequest = httpController.expectOne('/api/sources');
+    firstRequest.flush(createValidSourcesPayload());
+    await firstRequestPromise;
+
+    service.clear();
+
+    const secondRequestPromise = firstValueFrom(service.getSources());
+    const secondRequest = httpController.expectOne('/api/sources');
+    secondRequest.flush(createValidSourcesPayload());
+    await secondRequestPromise;
+  });
+
+  it('forces refresh when forceRefresh is true', async () => {
+    configureTestingModule();
+    service = TestBed.inject(SourcesService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getSources());
+    const firstRequest = httpController.expectOne('/api/sources');
+    firstRequest.flush(createValidSourcesPayload());
+    await firstRequestPromise;
+
+    const secondRequestPromise = firstValueFrom(service.getSources({ forceRefresh: true }));
+    const secondRequest = httpController.expectOne('/api/sources');
+    secondRequest.flush(createValidSourcesPayload());
+    await secondRequestPromise;
+  });
 });
 
 function configureTestingModule(): void {
   TestBed.configureTestingModule({
     providers: [provideHttpClient(), provideHttpClientTesting()],
   });
+}
+
+function createValidSourcesPayload() {
+  return {
+    sources: [
+      {
+        id: 'source-ejemplo',
+        name: 'Ejemplo',
+        baseUrl: 'https://example.com',
+        feedUrl: 'https://example.com/rss.xml',
+        sectionSlugs: ['actualidad'],
+      },
+    ],
+    sections: [
+      {
+        id: 'section-actualidad',
+        slug: 'actualidad',
+        name: 'Actualidad',
+      },
+    ],
+  };
 }

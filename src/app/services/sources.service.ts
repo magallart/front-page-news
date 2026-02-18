@@ -5,28 +5,48 @@ import { catchError, map, shareReplay, throwError } from 'rxjs';
 import type { Section } from '../../interfaces/section.interface';
 import type { Source } from '../../interfaces/source.interface';
 import type { SourcesResponse } from '../../interfaces/sources-response.interface';
-import type { Observable } from 'rxjs';
+import type { SourcesCacheEntry } from '../interfaces/sources-cache-entry.interface';
+import type { SourcesRequestOptions } from '../interfaces/sources-request-options.interface';
+
+export const SOURCES_CACHE_TTL_MS = 300_000;
 
 @Injectable({ providedIn: 'root' })
 export class SourcesService {
   private readonly http = inject(HttpClient);
-  private cachedResponse: Observable<SourcesResponse> | null = null;
+  private cachedResponse: SourcesCacheEntry | null = null;
 
-  getSources() {
-    if (this.cachedResponse) {
-      return this.cachedResponse;
+  getSources(options: SourcesRequestOptions = {}) {
+    if (options.forceRefresh) {
+      this.clear();
     }
 
-    this.cachedResponse = this.http.get<Record<string, unknown>>('/api/sources').pipe(
+    if (this.cachedResponse && !isExpired(this.cachedResponse.expiresAt)) {
+      return this.cachedResponse.response$;
+    }
+
+    if (this.cachedResponse) {
+      this.cachedResponse = null;
+    }
+
+    const request$ = this.http.get<Record<string, unknown>>('/api/sources').pipe(
       map((payload) => adaptSourcesResponse(payload)),
       shareReplay({ bufferSize: 1, refCount: false }),
       catchError((error) => {
-        this.cachedResponse = null;
+        this.clear();
         return throwError(() => error);
       }),
     );
 
-    return this.cachedResponse;
+    this.cachedResponse = {
+      response$: request$,
+      expiresAt: Date.now() + SOURCES_CACHE_TTL_MS,
+    };
+
+    return request$;
+  }
+
+  clear(): void {
+    this.cachedResponse = null;
   }
 }
 
@@ -97,4 +117,8 @@ function asStringArray(value: unknown, field: string): readonly string[] {
   }
 
   return value;
+}
+
+function isExpired(expiresAt: number): boolean {
+  return Date.now() >= expiresAt;
 }

@@ -2,15 +2,21 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NewsService } from './news.service';
+import { NEWS_CACHE_TTL_MS, NewsService } from './news.service';
 
 describe('NewsService', () => {
   let service: NewsService;
   let httpController: HttpTestingController;
 
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     httpController.verify();
   });
 
@@ -97,6 +103,84 @@ describe('NewsService', () => {
     const cultureRequest = httpController.expectOne('/api/news?section=cultura');
     cultureRequest.flush(createValidNewsPayload());
     await cultureRequestPromise;
+  });
+
+  it('creates a new request when cache entry TTL expires', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    firstRequest.flush(createValidNewsPayload());
+    await firstRequestPromise;
+
+    vi.setSystemTime(new Date(Date.now() + NEWS_CACHE_TTL_MS + 1));
+
+    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    secondRequest.flush(createValidNewsPayload());
+    await secondRequestPromise;
+  });
+
+  it('clears all cached entries with clear()', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    firstRequest.flush(createValidNewsPayload());
+    await firstRequestPromise;
+
+    service.clear();
+
+    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    secondRequest.flush(createValidNewsPayload());
+    await secondRequestPromise;
+  });
+
+  it('invalidates only entries for selected section', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const economyPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const economyRequest = httpController.expectOne('/api/news?section=economia');
+    economyRequest.flush(createValidNewsPayload());
+    await economyPromise;
+
+    const culturePromise = firstValueFrom(service.getNews({ section: 'cultura' }));
+    const cultureRequest = httpController.expectOne('/api/news?section=cultura');
+    cultureRequest.flush(createValidNewsPayload());
+    await culturePromise;
+
+    service.invalidateBySection('economia');
+
+    const refreshedEconomyPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const refreshedEconomyRequest = httpController.expectOne('/api/news?section=economia');
+    refreshedEconomyRequest.flush(createValidNewsPayload());
+    await refreshedEconomyPromise;
+
+    const cachedCulturePromise = firstValueFrom(service.getNews({ section: 'cultura' }));
+    await expect(cachedCulturePromise).resolves.toEqual(createValidNewsPayload());
+  });
+
+  it('forces refresh when forceRefresh is true', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    firstRequest.flush(createValidNewsPayload());
+    await firstRequestPromise;
+
+    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }, { forceRefresh: true }));
+    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    secondRequest.flush(createValidNewsPayload());
+    await secondRequestPromise;
   });
 
   it('fails when response shape is invalid', async () => {
