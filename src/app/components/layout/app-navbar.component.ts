@@ -61,9 +61,9 @@ export class AppNavbarComponent {
     { label: 'Actualidad', href: '/seccion/actualidad', exact: false },
     { label: 'Sucesos', href: '/seccion/sucesos', exact: false },
     { label: 'Deportes', href: '/seccion/deportes', exact: false },
-    { label: 'Economia', href: '/seccion/economia', exact: false },
+    { label: 'Economía', href: '/seccion/economia', exact: false },
     { label: 'Cultura', href: '/seccion/cultura', exact: false },
-    { label: 'Opinion', href: '/seccion/opinion', exact: false },
+    { label: 'Opinión', href: '/seccion/opinion', exact: false },
   ];
 
   protected readonly topLinks: readonly TopLink[] = [

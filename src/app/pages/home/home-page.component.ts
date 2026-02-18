@@ -37,7 +37,7 @@ import type { OnInit } from '@angular/core';
           <section class="py-4">
             <app-error-state
               headline="No se ha podido cargar la portada"
-              message="No hay conexion con el servicio de noticias. Intentalo de nuevo en unos minutos."
+              message="No hay conexión con el servicio de noticias. Inténtalo de nuevo en unos minutos."
             />
           </section>
         }
@@ -64,7 +64,7 @@ import type { OnInit } from '@angular/core';
                   <app-section-block title="Actualidad" sectionSlug="actualidad" [articles]="currentAffairsNews()" />
                 </div>
                 <div class="mb-12">
-                  <app-section-block title="Economia" sectionSlug="economia" [articles]="economyNews()" />
+                  <app-section-block title="Economía" sectionSlug="economia" [articles]="economyNews()" />
                 </div>
                 <div>
                   <app-section-block title="Cultura" sectionSlug="cultura" [articles]="cultureNews()" />

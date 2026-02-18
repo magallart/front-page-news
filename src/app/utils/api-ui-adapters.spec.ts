@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import { adaptArticleToNewsItem, adaptSourceToFilterItem } from './api-ui-adapters';
 
@@ -27,7 +27,7 @@ describe('api-ui-adapters', () => {
       source: 'Fuente Uno',
       section: 'actualidad',
       publishedAt: '',
-      author: 'Redaccion',
+      author: 'Redacción',
       url: 'https://example.com/news-1',
     });
   });
@@ -75,7 +75,7 @@ describe('api-ui-adapters', () => {
     expect(result.imageUrl).toBe('/images/no-image.jpg');
     expect(result.source).toBe('Fuente desconocida');
     expect(result.section).toBe('actualidad');
-    expect(result.author).toBe('Redaccion');
+    expect(result.author).toBe('Redacción');
     expect(result.publishedAt).toBe('');
     expect(result.url).toBe('#');
   });
@@ -83,7 +83,7 @@ describe('api-ui-adapters', () => {
   it('adapts source with fallback id and normalized section slugs', () => {
     const result = adaptSourceToFilterItem({
       id: ' ',
-      name: 'El Pais',
+      name: 'El País',
       baseUrl: 'https://elpais.com',
       feedUrl: 'https://elpais.com/rss.xml',
       sectionSlugs: ['Actualidad Nacional', ''],
@@ -91,7 +91,7 @@ describe('api-ui-adapters', () => {
 
     expect(result).toEqual({
       id: 'source-el-pais',
-      label: 'El Pais',
+      label: 'El País',
       sectionSlugs: ['actualidad-nacional', 'actualidad'],
     });
   });

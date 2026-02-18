@@ -11,7 +11,7 @@ import { IconExclamationCircleComponent } from '../icons/icon-exclamation-circle
     <article class="mx-auto flex max-w-2xl flex-col items-center px-4 py-6 text-center sm:py-8">
       <img
         src="/images/error.png"
-        alt="Ilustracion de error"
+        alt="Ilustración de error"
         class="mb-6 h-36 w-auto sm:h-44 lg:h-52"
         loading="eager"
       />
@@ -19,7 +19,7 @@ import { IconExclamationCircleComponent } from '../icons/icon-exclamation-circle
       <h1 class="font-editorial-title text-3xl font-semibold text-foreground sm:text-4xl">Noticia no encontrada</h1>
       <p class="mt-4 max-w-xl text-base text-muted-foreground">
         Revisa el enlace de la noticia, porque puede haber un error en la URL. Si el enlace es correcto, es posible
-        que esta noticia ya no este disponible porque la fuente original ha actualizado o modificado su publicacion.
+        que esta noticia ya no esté disponible porque la fuente original ha actualizado o modificado su publicación.
         Puedes regresar a portada para seguir navegando por el resto de noticias.
       </p>
       <a

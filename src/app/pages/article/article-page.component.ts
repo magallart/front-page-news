@@ -38,7 +38,7 @@ import { resolveDetailUiState } from '../../utils/ui-state-matrix';
             } @else if (detailUiState() === uiViewState.ERROR_TOTAL) {
               <app-error-state
                 headline="No se ha podido cargar la noticia"
-                message="Estamos teniendo problemas para cargar este contenido. Intentalo de nuevo en unos minutos."
+                message="Estamos teniendo problemas para cargar este contenido. Inténtalo de nuevo en unos minutos."
               />
             } @else if (article(); as item) {
               <app-article-content [article]="item" />

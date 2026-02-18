@@ -4,7 +4,7 @@ import type { NewsItem } from '../interfaces/news-item.interface';
 import type { SourceFilterItem } from '../interfaces/source-filter-item.interface';
 
 const DEFAULT_NEWS_IMAGE_URL = '/images/no-image.jpg';
-const DEFAULT_NEWS_AUTHOR = 'Redaccion';
+const DEFAULT_NEWS_AUTHOR = 'Redacción';
 const DEFAULT_NEWS_SOURCE = 'Fuente desconocida';
 const DEFAULT_NEWS_SECTION = 'actualidad';
 const DEFAULT_NEWS_TITLE = 'Noticia sin titular';

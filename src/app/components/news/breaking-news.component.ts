@@ -69,7 +69,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         [routerLink]="coverageLink()"
       >
         <app-icon-news />
-        Ver ultimas noticias
+        Ver últimas noticias
       </a>
     </section>
   `,

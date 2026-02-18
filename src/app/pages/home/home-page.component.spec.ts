@@ -31,7 +31,7 @@ describe('HomePageComponent', () => {
 
     const sectionText = fixture.nativeElement.textContent as string;
     expect(sectionText).toContain('Actualidad');
-    expect(sectionText).toContain('Economia');
+    expect(sectionText).toContain('Economía');
     expect(sectionText).toContain('Cultura');
   });
 

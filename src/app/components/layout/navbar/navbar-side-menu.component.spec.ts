@@ -83,7 +83,7 @@ describe('NavbarSideMenuComponent', () => {
 
 const MOCK_LINKS = [
   { label: 'Actualidad', href: '/seccion/actualidad', exact: false },
-  { label: 'Economia', href: '/seccion/economia', exact: false },
+  { label: 'Economía', href: '/seccion/economia', exact: false },
 ] as const;
 
 const MOCK_SOCIAL_LINKS = [

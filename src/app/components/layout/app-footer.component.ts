@@ -32,7 +32,8 @@ import { PageContainerComponent } from './page-container.component';
               class="mx-auto h-10 w-auto object-contain sm:h-12 md:mx-0"
             />
             <p class="max-w-xs text-sm leading-7 text-secondary-foreground/80">
-              Las ultimas noticias de distintos periodicos, reunidas en un solo lugar. Informate en minutos y profundiza solo en lo que de verdad te interesa.
+              Las últimas noticias de distintos periódicos, reunidas en un solo lugar. Infórmate en minutos y
+              profundiza solo en lo que de verdad te interesa.
             </p>
             <ul
               class="flex items-center justify-center gap-3 text-xs uppercase tracking-wider text-secondary-foreground/80 md:justify-start"
@@ -88,7 +89,7 @@ import { PageContainerComponent } from './page-container.component';
           </section>
 
           <section class="w-full max-w-xs text-center md:max-w-none md:justify-self-center md:text-center">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Enlaces de interes</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Enlaces de interés</h2>
             <ul class="mt-5 space-y-3 text-sm">
               @for (item of interestLinks; track item.label) {
                 <li>
@@ -105,7 +106,7 @@ import { PageContainerComponent } from './page-container.component';
           </section>
 
           <section class="w-full max-w-xs text-center md:max-w-none md:justify-self-center md:text-center">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Periodicos</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Periódicos</h2>
             <ul class="mt-5 space-y-3 text-sm">
               @for (item of newspaperLinks; track item.label) {
                 <li>

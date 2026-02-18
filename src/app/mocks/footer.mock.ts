@@ -6,16 +6,16 @@ export const FOOTER_SOCIAL_LINKS = [
 
 export const FOOTER_SECTION_LINKS = [
   { label: 'Actualidad', href: '/seccion/actualidad' },
-  { label: 'Economia', href: '/seccion/economia' },
+  { label: 'Economía', href: '/seccion/economia' },
   { label: 'Deportes', href: '/seccion/deportes' },
-  { label: 'Tecnologia', href: '/seccion/tecnologia' },
+  { label: 'Tecnología', href: '/seccion/tecnologia' },
 ] as const;
 
 export const FOOTER_SERVICE_LINKS = [
   { label: 'Hemeroteca', url: 'https://example.com/hemeroteca' },
   { label: 'Podcasts', url: 'https://example.com/podcasts' },
   { label: 'Newsletter', url: 'https://example.com/newsletter' },
-  { label: 'Anunciate', url: 'https://example.com/anunciate' },
+  { label: 'Anúnciate', url: 'https://example.com/anunciate' },
 ] as const;
 
 export const FOOTER_LEGAL_LINKS = [
@@ -25,13 +25,13 @@ export const FOOTER_LEGAL_LINKS = [
 ] as const;
 
 export const FOOTER_INTEREST_LINKS = [
-  { label: 'Ultima hora', href: '/', fragment: 'breaking-news' },
-  { label: 'Lo mas leido', href: '/', fragment: 'most-read' },
+  { label: 'Última hora', href: '/', fragment: 'breaking-news' },
+  { label: 'Lo más leído', href: '/', fragment: 'most-read' },
   { label: 'Actualidad', href: '/', fragment: 'current-news' },
 ] as const;
 
 export const FOOTER_NEWSPAPER_LINKS = [
-  { label: 'El Pais', url: 'https://elpais.com' },
+  { label: 'El País', url: 'https://elpais.com' },
   { label: 'El Mundo', url: 'https://www.elmundo.es' },
   { label: 'ABC', url: 'https://www.abc.es' },
   { label: 'La Vanguardia', url: 'https://www.lavanguardia.com' },

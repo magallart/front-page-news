@@ -21,7 +21,7 @@ describe('AppFooterComponent', () => {
     expect(logo?.getAttribute('src')).toBe('/images/front-page-news-logo.png');
 
     const textContent = fixture.nativeElement.textContent as string;
-    expect(textContent).toContain('Las ultimas noticias de distintos periodicos, reunidas en un solo lugar.');
+    expect(textContent).toContain('Las últimas noticias de distintos periódicos, reunidas en un solo lugar.');
 
     const socialLinks = fixture.nativeElement.querySelectorAll(
       'a[aria-label="Facebook"], a[aria-label="Instagram"], a[aria-label="X"]',
@@ -43,13 +43,13 @@ describe('AppFooterComponent', () => {
     );
     expect(headings).toContain('Secciones');
     expect(headings).toContain('Servicios');
-    expect(headings).toContain('Enlaces de interes');
-    expect(headings).toContain('Periodicos');
+    expect(headings).toContain('Enlaces de interés');
+    expect(headings).toContain('Periódicos');
 
     const textContent = fixture.nativeElement.textContent as string;
     expect(textContent).toContain('Actualidad');
-    expect(textContent).toContain('Lo mas leido');
-    expect(textContent).toContain('El Pais');
+    expect(textContent).toContain('Lo más leído');
+    expect(textContent).toContain('El País');
     expect(textContent).toContain('elDiario.es');
   });
 

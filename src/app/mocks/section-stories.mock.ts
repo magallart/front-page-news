@@ -7,7 +7,7 @@ export interface SectionMockStory {
 export const SECTION_MOCK_STORIES: readonly SectionMockStory[] = [
   {
     id: 'mock-001',
-    title: 'Titular de ejemplo para seccion',
+    title: 'Titular de ejemplo para sección',
     summary: 'Este bloque validara la estructura visual mientras usamos datos mock.',
   },
   {
