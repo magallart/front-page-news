@@ -6,8 +6,9 @@ import type { Article } from '../interfaces/article.interface';
 
 describe('news-query', () => {
   it('parses filters and pagination from URL', () => {
-    const query = parseNewsQuery('/api/news?section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10');
+    const query = parseNewsQuery('/api/news?id=url-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10');
 
+    expect(query.id).toBe('url-123');
     expect(query.section).toBe('economia');
     expect(query.sourceIds).toEqual(['source-a', 'source-b']);
     expect(query.searchQuery).toBe('inflacion');
@@ -18,6 +19,7 @@ describe('news-query', () => {
   it('applies defaults when query params are invalid', () => {
     const query = parseNewsQuery('/api/news?page=0&limit=1000');
 
+    expect(query.id).toBeNull();
     expect(query.page).toBe(1);
     expect(query.limit).toBe(100);
   });
@@ -36,6 +38,20 @@ describe('news-query', () => {
     expect(result.total).toBe(2);
     expect(result.articles).toHaveLength(2);
     expect(result.articles.map((item) => item.id)).toEqual(['1', '3']);
+  });
+
+  it('filters by exact id when provided', () => {
+    const articles: readonly Article[] = [
+      makeArticle({ id: 'url-aaa', title: 'A' }),
+      makeArticle({ id: 'url-bbb', title: 'B' }),
+    ];
+
+    const query = parseNewsQuery('/api/news?id=url-bbb&page=1&limit=10');
+    const result = applyNewsFilters(articles, query);
+
+    expect(result.total).toBe(1);
+    expect(result.articles).toHaveLength(1);
+    expect(result.articles[0]?.id).toBe('url-bbb');
   });
 });
 

@@ -9,6 +9,7 @@ const MAX_LIMIT = 100;
 export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
   if (!requestUrl) {
     return {
+      id: null,
       section: null,
       sourceIds: [],
       searchQuery: null,
@@ -18,6 +19,7 @@ export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
   }
 
   const parsedUrl = new URL(requestUrl, 'http://localhost');
+  const id = normalizeIdValue(parsedUrl.searchParams.get('id'));
   const section = normalizeQueryValue(parsedUrl.searchParams.get('section'));
   const searchQuery = normalizeQueryValue(parsedUrl.searchParams.get('q'));
   const sourceIds = parseSourceIds(parsedUrl.searchParams.get('source'));
@@ -25,6 +27,7 @@ export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
   const limit = parsePositiveNumber(parsedUrl.searchParams.get('limit'), DEFAULT_LIMIT, MAX_LIMIT);
 
   return {
+    id,
     section,
     sourceIds,
     searchQuery,
@@ -35,6 +38,10 @@ export function parseNewsQuery(requestUrl: string | undefined): NewsQuery {
 
 export function applyNewsFilters(articles: readonly Article[], query: NewsQuery): FilteredNews {
   const filtered = articles.filter((article) => {
+    if (query.id && article.id !== query.id) {
+      return false;
+    }
+
     if (query.section && article.sectionSlug !== query.section) {
       return false;
     }
@@ -98,5 +105,14 @@ function normalizeQueryValue(value: string | null): string | null {
   }
 
   const trimmed = value.trim().toLowerCase();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeIdValue(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 }

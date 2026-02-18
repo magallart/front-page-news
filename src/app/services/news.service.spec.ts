@@ -27,6 +27,7 @@ describe('NewsService', () => {
 
     firstValueFrom(
       service.getNews({
+        id: 'url-article-123',
         section: '  Economia ',
         sourceIds: ['source-a', 'source-b'],
         searchQuery: ' Inflacion ',
@@ -35,7 +36,9 @@ describe('NewsService', () => {
       }),
     );
 
-    const request = httpController.expectOne('/api/news?section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10');
+    const request = httpController.expectOne(
+      '/api/news?id=url-article-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10'
+    );
     expect(request.request.method).toBe('GET');
     request.flush(createValidNewsPayload());
   });

@@ -74,6 +74,10 @@ export class NewsService {
 export function buildNewsHttpParams(query: NewsRequestQuery): HttpParams {
   let params = new HttpParams();
 
+  if (isNonEmptyString(query.id)) {
+    params = params.set('id', query.id.trim());
+  }
+
   if (isNonEmptyString(query.section)) {
     params = params.set('section', query.section.trim().toLowerCase());
   }
