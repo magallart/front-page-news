@@ -32,6 +32,27 @@ describe('api-ui-adapters', () => {
     });
   });
 
+  it('routes remote image URLs through the local image proxy', () => {
+    const result = adaptArticleToNewsItem({
+      id: 'news-2',
+      externalId: null,
+      title: 'Imagen remota',
+      summary: 'Resumen',
+      url: 'https://example.com/news-2',
+      canonicalUrl: null,
+      imageUrl: 'https://s1.staticld.com/2026/02/18/lisa-tuttle-berlinale.jpg',
+      sourceId: 'source-2',
+      sourceName: 'Fuente Dos',
+      sectionSlug: 'cultura',
+      author: 'Autor',
+      publishedAt: '2026-02-18T17:13:00.000Z',
+    });
+
+    expect(result.imageUrl).toBe(
+      '/api/image?url=https%3A%2F%2Fs1.staticld.com%2F2026%2F02%2F18%2Flisa-tuttle-berlinale.jpg'
+    );
+  });
+
   it('falls back to generated id and default text when article strings are empty', () => {
     const result = adaptArticleToNewsItem({
       id: ' ',

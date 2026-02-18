@@ -9,6 +9,7 @@ const DEFAULT_NEWS_SOURCE = 'Fuente desconocida';
 const DEFAULT_NEWS_SECTION = 'actualidad';
 const DEFAULT_NEWS_TITLE = 'Noticia sin titular';
 const DEFAULT_NEWS_SUMMARY = 'Resumen no disponible.';
+const IMAGE_PROXY_PATH = '/api/image?url=';
 
 export function adaptArticleToNewsItem(article: Article): NewsItem {
   const normalizedSource = normalizeString(article.sourceName, DEFAULT_NEWS_SOURCE);
@@ -19,7 +20,7 @@ export function adaptArticleToNewsItem(article: Article): NewsItem {
     id: normalizeId(article.id, article.externalId, normalizedTitle),
     title: normalizedTitle,
     summary: normalizeString(article.summary, DEFAULT_NEWS_SUMMARY),
-    imageUrl: normalizeNullableString(article.imageUrl, DEFAULT_NEWS_IMAGE_URL),
+    imageUrl: toDisplayImageUrl(normalizeNullableString(article.imageUrl, DEFAULT_NEWS_IMAGE_URL)),
     source: normalizedSource,
     section: normalizedSection,
     publishedAt: normalizeNullableString(article.publishedAt, ''),
@@ -95,4 +96,20 @@ function slugify(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function toDisplayImageUrl(imageUrl: string): string {
+  if (imageUrl.startsWith('/')) {
+    return imageUrl;
+  }
+
+  if (imageUrl.startsWith(IMAGE_PROXY_PATH)) {
+    return imageUrl;
+  }
+
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return `${IMAGE_PROXY_PATH}${encodeURIComponent(imageUrl)}`;
+  }
+
+  return DEFAULT_NEWS_IMAGE_URL;
 }
