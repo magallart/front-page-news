@@ -1,9 +1,10 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 
 import { ArticlePageComponent } from './article-page.component';
@@ -13,16 +14,23 @@ describe('ArticlePageComponent', () => {
     const newsStoreMock = createNewsStoreMock({
       data: [createArticle('news-1', 'actualidad'), createArticle('news-2', 'actualidad'), createArticle('news-3', 'economia')],
     });
+    const newsServiceMock = createNewsServiceMock();
 
     await TestBed.configureTestingModule({
       imports: [ArticlePageComponent],
-      providers: [provideRouter([]), provideRouteId('news-1'), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        provideRouteId('news-1'),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ArticlePageComponent);
     fixture.detectChanges();
 
     expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: 100 });
+    expect(newsServiceMock.getNews).not.toHaveBeenCalled();
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Actualidad');
@@ -48,10 +56,18 @@ describe('ArticlePageComponent', () => {
     const newsStoreMock = createNewsStoreMock({
       data: [createArticle('news-1', 'actualidad')],
     });
+    const newsServiceMock = createNewsServiceMock({
+      response: { articles: [], total: 0, page: 1, limit: 1, warnings: [] },
+    });
 
     await TestBed.configureTestingModule({
       imports: [ArticlePageComponent],
-      providers: [provideRouter([]), provideRouteId('id-inexistente'), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        provideRouteId('id-inexistente'),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ArticlePageComponent);
@@ -64,14 +80,21 @@ describe('ArticlePageComponent', () => {
 
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
+    expect(newsServiceMock.getNews).toHaveBeenCalledWith({ id: 'id-inexistente', page: 1, limit: 1 }, { forceRefresh: true });
   });
 
   it('renders error state when api fails and article is not available', async () => {
     const newsStoreMock = createNewsStoreMock({ data: [], error: 'Request failed' });
+    const newsServiceMock = createNewsServiceMock({ shouldFail: true });
 
     await TestBed.configureTestingModule({
       imports: [ArticlePageComponent],
-      providers: [provideRouter([]), provideRouteId('news-missing'), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        provideRouteId('news-missing'),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ArticlePageComponent);
@@ -88,6 +111,29 @@ function provideRouteId(id: string) {
     useValue: {
       paramMap: of(convertToParamMap({ id })),
     },
+  };
+}
+
+function createNewsServiceMock(
+  overrides?: Partial<{
+    response: { articles: readonly ReturnType<typeof createArticle>[]; total: number; page: number; limit: number; warnings: readonly unknown[] };
+    shouldFail: boolean;
+  }>,
+) {
+  const response =
+    overrides?.response ??
+    ({
+      articles: [createArticle('news-fallback', 'actualidad')],
+      total: 1,
+      page: 1,
+      limit: 1,
+      warnings: [],
+    } as const);
+
+  return {
+    getNews: vi.fn(() =>
+      overrides?.shouldFail ? throwError(() => new Error('Request failed')) : of(response),
+    ),
   };
 }
 

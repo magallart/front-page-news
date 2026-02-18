@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { map, take } from 'rxjs';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { ArticleContentComponent } from '../../components/news/article-content.component';
@@ -10,7 +10,9 @@ import { BreakingNewsComponent } from '../../components/news/breaking-news.compo
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
+import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
+import { adaptArticleToNewsItem } from '../../utils/api-ui-adapters';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { resolveDetailUiState } from '../../utils/ui-state-matrix';
 
@@ -58,7 +60,12 @@ import { resolveDetailUiState } from '../../utils/ui-state-matrix';
 export class ArticlePageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly newsStore = inject(NewsStore);
+  private readonly newsService = inject(NewsService);
   protected readonly uiViewState = UI_VIEW_STATE;
+  private readonly fallbackArticleSignal = signal<ReturnType<typeof adaptArticleToNewsItem> | null>(null);
+  private readonly fallbackLoadingSignal = signal(false);
+  private readonly fallbackErrorSignal = signal<string | null>(null);
+  private readonly fallbackRequestedIdSignal = signal<string | null>(null);
 
   protected readonly articleId = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('id') ?? 'sin-id')),
@@ -66,7 +73,8 @@ export class ArticlePageComponent {
   );
 
   private readonly aggregatedNewsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data()));
-  protected readonly article = computed(() => this.aggregatedNewsItems().find((item) => item.id === this.articleId()));
+  private readonly aggregatedArticle = computed(() => this.aggregatedNewsItems().find((item) => item.id === this.articleId()));
+  protected readonly article = computed(() => this.aggregatedArticle() ?? this.fallbackArticleSignal());
 
   private readonly sideItems = computed(() => {
     const currentArticleId = this.articleId();
@@ -87,8 +95,8 @@ export class ArticlePageComponent {
 
   protected readonly detailUiState = computed(() =>
     resolveDetailUiState({
-      loading: this.newsStore.loading(),
-      error: this.newsStore.error(),
+      loading: this.newsStore.loading() || this.fallbackLoadingSignal(),
+      error: this.fallbackErrorSignal() ?? this.newsStore.error(),
       warnings: this.newsStore.warnings(),
       hasItem: Boolean(this.article()),
     }),
@@ -96,5 +104,50 @@ export class ArticlePageComponent {
 
   constructor() {
     this.newsStore.load({ page: 1, limit: 100 });
+
+    effect(() => {
+      const currentArticleId = this.articleId();
+      const hasAggregatedItem = Boolean(this.aggregatedArticle());
+
+      if (hasAggregatedItem) {
+        this.fallbackArticleSignal.set(null);
+        this.fallbackErrorSignal.set(null);
+        this.fallbackLoadingSignal.set(false);
+        this.fallbackRequestedIdSignal.set(currentArticleId);
+        return;
+      }
+
+      if (this.fallbackRequestedIdSignal() === currentArticleId) {
+        return;
+      }
+
+      this.fallbackRequestedIdSignal.set(currentArticleId);
+      this.fallbackErrorSignal.set(null);
+      this.fallbackLoadingSignal.set(true);
+
+      this.newsService
+        .getNews({ id: currentArticleId, page: 1, limit: 1 }, { forceRefresh: true })
+        .pipe(take(1))
+        .subscribe({
+          next: (response) => {
+            const matched = response.articles[0];
+            this.fallbackArticleSignal.set(matched ? adaptArticleToNewsItem(matched) : null);
+            this.fallbackLoadingSignal.set(false);
+          },
+          error: (error: unknown) => {
+            this.fallbackArticleSignal.set(null);
+            this.fallbackErrorSignal.set(toErrorMessage(error));
+            this.fallbackLoadingSignal.set(false);
+          },
+        });
+    });
   }
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+
+  return 'No se pudo cargar la noticia.';
 }
