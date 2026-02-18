@@ -212,18 +212,21 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [ ] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
   - [ ] Implementar `NewsService` para `/api/news` con constructor de query params tipado.
+  - [ ] Implementar adaptadores tipados API->UI (`Article`/`Source` -> modelos de componentes) con fallback seguro para campos nulos.
   - [ ] Implementar cache/deduplicacion en servicios HTTP con `shareReplay` por query (`section/source/q/page/limit`).
-  - [ ] Definir TTL de cache en cliente y API de invalidacion (`clear`, `invalidateBySection`, `forceRefresh`).
+  - [ ] Definir TTL de cache en cliente y API de invalidacion (`clear`, `invalidateBySection`, `forceRefresh`) con valores y comportamiento por defecto.
   - [ ] Crear store de fuentes con `signals` (`loading`, `data`, `error`) y carga inicial reutilizable.
   - [ ] Crear store de noticias con `signals` (`loading`, `data`, `error`, `warnings`, `lastUpdated`) y refresco manual.
+  - [ ] Definir matriz de estados UI (`loading`, `empty`, `error total`, `error parcial`) por portada, seccion y detalle.
   - [ ] Conectar portada a datos reales desde `/api/news` manteniendo estructura editorial actual.
   - [ ] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
   - [ ] Conectar pagina de detalle por `id` sobre dataset agregado y definir fallback si no existe.
   - [ ] Mostrar banners de warning parcial cuando `warnings[]` no este vacio.
   - [ ] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
-  - [ ] Retirar dependencias de `MockNewsService` en paginas conectadas a API.
+  - [ ] Retirar dependencias de `MockNewsService` en paginas y layout afectados por la integracion (incluyendo navbar/ticker si aplica).
   - [ ] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
   - [ ] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
+  - [ ] Documentar estrategia de cache cliente (TTL + invalidacion) y criterios de estados de error/parcial para mantenimiento futuro.
 
 <a id="fpn-009"></a>
 
