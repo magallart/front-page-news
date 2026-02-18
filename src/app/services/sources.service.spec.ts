@@ -73,6 +73,74 @@ describe('SourcesService', () => {
 
     await expect(requestPromise).rejects.toThrow('Invalid sources response: "sources" must be an array');
   });
+
+  it('reuses cached response for repeated calls', async () => {
+    configureTestingModule();
+    service = TestBed.inject(SourcesService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getSources());
+    const secondRequestPromise = firstValueFrom(service.getSources());
+
+    const request = httpController.expectOne('/api/sources');
+    request.flush({
+      sources: [
+        {
+          id: 'source-ejemplo',
+          name: 'Ejemplo',
+          baseUrl: 'https://example.com',
+          feedUrl: 'https://example.com/rss.xml',
+          sectionSlugs: ['actualidad'],
+        },
+      ],
+      sections: [
+        {
+          id: 'section-actualidad',
+          slug: 'actualidad',
+          name: 'Actualidad',
+        },
+      ],
+    });
+
+    await expect(Promise.all([firstRequestPromise, secondRequestPromise])).resolves.toEqual([
+      {
+        sources: [
+          {
+            id: 'source-ejemplo',
+            name: 'Ejemplo',
+            baseUrl: 'https://example.com',
+            feedUrl: 'https://example.com/rss.xml',
+            sectionSlugs: ['actualidad'],
+          },
+        ],
+        sections: [
+          {
+            id: 'section-actualidad',
+            slug: 'actualidad',
+            name: 'Actualidad',
+          },
+        ],
+      },
+      {
+        sources: [
+          {
+            id: 'source-ejemplo',
+            name: 'Ejemplo',
+            baseUrl: 'https://example.com',
+            feedUrl: 'https://example.com/rss.xml',
+            sectionSlugs: ['actualidad'],
+          },
+        ],
+        sections: [
+          {
+            id: 'section-actualidad',
+            slug: 'actualidad',
+            name: 'Actualidad',
+          },
+        ],
+      },
+    ]);
+  });
 });
 
 function configureTestingModule(): void {

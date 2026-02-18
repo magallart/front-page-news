@@ -1,19 +1,32 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { catchError, map, shareReplay, throwError } from 'rxjs';
 
 import type { Section } from '../../interfaces/section.interface';
 import type { Source } from '../../interfaces/source.interface';
 import type { SourcesResponse } from '../../interfaces/sources-response.interface';
+import type { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SourcesService {
   private readonly http = inject(HttpClient);
+  private cachedResponse: Observable<SourcesResponse> | null = null;
 
   getSources() {
-    return this.http
-      .get<Record<string, unknown>>('/api/sources')
-      .pipe(map((payload) => adaptSourcesResponse(payload)));
+    if (this.cachedResponse) {
+      return this.cachedResponse;
+    }
+
+    this.cachedResponse = this.http.get<Record<string, unknown>>('/api/sources').pipe(
+      map((payload) => adaptSourcesResponse(payload)),
+      shareReplay({ bufferSize: 1, refCount: false }),
+      catchError((error) => {
+        this.cachedResponse = null;
+        return throwError(() => error);
+      }),
+    );
+
+    return this.cachedResponse;
   }
 }
 

@@ -66,6 +66,39 @@ describe('NewsService', () => {
     await expect(requestPromise).resolves.toEqual(createValidNewsPayload());
   });
 
+  it('reuses cached response for identical queries', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia', page: 1, limit: 10 }));
+    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia', page: 1, limit: 10 }));
+
+    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=10');
+    request.flush(createValidNewsPayload());
+
+    await expect(Promise.all([firstRequestPromise, secondRequestPromise])).resolves.toEqual([
+      createValidNewsPayload(),
+      createValidNewsPayload(),
+    ]);
+  });
+
+  it('creates a new request when query changes', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    const economyRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    const economyRequest = httpController.expectOne('/api/news?section=economia');
+    economyRequest.flush(createValidNewsPayload());
+    await economyRequestPromise;
+
+    const cultureRequestPromise = firstValueFrom(service.getNews({ section: 'cultura' }));
+    const cultureRequest = httpController.expectOne('/api/news?section=cultura');
+    cultureRequest.flush(createValidNewsPayload());
+    await cultureRequestPromise;
+  });
+
   it('fails when response shape is invalid', async () => {
     configureTestingModule();
     service = TestBed.inject(NewsService);
