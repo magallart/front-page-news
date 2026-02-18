@@ -212,7 +212,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 - Tasks:
   - [✔️] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
   - [✔️] Implementar `NewsService` para `/api/news` con constructor de query params tipado.
-  - [ ] Implementar adaptadores tipados API->UI (`Article`/`Source` -> modelos de componentes) con fallback seguro para campos nulos.
+  - [✔️] Implementar adaptadores tipados API->UI (`Article`/`Source` -> modelos de componentes) con fallback seguro para campos nulos.
   - [ ] Implementar cache/deduplicacion en servicios HTTP con `shareReplay` por query (`section/source/q/page/limit`).
   - [ ] Definir TTL de cache en cliente y API de invalidacion (`clear`, `invalidateBySection`, `forceRefresh`) con valores y comportamiento por defecto.
   - [ ] Crear store de fuentes con `signals` (`loading`, `data`, `error`) y carga inicial reutilizable.
