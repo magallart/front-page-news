@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-import { LOCKED_PREVIEW_LINE_PATTERNS } from '../../mocks/article-locked-preview.mock';
+import { LOCKED_PREVIEW_LINE_PATTERNS } from '../../constants/locked-preview.constants';
 
 @Component({
   selector: 'app-article-locked-preview',
