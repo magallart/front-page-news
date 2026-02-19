@@ -109,6 +109,7 @@ export class ArticlePageComponent {
 
     effect(() => {
       const currentArticleId = this.articleId();
+      const isAggregatedLoading = this.newsStore.loading();
       const hasAggregatedItem = Boolean(this.aggregatedArticle());
 
       if (hasAggregatedItem) {
@@ -116,6 +117,10 @@ export class ArticlePageComponent {
         this.fallbackErrorSignal.set(null);
         this.fallbackLoadingSignal.set(false);
         this.fallbackRequestedIdSignal.set(currentArticleId);
+        return;
+      }
+
+      if (isAggregatedLoading) {
         return;
       }
 

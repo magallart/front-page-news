@@ -35,15 +35,7 @@ describe('ArticlePageComponent', () => {
       limit: 1000,
       warnings: [],
     });
-
-    const fallbackRequest = httpController.expectOne('/api/news?id=news-1&page=1&limit=1');
-    fallbackRequest.flush({
-      articles: [],
-      total: 0,
-      page: 1,
-      limit: 1,
-      warnings: [],
-    });
+    httpController.expectNone('/api/news?id=news-1&page=1&limit=1');
 
     fixture.detectChanges();
 
@@ -51,6 +43,44 @@ describe('ArticlePageComponent', () => {
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
 
     httpController.verify();
+  });
+
+  it('does not trigger fallback request while aggregated dataset is loading', async () => {
+    const dataSignal = signal<readonly ReturnType<typeof createArticle>[]>([]);
+    const errorSignal = signal<string | null>(null);
+    const loadingSignal = signal(true);
+    const newsServiceMock = createNewsServiceMock({
+      response: { articles: [createArticle('news-missing', 'actualidad')], total: 1, page: 1, limit: 1, warnings: [] },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ArticlePageComponent],
+      providers: [
+        provideRouter([]),
+        provideRouteId('news-missing'),
+        {
+          provide: NewsStore,
+          useValue: {
+            loading: loadingSignal.asReadonly(),
+            data: dataSignal.asReadonly(),
+            error: errorSignal.asReadonly(),
+            warnings: signal([]).asReadonly(),
+            load: vi.fn(),
+          },
+        },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticlePageComponent);
+    fixture.detectChanges();
+
+    expect(newsServiceMock.getNews).not.toHaveBeenCalled();
+
+    loadingSignal.set(false);
+    fixture.detectChanges();
+
+    expect(newsServiceMock.getNews).toHaveBeenCalledWith({ id: 'news-missing', page: 1, limit: 1 }, { forceRefresh: true });
   });
 
   it('integrates fallback request by id when article is missing in aggregated dataset', async () => {
@@ -72,6 +102,7 @@ describe('ArticlePageComponent', () => {
       limit: 1000,
       warnings: [],
     });
+    fixture.detectChanges();
 
     const fallbackRequest = httpController.expectOne('/api/news?id=news-missing&page=1&limit=1');
     fallbackRequest.flush({
