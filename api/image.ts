@@ -59,12 +59,17 @@ export default async function handler(request: ApiRequest, response: ServerRespo
     return;
   }
 
+  const contentLengthHeader = upstream.headers.get('content-length');
+  const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : Number.NaN;
+  if (Number.isFinite(contentLength) && contentLength > MAX_IMAGE_BYTES) {
+    sendError(response, 413, 'Remote image too large');
+    return;
+  }
+
   response.statusCode = 200;
   response.setHeader('content-type', contentType);
   response.setHeader('cache-control', CACHE_CONTROL_SUCCESS);
 
-  const contentLengthHeader = upstream.headers.get('content-length');
-  const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : Number.NaN;
   if (Number.isFinite(contentLength)) {
     response.setHeader('content-length', contentLength);
   }
