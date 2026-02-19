@@ -197,8 +197,21 @@ Brief continuity notes to recover context between terminal sessions.
 - What changed:
   - Added `.nvmrc` with Node `22` to standardize local runtime for `vercel dev` on Windows.
   - Added `engines.node` in `package.json` as `>=22 <23` to align the project with Node 22 LTS.
-  - Hardened `api/image` against SSRF:
-    - added DNS/IP safety guard (`src/lib/ssrf-guard.ts`) to reject local/private/reserved targets
+  - Renamed Angular workspace project identifier from `angular-project-base` to `front-page-news` in `angular.json`.
+  - Updated `serve` build targets to reference `front-page-news`.
+  - Renamed package name in `package.json` to `front-page-news`.
+  - Hardened quality gates to prevent false greens:
+    - updated `lint` script to run `lint:eslint` + `typecheck`
+    - added `typecheck` script for both `tsconfig.app.json` and `tsconfig.api.json`
+    - expanded Angular ESLint scope to include `api/**/*.ts`
+    - added ESLint guard for `src/**/*.ts` to forbid `node:*` imports (excluding `*.spec.ts`)
+  - Hardened `api/image` against SSRF and large payload memory risk:
+    - moved server-only guards/helpers to `api/lib` (`ssrf-guard.ts`, `response-body-limit.ts`)
     - blocked credentialed URLs and non-HTTP protocols
     - switched image fetch to manual redirect handling with safety validation at each redirect hop
-    - added unit coverage for SSRF guard scenarios (`src/lib/ssrf-guard.spec.ts`)
+    - switched image proxy response handling to streaming with hard byte limit (no full in-memory buffering)
+    - updated API/spec imports to match the new server helper location
+    - added/updated coverage for SSRF guard and response body byte-limit helpers
+- Verification performed:
+  - `pnpm run lint` (pass)
+  - `pnpm test` (pass)
