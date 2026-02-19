@@ -10,6 +10,11 @@ export function rankMostReadNews(items: readonly NewsItem[], nowMs = Date.now())
     return [];
   }
 
+  // Ranking strategy:
+  // 1) Score each article by weighted recency and source repetition in the current dataset.
+  // 2) Sort by score (and recency as tie-breaker).
+  // 3) Apply a per-source cap to avoid one outlet dominating the list.
+
   const sourceFrequency = new Map<string, number>();
   for (const item of items) {
     const current = sourceFrequency.get(item.source) ?? 0;
