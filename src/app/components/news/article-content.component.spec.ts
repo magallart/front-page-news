@@ -48,7 +48,7 @@ describe('ArticleContentComponent', () => {
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Noticia sin titular disponible');
-    expect(text).toContain('Redaccion Front Page News');
+    expect(text).toContain('Redacción Front Page News');
     expect(text).toContain('Front Page News');
     expect(text).toContain('Actualidad');
     expect(text).toContain('Esta noticia no incluye resumen disponible en este momento.');

@@ -15,7 +15,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
 
         <article class="space-y-8 rounded-lg bg-card p-6 text-sm leading-7 text-card-foreground sm:p-8">
           <section class="space-y-2">
-            <h2 class="font-heading text-xl font-semibold tracking-tight">1. Que son las cookies</h2>
+            <h2 class="font-heading text-xl font-semibold tracking-tight">1. Qué son las cookies</h2>
             <p>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nec ante. Sed lacinia, urna non tincidunt
               mattis, tortor neque adipiscing diam, a cursus ipsum ante quis turpis.
@@ -29,9 +29,9 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
               Vestibulum sapien. Proin quam.
             </p>
             <ul class="list-disc space-y-1 pl-5 text-card-foreground/90">
-              <li>Cookies tecnicas y funcionales.</li>
-              <li>Cookies de analitica y rendimiento.</li>
-              <li>Cookies de personalizacion de contenido.</li>
+              <li>Cookies técnicas y funcionales.</li>
+              <li>Cookies de analítica y rendimiento.</li>
+              <li>Cookies de personalización de contenido.</li>
             </ul>
           </section>
 
@@ -44,7 +44,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
           </section>
 
           <section class="space-y-2">
-            <h2 class="font-heading text-xl font-semibold tracking-tight">4. Gestion y desactivacion</h2>
+            <h2 class="font-heading text-xl font-semibold tracking-tight">4. Gestión y desactivación</h2>
             <p>
               Sem massa mattis sem, at interdum magna augue eget diam. Vestibulum ante ipsum primis in faucibus orci
               luctus et ultrices posuere cubilia curae.
@@ -60,7 +60,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
           </section>
 
           <section class="space-y-2">
-            <h2 class="font-heading text-xl font-semibold tracking-tight">6. Actualizaciones de esta politica</h2>
+            <h2 class="font-heading text-xl font-semibold tracking-tight">6. Actualizaciones de esta política</h2>
             <p>
               Morbi in ipsum sit amet pede facilisis laoreet. Donec lacus nunc, viverra nec, blandit vel, egestas et,
               augue.

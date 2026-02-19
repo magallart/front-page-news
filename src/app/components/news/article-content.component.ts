@@ -69,7 +69,7 @@ export class ArticleContentComponent {
       source,
       section,
       publishedAt: item.publishedAt,
-      author: normalizeOrFallback(item.author, 'Redaccion Front Page News'),
+      author: normalizeOrFallback(item.author, 'Redacción Front Page News'),
       url: normalizeOrFallback(item.url, '/'),
     } as const;
   });
@@ -80,8 +80,8 @@ export class ArticleContentComponent {
 
     return [
       item.summary,
-      `Segun fuentes de ${item.source}, este avance refuerza la cobertura en ${formatSectionLabel(item.section).toLowerCase()} y abre nuevas lineas de seguimiento editorial en los proximos dias.`,
-      'El equipo de redaccion mantendra esta historia en actualizacion constante para aportar contexto, datos verificados y el impacto directo en la audiencia.',
+      `Según fuentes de ${item.source}, este avance refuerza la cobertura en ${formatSectionLabel(item.section).toLowerCase()} y abre nuevas líneas de seguimiento editorial en los próximos días.`,
+      'El equipo de redacción mantendrá esta historia en actualización constante para aportar contexto, datos verificados y el impacto directo en la audiencia.',
     ] as const;
   });
 }

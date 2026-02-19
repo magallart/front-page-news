@@ -1,30 +1,26 @@
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog';
+
+import { WARNING_CODE } from '../src/interfaces/warning.interface';
 import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher';
 import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query';
-import { parseFeedItems } from '../src/lib/rss-parser';
 import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normalization';
+import { parseFeedItems } from '../src/lib/rss-parser';
+import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog';
+
+import { loadRssCatalogRecords } from './lib/rss-catalog';
+import { sendJson } from './lib/send-json';
 
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
-import type { RssSourceRecord } from '../src/interfaces/rss-source-record.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
-import { WARNING_CODE } from '../src/interfaces/warning.interface';
 import type { Warning } from '../src/interfaces/warning.interface';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'data/rss-sources.json');
 const FEED_FETCH_TIMEOUT_MS = 8000;
 const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=120, stale-while-revalidate=600';
-
-interface ApiErrorResponse {
-  readonly error: string;
-}
-
-type NewsApiResponse = NewsResponse | ApiErrorResponse;
 
 interface ApiRequest extends IncomingMessage {
   readonly method?: string;
@@ -65,7 +61,7 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
 
   return async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
     if (request.method !== 'GET') {
-      sendJson(response, 405, { error: 'Method Not Allowed' });
+      sendJson(response, 405, { error: 'Method Not Allowed' }, CACHE_CONTROL_HEADER_VALUE);
       return;
     }
 
@@ -73,7 +69,7 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
     try {
       availableSources = await dependencies.loadSourcesCatalog();
     } catch {
-      sendJson(response, 500, { error: 'Unable to load RSS sources catalog' });
+      sendJson(response, 500, { error: 'Unable to load RSS sources catalog' }, CACHE_CONTROL_HEADER_VALUE);
       return;
     }
 
@@ -94,7 +90,7 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
       warnings: [...fetchResult.warnings, ...parseResult.warnings],
     };
 
-    sendJson(response, 200, payload);
+    sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
   };
 }
 
@@ -165,8 +161,7 @@ function toErrorMessage(error: unknown): string {
 }
 
 async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
-  const json = await readFile(RSS_SOURCES_FILE_PATH, 'utf8');
-  const records = parseCatalogRecords(json);
+  const records = await loadRssCatalogRecords(RSS_SOURCES_FILE_PATH);
   const feedTargets = buildSourceFeedTargetsFromRecords(records);
 
   if (feedTargets.length === 0) {
@@ -175,46 +170,6 @@ async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
 
   return feedTargets;
 }
-
-function parseCatalogRecords(value: string): readonly RssSourceRecord[] {
-  const parsed: unknown = JSON.parse(value);
-  if (!Array.isArray(parsed)) {
-    throw new Error('Invalid catalog JSON: expected array');
-  }
-
-  const records: RssSourceRecord[] = [];
-  for (const item of parsed) {
-    if (!isCatalogRecord(item)) {
-      continue;
-    }
-
-    records.push({
-      sourceName: item.sourceName,
-      feedUrl: item.feedUrl,
-      sectionName: item.sectionName,
-    });
-  }
-
-  if (records.length === 0) {
-    throw new Error('RSS sources catalog has no valid entries');
-  }
-
-  return records;
-}
-
-function isCatalogRecord(value: unknown): value is RssSourceRecord {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const candidate = value as Record<string, unknown>;
-  return (
-    typeof candidate['sourceName'] === 'string' &&
-    typeof candidate['feedUrl'] === 'string' &&
-    typeof candidate['sectionName'] === 'string'
-  );
-}
-
 function selectFeedTargetsForFetch(
   sources: readonly SourceFeedTarget[],
   sectionSlug: string | null,
@@ -275,16 +230,3 @@ function toFeedTargetKey(sourceId: string, feedUrl: string): string {
   return `${sourceId}|${feedUrl}`;
 }
 
-function sendJson(response: ServerResponse, statusCode: number, body: NewsApiResponse): void {
-  response.statusCode = statusCode;
-  response.setHeader('content-type', 'application/json; charset=utf-8');
-  response.setHeader(
-    'cache-control',
-    isCacheableStatus(statusCode) ? CACHE_CONTROL_HEADER_VALUE : 'no-store, max-age=0'
-  );
-  response.end(JSON.stringify(body));
-}
-
-function isCacheableStatus(statusCode: number): boolean {
-  return statusCode >= 200 && statusCode < 300;
-}

@@ -81,22 +81,49 @@ function extractTagText(block: string, tagNames: readonly string[]): string | nu
 }
 
 function extractImageUrl(block: string): string | null {
-  const mediaTag = block.match(/<(media:content|media:thumbnail)\b[^>]*>/i)?.[0] ?? null;
-  const mediaUrl = mediaTag ? extractAttribute(mediaTag, 'url') : null;
-  if (mediaUrl) {
-    return mediaUrl;
+  const thumbnailTags = block.match(/<media:thumbnail\b[^>]*>/gi) ?? [];
+  for (const tag of thumbnailTags) {
+    const thumbnailUrl = extractAttribute(tag, 'url');
+    if (isHttpUrl(thumbnailUrl)) {
+      return thumbnailUrl;
+    }
+  }
+
+  const mediaContentTags = block.match(/<media:content\b[^>]*>/gi) ?? [];
+  for (const tag of mediaContentTags) {
+    const mediaUrl = extractAttribute(tag, 'url');
+    const mediaType = extractAttribute(tag, 'type');
+    if (isImageMediaCandidate(mediaUrl, mediaType)) {
+      return mediaUrl;
+    }
+
+    const youtubeThumbnail = toYouTubeThumbnailUrl(mediaUrl);
+    if (youtubeThumbnail) {
+      return youtubeThumbnail;
+    }
   }
 
   const enclosureTag = block.match(/<enclosure\b[^>]*>/i)?.[0] ?? null;
   const enclosureUrl = enclosureTag ? extractAttribute(enclosureTag, 'url') : null;
-  if (enclosureUrl) {
+  const enclosureType = enclosureTag ? extractAttribute(enclosureTag, 'type') : null;
+  if (isImageMediaCandidate(enclosureUrl, enclosureType)) {
     return enclosureUrl;
+  }
+
+  const enclosureYoutubeThumbnail = toYouTubeThumbnailUrl(enclosureUrl);
+  if (enclosureYoutubeThumbnail) {
+    return enclosureYoutubeThumbnail;
   }
 
   const imageTag = block.match(/<img\b[^>]*>/i)?.[0] ?? null;
   const imageUrl = imageTag ? extractAttribute(imageTag, 'src') : null;
-  if (imageUrl) {
+  if (isImageUrl(imageUrl)) {
     return imageUrl;
+  }
+
+  const inlineYoutubeThumbnail = toYouTubeThumbnailUrl(imageUrl);
+  if (inlineYoutubeThumbnail) {
+    return inlineYoutubeThumbnail;
   }
 
   return null;
@@ -156,4 +183,80 @@ function decodeXmlEntities(value: string): string {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isImageMediaCandidate(url: string | null, mediaType: string | null): url is string {
+  if (!url) {
+    return false;
+  }
+
+  if (mediaType?.toLowerCase().startsWith('image/')) {
+    return true;
+  }
+
+  return isImageUrl(url);
+}
+
+function isImageUrl(url: string | null): url is string {
+  if (!isHttpUrl(url)) {
+    return false;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    return /\.(avif|gif|jpe?g|png|webp|bmp|svg)$/i.test(parsedUrl.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function isHttpUrl(url: string | null): url is string {
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function toYouTubeThumbnailUrl(url: string | null): string | null {
+  if (!url) {
+    return null;
+  }
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    return null;
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+  let videoId: string | null = null;
+
+  if (hostname === 'youtu.be') {
+    videoId = parsedUrl.pathname.split('/').filter((segment) => segment.length > 0)[0] ?? null;
+  } else if (hostname === 'youtube.com' || hostname === 'www.youtube.com') {
+    if (parsedUrl.pathname === '/watch') {
+      videoId = parsedUrl.searchParams.get('v');
+    } else if (parsedUrl.pathname.startsWith('/embed/')) {
+      videoId = parsedUrl.pathname.split('/')[2] ?? null;
+    } else if (parsedUrl.pathname.startsWith('/shorts/')) {
+      videoId = parsedUrl.pathname.split('/')[2] ?? null;
+    }
+  }
+
+  if (!videoId) {
+    return null;
+  }
+
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }

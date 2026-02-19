@@ -148,3 +148,80 @@ Brief continuity notes to recover context between terminal sessions.
     - added explicit tasks for the catalog split/json migration
     - reordered and expanded FPN-008 tasks for Angular API integration (`signals` + `shareReplay` strategy)
   - Synced local `main` with `origin/main` after merge.
+
+## 2026-02-18
+
+- What changed:
+  - Completed ticket `FPN-008` end-to-end (Angular integration with real API) and closed all remaining backlog subtasks.
+  - Replaced mock data flow in UI with real API consumption:
+    - homepage connected to `/api/news`
+    - section page connected by `slug` with typed filters (`source`, `q`, `page`, `limit`)
+    - article detail connected to aggregated dataset with fallback fetch by `id` when missing
+  - Implemented typed frontend data layer:
+    - `SourcesService` and `NewsService` with strict adapters and runtime validation
+    - request cache with `shareReplay` and explicit TTLs
+    - cache invalidation APIs (`clear`, `invalidateBySection`, `forceRefresh`)
+    - extracted service/store interfaces into dedicated interface files
+  - Added state stores with Angular signals:
+    - `SourcesStore`: `loading`, `data`, `error`, reusable initial load + refresh
+    - `NewsStore`: `loading`, `data`, `error`, `warnings`, `lastUpdated`, manual refresh
+  - Defined and integrated UI state matrix (`loading`, `empty`, `error total`, `error parcial`) for home/section/detail.
+  - Integrated global HTTP error handling:
+    - added typed `AppHttpError`
+    - added interceptor and shared user-facing error mapping utilities
+    - aligned store/article fallback error behavior
+  - Improved section UX and data behavior:
+    - removed hard API max limit and raised frontend feed request limit
+    - added progressive reveal in section lists (`24` initial + `12` per click)
+    - updated CTA styling/text (`Ver m�s noticias`) with eye icon and spacing adjustments
+  - Improved image resilience and feed compatibility:
+    - image proxy endpoint `api/image`
+    - fallback image handling in cards/content
+    - parser support to derive YouTube thumbnails from video links
+  - Removed legacy mock dependencies after API integration:
+    - removed `MockNewsService` and unused news mocks
+    - moved locked preview patterns to constants
+    - removed `footer.mock` and inlined static footer data in component
+  - Expanded and stabilized test coverage:
+    - service/store unit tests for cache hit, cache miss, TTL, invalidation, `forceRefresh`
+    - store state tests for `loading`/`error`/`success`
+    - integration tests for home/section/article pages with mocked HTTP API responses
+    - interceptor/error-mapper tests
+  - Documentation and backlog alignment:
+    - created `docs/cache-and-ui-states.md` (English) with cache strategy + UI state criteria
+    - updated `BACKLOG.md` to mark `FPN-008` completed and backfilled missing completed improvements
+  - Created multiple atomic commits across feature, refactor, test, and docs scopes, all tied to `FPN-008`.
+
+## 2026-02-19
+
+- What changed:
+  - Added `.nvmrc` with Node `22` to standardize local runtime for `vercel dev` on Windows.
+  - Added `engines.node` in `package.json` as `>=22 <23` to align the project with Node 22 LTS.
+  - Renamed Angular workspace project identifier from `angular-project-base` to `front-page-news` in `angular.json`.
+  - Updated `serve` build targets to reference `front-page-news`.
+  - Renamed package name in `package.json` to `front-page-news`.
+  - Hardened quality gates to prevent false greens:
+    - updated `lint` script to run `lint:eslint` + `typecheck`
+    - added `typecheck` script for both `tsconfig.app.json` and `tsconfig.api.json`
+    - expanded Angular ESLint scope to include `api/**/*.ts`
+    - added ESLint guard for `src/**/*.ts` to forbid `node:*` imports (excluding `*.spec.ts`)
+  - Hardened `api/image` against SSRF and large payload memory risk:
+    - moved server-only guards/helpers to `api/lib` (`ssrf-guard.ts`, `response-body-limit.ts`)
+    - blocked credentialed URLs and non-HTTP protocols
+    - switched image fetch to manual redirect handling with safety validation at each redirect hop
+    - switched image proxy response handling to streaming with hard byte limit (no full in-memory buffering)
+    - updated API/spec imports to match the new server helper location
+    - added/updated coverage for SSRF guard and response body byte-limit helpers
+  - Hardened image-proxy response behavior and timeout handling:
+    - validate oversized upstream `content-length` before sending success headers and return clean `413`
+    - added upstream timeout/cancellation with `AbortController` (including redirects and client disconnect)
+    - mapped upstream timeout to explicit `504` response
+    - added regression tests for oversized-header and timeout-abort scenarios
+  - Reduced API duplication in RSS catalog and JSON response handling:
+    - extracted shared catalog parser/validator to `api/lib/rss-catalog.ts`
+    - extracted shared JSON response helper with cache policy to `api/lib/send-json.ts`
+    - refactored `api/news.ts` and `api/sources.ts` to reuse shared helpers
+  - Created and pushed PR `#7` with the full `FPN-008` hardening/refactor batch.
+- Verification performed:
+  - `pnpm run lint` (pass)
+  - `pnpm test` (pass)

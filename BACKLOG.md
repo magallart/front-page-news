@@ -24,7 +24,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-005](#fpn-005) | Pagina de noticia (mock first) | Implementar detalle parcial de noticia con CTA a fuente original. | [✔️] |
 | [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
-| [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [ ] |
+| [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
 | [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
@@ -210,20 +210,33 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Estados `loading`, `empty`, `error total`, `error parcial` implementados.
   - Reintento manual disponible.
 - Tasks:
-  - [ ] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
-  - [ ] Implementar `NewsService` para `/api/news` con constructor de query params tipado.
-  - [ ] Implementar cache/deduplicacion en servicios HTTP con `shareReplay` por query (`section/source/q/page/limit`).
-  - [ ] Definir TTL de cache en cliente y API de invalidacion (`clear`, `invalidateBySection`, `forceRefresh`).
-  - [ ] Crear store de fuentes con `signals` (`loading`, `data`, `error`) y carga inicial reutilizable.
-  - [ ] Crear store de noticias con `signals` (`loading`, `data`, `error`, `warnings`, `lastUpdated`) y refresco manual.
-  - [ ] Conectar portada a datos reales desde `/api/news` manteniendo estructura editorial actual.
-  - [ ] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
-  - [ ] Conectar pagina de detalle por `id` sobre dataset agregado y definir fallback si no existe.
-  - [ ] Mostrar banners de warning parcial cuando `warnings[]` no este vacio.
-  - [ ] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
-  - [ ] Retirar dependencias de `MockNewsService` en paginas conectadas a API.
-  - [ ] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
-  - [ ] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
+  - [✔️] Implementar `SourcesService` para `/api/sources` con tipos estrictos y adaptadores de respuesta.
+  - [✔️] Implementar `NewsService` para `/api/news` con constructor de query params tipado.
+  - [✔️] Implementar adaptadores tipados API->UI (`Article`/`Source` -> modelos de componentes) con fallback seguro para campos nulos.
+  - [✔️] Implementar cache/deduplicacion en servicios HTTP con `shareReplay` por query (`section/source/q/page/limit`).
+  - [✔️] Definir TTL de cache en cliente y API de invalidacion (`clear`, `invalidateBySection`, `forceRefresh`) con valores y comportamiento por defecto.
+  - [✔️] Crear store de fuentes con `signals` (`loading`, `data`, `error`) y carga inicial reutilizable.
+  - [✔️] Crear store de noticias con `signals` (`loading`, `data`, `error`, `warnings`, `lastUpdated`) y refresco manual.
+  - [✔️] Definir matriz de estados UI (`loading`, `empty`, `error total`, `error parcial`) por portada, seccion y detalle.
+    - [✔️] Conectar portada a datos reales desde `/api/news` manteniendo estructura editorial actual.
+    - [✔️] Conectar pagina de seccion por `slug` con filtros (`source`, `q`, `page`, `limit`) y estado vacio.
+    - [✔️] Eliminar limite duro en API y ampliar limite cliente para capturar el maximo de noticias por feed.
+    - [✔️] Implementar revelado progresivo en seccion (`24` iniciales + `12` por clic) con CTA `Ver más noticias`.
+    - [✔️] Conectar pagina de detalle por `id` sobre dataset agregado y definir fallback si no existe.
+    - [✔️] Mejorar robustez de imagenes: fallback local, thumbnails de YouTube y proxy de imagen remota por API.
+    - [✔️] Corregir copy en castellano (tildes y textos visibles clave) tras la integracion.
+    - [✔️] Añadir interceptor HTTP para errores transversales, trazabilidad y mensajes de usuario coherentes.
+    - [✔️] Retirar dependencias de `MockNewsService` en paginas y layout afectados por la integracion (incluyendo navbar/ticker si aplica).
+    - [✔️] Eliminar mocks legacy restantes (`footer/mock-news/section/ticker`) e inyectar datos estaticos directamente en layout.
+    - [✔️] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
+  - [✔️] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
+  - [✔️] Documentar estrategia de cache cliente (TTL + invalidacion) y criterios de estados de error/parcial para mantenimiento futuro.
+  - [✔️] Corregir respuesta inconsistente del proxy de imagen cuando `content-length` excede limite: devolver `413` antes de emitir headers `200`.
+  - [✔️] Añadir timeout/cancelacion explicita en fetch de proxy de imagen (incluyendo redirects) con `AbortController` y respuesta `504` en timeout.
+  - [✔️] Extraer utilidades compartidas de API para reducir duplicacion:
+    - parse/validacion de catalogo RSS en `api/lib/rss-catalog.ts`
+    - helper de respuesta JSON/cache en `api/lib/send-json.ts`
+    - reutilizacion desde `api/news.ts` y `api/sources.ts`
 
 <a id="fpn-009"></a>
 

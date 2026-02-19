@@ -91,6 +91,80 @@ describe('rss-parser', () => {
     expect(rssResult.items[0]?.imageUrl).toBe('https://example.com/image-single-quote.jpg');
   });
 
+  it('prioritizes media:thumbnail over media:content video', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-4</guid>
+            <title>Titular con video y thumbnail</title>
+            <link>https://example.com/rss-4</link>
+            <media:content url="https://cdn.example.com/video.mp4" type="video/mp4" />
+            <media:thumbnail url="https://cdn.example.com/thumbnail.jpg" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/thumbnail.jpg');
+  });
+
+  it('accepts media:thumbnail urls without image extension', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-4b</guid>
+            <title>Titular con thumbnail sin extension</title>
+            <link>https://example.com/rss-4b</link>
+            <media:thumbnail url="https://cdn.example.com/thumb?id=abc123&size=640" />
+            <media:content url="https://cdn.example.com/video.mp4" type="video/mp4" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/thumb?id=abc123&size=640');
+  });
+
+  it('maps youtube urls to a thumbnail when no image is available', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-5</guid>
+            <title>Titular con youtube</title>
+            <link>https://example.com/rss-5</link>
+            <media:content url="https://www.youtube.com/watch?v=7x9iAXgsuEY" type="video/mp4" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBe('https://i.ytimg.com/vi/7x9iAXgsuEY/hqdefault.jpg');
+  });
+
+  it('returns null image when feed only provides non-image media without thumbnail', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-6</guid>
+            <title>Titular sin imagen</title>
+            <link>https://example.com/rss-6</link>
+            <media:content url="https://cdn.example.com/video.mp4" type="video/mp4" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBeNull();
+  });
+
   it('strips CDATA wrappers even when surrounded by whitespace/newlines', () => {
     const source = makeSource();
     const xml = `<?xml version="1.0"?>

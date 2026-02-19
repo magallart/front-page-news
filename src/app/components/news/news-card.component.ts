@@ -48,6 +48,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
               [alt]="article().title"
               class="aspect-[16/9] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
               loading="lazy"
+              (error)="onImageError($event)"
             />
           } @else {
             <div class="flex aspect-[16/9] items-center justify-center text-sm text-muted-foreground">Imagen no disponible</div>
@@ -72,4 +73,14 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 })
 export class NewsCardComponent {
   readonly article = input.required<NewsItem>();
+  private readonly fallbackImageUrl = '/images/no-image.jpg';
+
+  protected onImageError(event: Event): void {
+    const imageElement = event.target as HTMLImageElement | null;
+    if (!imageElement || imageElement.src.endsWith(this.fallbackImageUrl)) {
+      return;
+    }
+
+    imageElement.src = this.fallbackImageUrl;
+  }
 }

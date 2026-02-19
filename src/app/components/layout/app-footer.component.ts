@@ -1,17 +1,50 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import {
-  FOOTER_INTEREST_LINKS,
-  FOOTER_LEGAL_LINKS,
-  FOOTER_NEWSPAPER_LINKS,
-  FOOTER_SECTION_LINKS,
-  FOOTER_SERVICE_LINKS,
-  FOOTER_SOCIAL_LINKS,
-} from '../../mocks/footer.mock';
 import { SocialIconComponent } from '../icons/social-icon.component';
 
 import { PageContainerComponent } from './page-container.component';
+
+const FOOTER_SOCIAL_LINKS = [
+  { label: 'Facebook', icon: 'facebook', url: 'https://facebook.com' },
+  { label: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
+  { label: 'X', icon: 'x', url: 'https://x.com' },
+] as const;
+
+const FOOTER_SECTION_LINKS = [
+  { label: 'Actualidad', href: '/seccion/actualidad' },
+  { label: 'Economía', href: '/seccion/economia' },
+  { label: 'Deportes', href: '/seccion/deportes' },
+  { label: 'Tecnología', href: '/seccion/tecnologia' },
+] as const;
+
+const FOOTER_SERVICE_LINKS = [
+  { label: 'Hemeroteca', url: 'https://example.com/hemeroteca' },
+  { label: 'Podcasts', url: 'https://example.com/podcasts' },
+  { label: 'Newsletter', url: 'https://example.com/newsletter' },
+  { label: 'Anúnciate', url: 'https://example.com/anunciate' },
+] as const;
+
+const FOOTER_LEGAL_LINKS = [
+  { label: 'Aviso legal', href: '/aviso-legal' },
+  { label: 'Privacidad', href: '/privacidad' },
+  { label: 'Cookies', href: '/cookies' },
+] as const;
+
+const FOOTER_INTEREST_LINKS = [
+  { label: 'Última hora', href: '/', fragment: 'breaking-news' },
+  { label: 'Lo más leído', href: '/', fragment: 'most-read' },
+  { label: 'Actualidad', href: '/', fragment: 'current-news' },
+] as const;
+
+const FOOTER_NEWSPAPER_LINKS = [
+  { label: 'El País', url: 'https://elpais.com' },
+  { label: 'El Mundo', url: 'https://www.elmundo.es' },
+  { label: 'ABC', url: 'https://www.abc.es' },
+  { label: 'La Vanguardia', url: 'https://www.lavanguardia.com' },
+  { label: '20 Minutos', url: 'https://www.20minutos.es' },
+  { label: 'elDiario.es', url: 'https://www.eldiario.es' },
+] as const;
 
 @Component({
   selector: 'app-footer',
@@ -32,7 +65,8 @@ import { PageContainerComponent } from './page-container.component';
               class="mx-auto h-10 w-auto object-contain sm:h-12 md:mx-0"
             />
             <p class="max-w-xs text-sm leading-7 text-secondary-foreground/80">
-              Las ultimas noticias de distintos periodicos, reunidas en un solo lugar. Informate en minutos y profundiza solo en lo que de verdad te interesa.
+              Las últimas noticias de distintos periódicos, reunidas en un solo lugar. Infórmate en minutos y
+              profundiza solo en lo que de verdad te interesa.
             </p>
             <ul
               class="flex items-center justify-center gap-3 text-xs uppercase tracking-wider text-secondary-foreground/80 md:justify-start"
@@ -88,7 +122,7 @@ import { PageContainerComponent } from './page-container.component';
           </section>
 
           <section class="w-full max-w-xs text-center md:max-w-none md:justify-self-center md:text-center">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Enlaces de interes</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Enlaces de interés</h2>
             <ul class="mt-5 space-y-3 text-sm">
               @for (item of interestLinks; track item.label) {
                 <li>
@@ -105,7 +139,7 @@ import { PageContainerComponent } from './page-container.component';
           </section>
 
           <section class="w-full max-w-xs text-center md:max-w-none md:justify-self-center md:text-center">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Periodicos</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Periódicos</h2>
             <ul class="mt-5 space-y-3 text-sm">
               @for (item of newspaperLinks; track item.label) {
                 <li>

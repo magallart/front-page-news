@@ -14,13 +14,13 @@ describe('SectionBlockComponent', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SectionBlockComponent);
-    fixture.componentRef.setInput('title', 'Economia');
+    fixture.componentRef.setInput('title', 'Economía');
     fixture.componentRef.setInput('sectionSlug', 'economia');
     fixture.componentRef.setInput('articles', MOCK_ARTICLES);
     fixture.detectChanges();
 
     const heading = fixture.nativeElement.querySelector('h2') as HTMLElement;
-    expect(heading.textContent?.trim()).toBe('Economia');
+    expect(heading.textContent?.trim()).toBe('Economía');
     expect(heading.className).toContain('font-editorial-title');
 
     const link = fixture.nativeElement.querySelector('a[href="/seccion/economia"]') as HTMLAnchorElement;

@@ -66,6 +66,30 @@
     {
       "files": ["*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended"]
+    },
+    {
+      "files": ["src/**/*.ts"],
+      "excludedFiles": ["src/**/*.spec.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "rxjs",
+                "importNames": ["AsyncSubject", "BehaviorSubject", "ReplaySubject", "Subject"],
+                "message": "Use Angular signals for state instead of RxJS Subjects."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["node:*"],
+                "message": "Node built-in modules are not allowed in browser-side src code. Move server code to api/."
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

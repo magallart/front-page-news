@@ -1,6 +1,9 @@
 {
-  "name": "angular-project-base",
+  "name": "front-page-news",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=22 <23"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +12,9 @@
     "test": "ng test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "ng lint",
+    "lint": "pnpm run lint:eslint && pnpm run typecheck",
+    "lint:eslint": "ng lint",
+    "typecheck": "pnpm exec tsc -p tsconfig.app.json --noEmit && pnpm exec tsc -p tsconfig.api.json --noEmit",
     "rss:check": "node scripts/rss-health-check.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
