@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
+import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
@@ -97,7 +98,7 @@ export class AppNavbarComponent {
   );
 
   constructor() {
-    this.newsStore.load({ page: 1, limit: this.tickerLimit });
+    this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
     this.initResponsiveMode();
     this.initStickyOnScroll();
     void this.loadCityAndWeather();
