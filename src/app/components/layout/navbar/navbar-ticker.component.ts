@@ -19,7 +19,7 @@ import type { TickerHeadline } from '../../../../interfaces/ticker-headline.inte
       .ticker-marquee {
         display: flex;
         width: max-content;
-        animation: ticker-ltr 78s linear infinite;
+        animation: ticker-rtl 78s linear infinite;
       }
 
       .ticker-window:hover .ticker-marquee,
@@ -51,12 +51,12 @@ import type { TickerHeadline } from '../../../../interfaces/ticker-headline.inte
         white-space: nowrap;
       }
 
-      @keyframes ticker-ltr {
+      @keyframes ticker-rtl {
         from {
-          transform: translateX(-50%);
+          transform: translateX(0);
         }
         to {
-          transform: translateX(0);
+          transform: translateX(-50%);
         }
       }
     `,
