@@ -10,14 +10,22 @@ import { MostReadNewsComponent } from '../../components/news/most-read-news.comp
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
+import { SourcesStore } from '../../stores/sources.store';
 
 import { HomePageComponent } from './home-page.component';
 
 describe('HomePageComponent', () => {
   it('integrates with /api/news and renders mixed rows from real store data', async () => {
+    const sourcesStoreMock = createSourcesStoreMock();
+
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -45,6 +53,7 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-source-directory')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(2);
 
     httpController.verify();
@@ -52,10 +61,15 @@ describe('HomePageComponent', () => {
 
   it('renders top hero+breaking and mixed rows with most-read', async () => {
     const newsStoreMock = createNewsStoreMock();
+    const sourcesStoreMock = createSourcesStoreMock();
 
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -65,6 +79,8 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-source-directory')).toBeTruthy();
+    expect(sourcesStoreMock.loadInitial).toHaveBeenCalledTimes(1);
 
     const sectionBlocks = fixture.nativeElement.querySelectorAll('app-section-block');
     expect(sectionBlocks.length).toBe(5);
@@ -78,10 +94,15 @@ describe('HomePageComponent', () => {
       data: [],
       error: 'Request failed',
     });
+    const sourcesStoreMock = createSourcesStoreMock();
 
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -104,10 +125,15 @@ describe('HomePageComponent', () => {
         createArticle('c-1', 'cultura', { sourceName: 'Fuente C', publishedAt: toIso(now, 7) }),
       ],
     });
+    const sourcesStoreMock = createSourcesStoreMock();
 
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -133,10 +159,15 @@ describe('HomePageComponent', () => {
         createArticle('d-1', 'deportes', { sourceName: 'Fuente D', publishedAt: toIso(now, 6) }),
       ],
     });
+    const sourcesStoreMock = createSourcesStoreMock();
 
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(HomePageComponent);
@@ -166,6 +197,24 @@ function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; err
     error: errorSignal.asReadonly(),
     warnings: signal([]).asReadonly(),
     load: vi.fn(),
+  };
+}
+
+function createSourcesStoreMock() {
+  return {
+    data: signal({
+      sources: [
+        {
+          id: 'source-a',
+          name: 'Periodico A',
+          baseUrl: 'https://periodico-a.test',
+          feedUrl: 'https://periodico-a.test/rss',
+          sectionSlugs: ['actualidad'],
+        },
+      ],
+      sections: [],
+    }).asReadonly(),
+    loadInitial: vi.fn(),
   };
 }
 

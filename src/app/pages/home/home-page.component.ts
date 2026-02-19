@@ -6,9 +6,11 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
+import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
+import { SourcesStore } from '../../stores/sources.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { selectFeaturedNews } from '../../utils/featured-news-selection';
 import { chunkNewsItems, selectHomeMixedNews } from '../../utils/home-mixed-selection';
@@ -27,6 +29,7 @@ import type { OnInit } from '@angular/core';
     BreakingNewsComponent,
     MostReadNewsComponent,
     SectionBlockComponent,
+    SourceDirectoryComponent,
   ],
   template: `
     <app-page-container>
@@ -68,8 +71,9 @@ import type { OnInit } from '@angular/core';
                 }
               </div>
 
-              <div class="lg:pl-5" id="most-read">
+              <div class="space-y-10 lg:pl-5" id="most-read">
                 <app-most-read-news [items]="mostReadNews()" />
+                <app-source-directory [items]="sourceDirectoryItems()" />
               </div>
             </div>
           </section>
@@ -80,6 +84,7 @@ import type { OnInit } from '@angular/core';
 })
 export class HomePageComponent implements OnInit {
   private readonly newsStore = inject(NewsStore);
+  private readonly sourcesStore = inject(SourcesStore);
   protected readonly uiViewState = UI_VIEW_STATE;
 
   private readonly newsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data()));
@@ -97,9 +102,18 @@ export class HomePageComponent implements OnInit {
   protected readonly breakingNews = computed(() => this.getNewsBySection('actualidad').slice(0, 6));
   protected readonly mixedNewsRows = computed(() => chunkNewsItems(selectHomeMixedNews(this.newsItems(), 15), 3).slice(0, 5));
   protected readonly mostReadNews = computed(() => rankMostReadNews(this.newsItems()).slice(0, 10));
+  protected readonly sourceDirectoryItems = computed(() =>
+    (this.sourcesStore.data()?.sources ?? []).map((source) => ({
+      id: source.id,
+      name: source.name,
+      url: source.baseUrl,
+      logoUrl: `/images/sources/${source.id}.png`,
+    })),
+  );
 
   ngOnInit(): void {
     this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
+    this.sourcesStore.loadInitial();
   }
 
   private getNewsBySection(sectionSlug: string) {
