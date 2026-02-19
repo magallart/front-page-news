@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isPublicHttpUrl, isSafePublicHost } from './ssrf-guard';
+import { isPublicHttpUrl, isSafePublicHost } from '../../api/lib/ssrf-guard';
 
 describe('ssrf-guard', () => {
   it('accepts public IPv4 hosts', async () => {

@@ -1,10 +1,15 @@
+import { once } from 'node:events';
+
+import { PayloadTooLargeError, streamResponseBodyWithLimit } from './lib/response-body-limit';
+import { isPublicHttpUrl } from './lib/ssrf-guard';
+
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { isPublicHttpUrl } from '../src/lib/ssrf-guard';
 
 const CACHE_CONTROL_SUCCESS = 'public, s-maxage=600, stale-while-revalidate=86400';
 const CACHE_CONTROL_ERROR = 'no-store, max-age=0';
 const SUPPORTED_PROTOCOLS = new Set(['http:', 'https:']);
 const MAX_REDIRECTS = 5;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
 interface ApiRequest extends IncomingMessage {
@@ -54,11 +59,45 @@ export default async function handler(request: ApiRequest, response: ServerRespo
     return;
   }
 
-  const body = Buffer.from(await upstream.arrayBuffer());
   response.statusCode = 200;
   response.setHeader('content-type', contentType);
   response.setHeader('cache-control', CACHE_CONTROL_SUCCESS);
-  response.end(body);
+
+  const contentLengthHeader = upstream.headers.get('content-length');
+  const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : Number.NaN;
+  if (Number.isFinite(contentLength)) {
+    response.setHeader('content-length', contentLength);
+  }
+
+  try {
+    await streamResponseBodyWithLimit(upstream, MAX_IMAGE_BYTES, async (chunk) => {
+      if (response.write(chunk)) {
+        return;
+      }
+
+      await once(response, 'drain');
+    });
+
+    response.end();
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      if (response.headersSent) {
+        response.destroy(error);
+        return;
+      }
+
+      sendError(response, 413, 'Remote image too large');
+      return;
+    }
+
+    if (response.headersSent) {
+      response.destroy(error as Error);
+      return;
+    }
+
+    sendError(response, 502, 'Unable to read remote image');
+    return;
+  }
 }
 
 function getImageUrl(requestUrl: string | undefined): string | null {
