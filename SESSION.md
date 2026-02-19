@@ -197,3 +197,8 @@ Brief continuity notes to recover context between terminal sessions.
 - What changed:
   - Added `.nvmrc` with Node `22` to standardize local runtime for `vercel dev` on Windows.
   - Added `engines.node` in `package.json` as `>=22 <23` to align the project with Node 22 LTS.
+  - Hardened `api/image` against SSRF:
+    - added DNS/IP safety guard (`src/lib/ssrf-guard.ts`) to reject local/private/reserved targets
+    - blocked credentialed URLs and non-HTTP protocols
+    - switched image fetch to manual redirect handling with safety validation at each redirect hop
+    - added unit coverage for SSRF guard scenarios (`src/lib/ssrf-guard.spec.ts`)
