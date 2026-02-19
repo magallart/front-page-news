@@ -110,6 +110,25 @@ describe('rss-parser', () => {
     expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/thumbnail.jpg');
   });
 
+  it('accepts media:thumbnail urls without image extension', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-4b</guid>
+            <title>Titular con thumbnail sin extension</title>
+            <link>https://example.com/rss-4b</link>
+            <media:thumbnail url="https://cdn.example.com/thumb?id=abc123&size=640" />
+            <media:content url="https://cdn.example.com/video.mp4" type="video/mp4" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/thumb?id=abc123&size=640');
+  });
+
   it('maps youtube urls to a thumbnail when no image is available', () => {
     const source = makeSource();
     const xml = `<?xml version="1.0"?>

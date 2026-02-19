@@ -84,7 +84,7 @@ function extractImageUrl(block: string): string | null {
   const thumbnailTags = block.match(/<media:thumbnail\b[^>]*>/gi) ?? [];
   for (const tag of thumbnailTags) {
     const thumbnailUrl = extractAttribute(tag, 'url');
-    if (isImageUrl(thumbnailUrl)) {
+    if (isHttpUrl(thumbnailUrl)) {
       return thumbnailUrl;
     }
   }
@@ -198,6 +198,19 @@ function isImageMediaCandidate(url: string | null, mediaType: string | null): ur
 }
 
 function isImageUrl(url: string | null): url is string {
+  if (!isHttpUrl(url)) {
+    return false;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    return /\.(avif|gif|jpe?g|png|webp|bmp|svg)$/i.test(parsedUrl.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function isHttpUrl(url: string | null): url is string {
   if (!url) {
     return false;
   }
@@ -208,7 +221,7 @@ function isImageUrl(url: string | null): url is string {
       return false;
     }
 
-    return /\.(avif|gif|jpe?g|png|webp|bmp|svg)$/i.test(parsedUrl.pathname);
+    return true;
   } catch {
     return false;
   }
