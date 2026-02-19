@@ -15,6 +15,7 @@ import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { selectFeaturedNews } from '../../utils/featured-news-selection';
 import { chunkNewsItems, selectHomeMixedNews } from '../../utils/home-mixed-selection';
 import { rankMostReadNews } from '../../utils/most-read-ranking';
+import { resolveSourceHomepage } from '../../utils/source-homepage';
 import { resolveHomeUiState } from '../../utils/ui-state-matrix';
 
 import type { OnInit } from '@angular/core';
@@ -106,7 +107,7 @@ export class HomePageComponent implements OnInit {
     (this.sourcesStore.data()?.sources ?? []).map((source) => ({
       id: source.id,
       name: source.name,
-      url: source.baseUrl,
+      url: resolveSourceHomepage(source),
       logoUrl: `/images/sources/${source.id}.png`,
     })),
   );

@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
+import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
@@ -184,6 +185,39 @@ describe('HomePageComponent', () => {
     expect(sections.has('deportes')).toBe(true);
     expect(sourceACount).toBe(2);
   });
+
+  it('uses publisher homepages for source directory links instead of rss hosts', async () => {
+    const newsStoreMock = createNewsStoreMock();
+    const sourcesStoreMock = createSourcesStoreMock({
+      sources: [
+        {
+          id: 'source-expansion',
+          name: 'Expansion',
+          baseUrl: 'https://e01-expansion.uecdn.es',
+          feedUrl: 'https://e01-expansion.uecdn.es/rss/economia.xml',
+          sectionSlugs: ['economia'],
+        },
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const sourceDirectory = fixture.debugElement.query(By.directive(SourceDirectoryComponent))
+      .componentInstance as SourceDirectoryComponent;
+    const [item] = sourceDirectory.items();
+
+    expect(item?.url).toBe('https://www.expansion.com');
+  });
 });
 
 function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; error: string | null; loading: boolean }>) {
@@ -200,18 +234,30 @@ function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; err
   };
 }
 
-function createSourcesStoreMock() {
+function createSourcesStoreMock(
+  overrides?: Partial<{
+    sources: readonly {
+      id: string;
+      name: string;
+      baseUrl: string;
+      feedUrl: string;
+      sectionSlugs: readonly string[];
+    }[];
+  }>,
+) {
   return {
     data: signal({
-      sources: [
-        {
-          id: 'source-a',
-          name: 'Periodico A',
-          baseUrl: 'https://periodico-a.test',
-          feedUrl: 'https://periodico-a.test/rss',
-          sectionSlugs: ['actualidad'],
-        },
-      ],
+      sources:
+        overrides?.sources ??
+        [
+          {
+            id: 'source-a',
+            name: 'Periodico A',
+            baseUrl: 'https://periodico-a.test',
+            feedUrl: 'https://periodico-a.test/rss',
+            sectionSlugs: ['actualidad'],
+          },
+        ],
       sections: [],
     }).asReadonly(),
     loadInitial: vi.fn(),
