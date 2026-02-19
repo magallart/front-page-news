@@ -10,6 +10,7 @@ import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { rankMostReadNews } from '../../utils/most-read-ranking';
 import { resolveHomeUiState } from '../../utils/ui-state-matrix';
 
 import type { OnInit } from '@angular/core';
@@ -101,7 +102,7 @@ export class HomePageComponent implements OnInit {
   protected readonly breakingNews = computed(() => this.getNewsBySection('actualidad').slice(0, 6));
   protected readonly economyNews = computed(() => this.getNewsBySection('economia').slice(0, 3));
   protected readonly cultureNews = computed(() => this.getNewsBySection('cultura').slice(0, 3));
-  protected readonly mostReadNews = computed(() => this.newsItems().slice(0, 10));
+  protected readonly mostReadNews = computed(() => rankMostReadNews(this.newsItems()).slice(0, 10));
 
   ngOnInit(): void {
     this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });

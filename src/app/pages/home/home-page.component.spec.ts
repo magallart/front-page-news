@@ -2,9 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
@@ -90,6 +92,36 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-error-state')).toBeTruthy();
     expect(fixture.nativeElement.textContent as string).toContain('No se ha podido cargar la portada');
   });
+
+  it('ranks "most read" with recency and source repetition and caps items per source', async () => {
+    const now = Date.now();
+    const newsStoreMock = createNewsStoreMock({
+      data: [
+        createArticle('a-1', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 5) }),
+        createArticle('a-2', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 10) }),
+        createArticle('a-3', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 15) }),
+        createArticle('a-4', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 20) }),
+        createArticle('a-5', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 25) }),
+        createArticle('b-1', 'economia', { sourceName: 'Fuente B', publishedAt: toIso(now, 2) }),
+        createArticle('c-1', 'cultura', { sourceName: 'Fuente C', publishedAt: toIso(now, 7) }),
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const mostRead = fixture.debugElement.query(By.directive(MostReadNewsComponent)).componentInstance as MostReadNewsComponent;
+    const items = mostRead.items();
+    const sourceACount = items.filter((item) => item.source === 'Fuente A').length;
+
+    expect(sourceACount).toBe(3);
+    expect(items[0]?.source).toBe('Fuente A');
+  });
 });
 
 function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; error: string | null; loading: boolean }>) {
@@ -115,7 +147,11 @@ function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; err
   };
 }
 
-function createArticle(id: string, sectionSlug: string) {
+function createArticle(
+  id: string,
+  sectionSlug: string,
+  overrides?: Partial<{ sourceName: string; publishedAt: string | null }>,
+) {
   return {
     id,
     externalId: null,
@@ -125,9 +161,13 @@ function createArticle(id: string, sectionSlug: string) {
     canonicalUrl: null,
     imageUrl: 'https://example.com/image.jpg',
     sourceId: 'source-example',
-    sourceName: 'Example',
+    sourceName: overrides?.sourceName ?? 'Example',
     sectionSlug,
     author: null,
-    publishedAt: null,
+    publishedAt: overrides?.publishedAt ?? null,
   } as const;
+}
+
+function toIso(now: number, minutesAgo: number): string {
+  return new Date(now - minutesAgo * 60 * 1000).toISOString();
 }
