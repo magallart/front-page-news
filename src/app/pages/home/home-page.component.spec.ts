@@ -14,7 +14,7 @@ import { NewsStore } from '../../stores/news.store';
 import { HomePageComponent } from './home-page.component';
 
 describe('HomePageComponent', () => {
-  it('integrates with /api/news and renders editorial blocks from real store data', async () => {
+  it('integrates with /api/news and renders mixed rows from real store data', async () => {
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
@@ -45,12 +45,12 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
-    expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(2);
 
     httpController.verify();
   });
 
-  it('renders top hero+breaking and lower sections with most-read', async () => {
+  it('renders top hero+breaking and mixed rows with most-read', async () => {
     const newsStoreMock = createNewsStoreMock();
 
     await TestBed.configureTestingModule({
@@ -62,18 +62,15 @@ describe('HomePageComponent', () => {
     fixture.detectChanges();
 
     expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
-
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
 
     const sectionBlocks = fixture.nativeElement.querySelectorAll('app-section-block');
-    expect(sectionBlocks.length).toBe(3);
+    expect(sectionBlocks.length).toBe(5);
 
-    const sectionText = fixture.nativeElement.textContent as string;
-    expect(sectionText).toContain('Actualidad');
-    expect(sectionText).toContain('Economía');
-    expect(sectionText).toContain('Cultura');
+    const pageText = fixture.nativeElement.textContent as string;
+    expect(pageText).not.toContain('Ver más');
   });
 
   it('renders total error state when api fails and there is no data', async () => {
@@ -159,16 +156,7 @@ describe('HomePageComponent', () => {
 });
 
 function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; error: string | null; loading: boolean }>) {
-  const dataSignal = signal(
-    (overrides?.data as readonly ReturnType<typeof createArticle>[]) ?? [
-      createArticle('news-1', 'actualidad'),
-      createArticle('news-2', 'actualidad'),
-      createArticle('news-3', 'economia'),
-      createArticle('news-4', 'cultura'),
-      createArticle('news-5', 'economia'),
-      createArticle('news-6', 'actualidad'),
-    ],
-  );
+  const dataSignal = signal((overrides?.data as readonly ReturnType<typeof createArticle>[]) ?? createHomeDataset());
   const loadingSignal = signal(overrides?.loading ?? false);
   const errorSignal = signal<string | null>(overrides?.error ?? null);
 
@@ -179,6 +167,30 @@ function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; err
     warnings: signal([]).asReadonly(),
     load: vi.fn(),
   };
+}
+
+function createHomeDataset() {
+  const now = Date.now();
+  return [
+    createArticle('n-1', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 1) }),
+    createArticle('n-2', 'actualidad', { sourceName: 'Fuente B', publishedAt: toIso(now, 2) }),
+    createArticle('n-3', 'economia', { sourceName: 'Fuente C', publishedAt: toIso(now, 3) }),
+    createArticle('n-4', 'economia', { sourceName: 'Fuente D', publishedAt: toIso(now, 4) }),
+    createArticle('n-5', 'cultura', { sourceName: 'Fuente E', publishedAt: toIso(now, 5) }),
+    createArticle('n-6', 'cultura', { sourceName: 'Fuente F', publishedAt: toIso(now, 6) }),
+    createArticle('n-7', 'deportes', { sourceName: 'Fuente G', publishedAt: toIso(now, 7) }),
+    createArticle('n-8', 'deportes', { sourceName: 'Fuente H', publishedAt: toIso(now, 8) }),
+    createArticle('n-9', 'tecnologia', { sourceName: 'Fuente I', publishedAt: toIso(now, 9) }),
+    createArticle('n-10', 'tecnologia', { sourceName: 'Fuente J', publishedAt: toIso(now, 10) }),
+    createArticle('n-11', 'opinion', { sourceName: 'Fuente K', publishedAt: toIso(now, 11) }),
+    createArticle('n-12', 'opinion', { sourceName: 'Fuente L', publishedAt: toIso(now, 12) }),
+    createArticle('n-13', 'internacional', { sourceName: 'Fuente A', publishedAt: toIso(now, 13) }),
+    createArticle('n-14', 'internacional', { sourceName: 'Fuente B', publishedAt: toIso(now, 14) }),
+    createArticle('n-15', 'sucesos', { sourceName: 'Fuente C', publishedAt: toIso(now, 15) }),
+    createArticle('n-16', 'sucesos', { sourceName: 'Fuente D', publishedAt: toIso(now, 16) }),
+    createArticle('n-17', 'salud', { sourceName: 'Fuente E', publishedAt: toIso(now, 17) }),
+    createArticle('n-18', 'salud', { sourceName: 'Fuente F', publishedAt: toIso(now, 18) }),
+  ] as const;
 }
 
 function createArticle(

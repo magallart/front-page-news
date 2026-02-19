@@ -11,6 +11,7 @@ import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { selectFeaturedNews } from '../../utils/featured-news-selection';
+import { chunkNewsItems, selectHomeMixedNews } from '../../utils/home-mixed-selection';
 import { rankMostReadNews } from '../../utils/most-read-ranking';
 import { resolveHomeUiState } from '../../utils/ui-state-matrix';
 
@@ -39,7 +40,7 @@ import type { OnInit } from '@angular/core';
           <section class="py-4">
             <app-error-state
               headline="No se ha podido cargar la portada"
-              message="No hay conexión con el servicio de noticias. Inténtalo de nuevo en unos minutos."
+              message="No hay conexion con el servicio de noticias. Intentalo de nuevo en unos minutos."
             />
           </section>
         }
@@ -61,16 +62,10 @@ import type { OnInit } from '@angular/core';
             </div>
 
             <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start" id="current-news">
-              <div>
-                <div class="mb-12">
-                  <app-section-block title="Actualidad" sectionSlug="actualidad" [articles]="currentAffairsNews()" />
-                </div>
-                <div class="mb-12">
-                  <app-section-block title="Economía" sectionSlug="economia" [articles]="economyNews()" />
-                </div>
-                <div>
-                  <app-section-block title="Cultura" sectionSlug="cultura" [articles]="cultureNews()" />
-                </div>
+              <div class="space-y-6">
+                @for (row of mixedNewsRows(); track $index) {
+                  <app-section-block [articles]="row" />
+                }
               </div>
 
               <div class="lg:pl-5" id="most-read">
@@ -99,10 +94,8 @@ export class HomePageComponent implements OnInit {
   );
 
   protected readonly featuredNews = computed(() => selectFeaturedNews(this.newsItems()));
-  protected readonly currentAffairsNews = computed(() => this.getNewsBySection('actualidad').slice(0, 3));
   protected readonly breakingNews = computed(() => this.getNewsBySection('actualidad').slice(0, 6));
-  protected readonly economyNews = computed(() => this.getNewsBySection('economia').slice(0, 3));
-  protected readonly cultureNews = computed(() => this.getNewsBySection('cultura').slice(0, 3));
+  protected readonly mixedNewsRows = computed(() => chunkNewsItems(selectHomeMixedNews(this.newsItems(), 15), 3).slice(0, 5));
   protected readonly mostReadNews = computed(() => rankMostReadNews(this.newsItems()).slice(0, 10));
 
   ngOnInit(): void {
