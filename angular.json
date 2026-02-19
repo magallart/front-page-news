@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "angular-project-base": {
+    "front-page-news": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -67,10 +67,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-project-base:build:production"
+              "buildTarget": "front-page-news:build:production"
             },
             "development": {
-              "buildTarget": "angular-project-base:build:development"
+              "buildTarget": "front-page-news:build:development"
             }
           },
           "defaultConfiguration": "development"

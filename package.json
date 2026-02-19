@@ -1,5 +1,5 @@
 {
-  "name": "angular-project-base",
+  "name": "front-page-news",
   "version": "0.0.0",
   "engines": {
     "node": ">=22 <23"
