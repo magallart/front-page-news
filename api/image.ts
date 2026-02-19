@@ -10,6 +10,7 @@ const CACHE_CONTROL_ERROR = 'no-store, max-age=0';
 const SUPPORTED_PROTOCOLS = new Set(['http:', 'https:']);
 const MAX_REDIRECTS = 5;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const UPSTREAM_FETCH_TIMEOUT_MS = 8000;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
 interface ApiRequest extends IncomingMessage {
@@ -40,12 +41,25 @@ export default async function handler(request: ApiRequest, response: ServerRespo
     return;
   }
 
+  const fetchController = new AbortController();
+  const timeoutHandle = setTimeout(() => fetchController.abort(), UPSTREAM_FETCH_TIMEOUT_MS);
+  const abortOnRequestClose = () => fetchController.abort();
+  request.once('close', abortOnRequestClose);
+
   let upstream: Response;
   try {
-    upstream = await fetchWithSafeRedirects(targetUrl);
-  } catch {
+    upstream = await fetchWithSafeRedirects(targetUrl, fetchController.signal);
+  } catch (error) {
+    if (isAbortError(error)) {
+      sendError(response, 504, 'Upstream image request timed out');
+      return;
+    }
+
     sendError(response, 502, 'Unable to fetch remote image');
     return;
+  } finally {
+    clearTimeout(timeoutHandle);
+    request.off('close', abortOnRequestClose);
   }
 
   if (!upstream.ok) {
@@ -126,11 +140,11 @@ function toAllowedImageUrl(rawUrl: string): URL | null {
   }
 }
 
-async function fetchWithSafeRedirects(initialUrl: URL): Promise<Response> {
+async function fetchWithSafeRedirects(initialUrl: URL, signal: AbortSignal): Promise<Response> {
   let currentUrl = initialUrl;
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
-    const upstream = await fetch(currentUrl.toString(), { redirect: 'manual' });
+    const upstream = await fetch(currentUrl.toString(), { redirect: 'manual', signal });
     if (!REDIRECT_STATUS_CODES.has(upstream.status)) {
       return upstream;
     }
@@ -160,4 +174,8 @@ function sendError(response: ServerResponse, statusCode: number, message: string
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.setHeader('cache-control', CACHE_CONTROL_ERROR);
   response.end(JSON.stringify({ error: message }));
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
 }
