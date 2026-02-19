@@ -191,3 +191,9 @@ Brief continuity notes to recover context between terminal sessions.
     - created `docs/cache-and-ui-states.md` (English) with cache strategy + UI state criteria
     - updated `BACKLOG.md` to mark `FPN-008` completed and backfilled missing completed improvements
   - Created multiple atomic commits across feature, refactor, test, and docs scopes, all tied to `FPN-008`.
+
+## 2026-02-19
+
+- What changed:
+  - Added `.nvmrc` with Node `22` to standardize local runtime for `vercel dev` on Windows.
+  - Added `engines.node` in `package.json` as `>=22 <23` to align the project with Node 22 LTS.
