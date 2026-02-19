@@ -2,6 +2,7 @@ import type { NewsItem } from '../interfaces/news-item.interface';
 
 const MAX_PER_SECTION = 2;
 const MAX_PER_SOURCE = 2;
+const ROW_SIZE = 3;
 
 export function selectHomeMixedNews(items: readonly NewsItem[], total = 15): readonly NewsItem[] {
   if (items.length <= 1) {
@@ -82,7 +83,7 @@ export function selectHomeMixedNews(items: readonly NewsItem[], total = 15): rea
     selectItem(item, selected, selectedIds, sectionCounts, sourceCounts);
   }
 
-  return selected;
+  return rebalanceForLayout(selected);
 }
 
 export function chunkNewsItems(items: readonly NewsItem[], size = 3): readonly (readonly NewsItem[])[] {
@@ -114,6 +115,64 @@ function compareByRecencyDesc(first: NewsItem, second: NewsItem): number {
   const firstTimestamp = toTimestamp(first.publishedAt);
   const secondTimestamp = toTimestamp(second.publishedAt);
   return secondTimestamp - firstTimestamp;
+}
+
+function rebalanceForLayout(items: readonly NewsItem[]): readonly NewsItem[] {
+  if (items.length <= ROW_SIZE) {
+    return items;
+  }
+
+  const remaining = [...items];
+  const balanced: NewsItem[] = [];
+
+  while (remaining.length > 0) {
+    const rowStart = balanced.length - (balanced.length % ROW_SIZE);
+    const currentRow = balanced.slice(rowStart);
+    const previous = balanced.at(-1) ?? null;
+    const nextIndex = pickNextIndex(remaining, currentRow, previous);
+    const [next] = remaining.splice(nextIndex, 1);
+    balanced.push(next);
+  }
+
+  return balanced;
+}
+
+function pickNextIndex(candidates: readonly NewsItem[], row: readonly NewsItem[], previous: NewsItem | null): number {
+  let bestIndex = 0;
+  let bestScore = Number.NEGATIVE_INFINITY;
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const candidate = candidates[index];
+    const score = scoreCandidate(candidate, row, previous);
+    if (score > bestScore) {
+      bestScore = score;
+      bestIndex = index;
+    }
+  }
+
+  return bestIndex;
+}
+
+function scoreCandidate(candidate: NewsItem, row: readonly NewsItem[], previous: NewsItem | null): number {
+  let score = 0;
+
+  const sectionInRow = row.some((item) => item.section === candidate.section);
+  const sourceInRow = row.some((item) => item.source === candidate.source);
+  if (!sectionInRow) {
+    score += 3;
+  }
+  if (!sourceInRow) {
+    score += 2;
+  }
+
+  if (previous !== null && previous.section !== candidate.section) {
+    score += 1;
+  }
+  if (previous !== null && previous.source !== candidate.source) {
+    score += 1;
+  }
+
+  return score;
 }
 
 function toTimestamp(value: string): number {

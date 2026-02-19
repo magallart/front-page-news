@@ -25,6 +25,19 @@ describe('selectHomeMixedNews', () => {
     expect(rows).toHaveLength(5);
     expect(rows.every((row) => row.length === 3)).toBe(true);
   });
+
+  it('spreads sections and sources across each row when dataset allows it', () => {
+    const now = Date.now();
+    const selected = selectHomeMixedNews(buildDataset(now), 15);
+    const rows = chunkNewsItems(selected, 3);
+
+    for (const row of rows) {
+      const sections = new Set(row.map((item) => item.section));
+      const sources = new Set(row.map((item) => item.source));
+      expect(sections.size).toBe(3);
+      expect(sources.size).toBe(3);
+    }
+  });
 });
 
 function buildDataset(now: number) {
