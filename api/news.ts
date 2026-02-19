@@ -1,20 +1,21 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog';
+
+import { WARNING_CODE } from '../src/interfaces/warning.interface';
 import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher';
 import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query';
-import { parseFeedItems } from '../src/lib/rss-parser';
 import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normalization';
+import { parseFeedItems } from '../src/lib/rss-parser';
+import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog';
 
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
 import type { RssSourceRecord } from '../src/interfaces/rss-source-record.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
-import { WARNING_CODE } from '../src/interfaces/warning.interface';
 import type { Warning } from '../src/interfaces/warning.interface';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'data/rss-sources.json');
 const FEED_FETCH_TIMEOUT_MS = 8000;
