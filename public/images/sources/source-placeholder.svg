@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Logo no disponible">
+  <rect width="128" height="128" rx="12" fill="hsl(0 0% 96%)"/>
+  <rect x="6" y="6" width="116" height="116" rx="10" fill="none" stroke="hsl(0 2% 16%)" stroke-opacity="0.25" stroke-width="4"/>
+  <text x="64" y="74" text-anchor="middle" font-family="serif" font-size="30" fill="hsl(0 2% 16%)">FPN</text>
+</svg>
