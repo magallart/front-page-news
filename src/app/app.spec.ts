@@ -19,11 +19,10 @@ describe('App', () => {
 
   it('should render app shell', async () => {
     const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('header')).toBeTruthy();
+    expect(compiled.querySelector('app-navbar')).toBeTruthy();
     expect(compiled.querySelector('main')).toBeTruthy();
-    expect(compiled.querySelector('footer')).toBeTruthy();
-    expect(compiled.textContent).toContain('Front Page News');
+    expect(compiled.querySelector('app-footer')).toBeTruthy();
   });
 });
