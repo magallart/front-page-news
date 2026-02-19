@@ -12,6 +12,7 @@ import type { NewsRequestQuery } from '../services/news.service';
 export class NewsStore {
   private readonly newsService = inject(NewsService);
   private readonly lastQuerySignal = signal<NewsRequestQuery | null>(null);
+  private activeRequestId = 0;
 
   private readonly loadingSignal = signal(false);
   readonly loading = this.loadingSignal.asReadonly();
@@ -47,6 +48,9 @@ export class NewsStore {
   }
 
   private fetchNews(query: NewsRequestQuery, forceRefresh: boolean): void {
+    const requestId = this.activeRequestId + 1;
+    this.activeRequestId = requestId;
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
@@ -55,12 +59,20 @@ export class NewsStore {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
+          if (requestId !== this.activeRequestId) {
+            return;
+          }
+
           this.dataSignal.set(response.articles);
           this.warningsSignal.set(response.warnings);
           this.lastUpdatedSignal.set(Date.now());
           this.loadingSignal.set(false);
         },
         error: (error: unknown) => {
+          if (requestId !== this.activeRequestId) {
+            return;
+          }
+
           this.errorSignal.set(getUserErrorMessage(error, 'No se pudieron cargar las noticias.'));
           this.loadingSignal.set(false);
         },

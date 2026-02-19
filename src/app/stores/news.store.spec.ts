@@ -6,6 +6,7 @@ import { NewsService } from '../services/news.service';
 
 import { NewsStore } from './news.store';
 
+import type { NewsResponse } from '../../interfaces/news-response.interface';
 describe('NewsStore', () => {
   it('loads news and updates data, warnings and lastUpdated', () => {
     vi.useFakeTimers();
@@ -107,6 +108,95 @@ describe('NewsStore', () => {
 
     expect(newsServiceMock.getNews).not.toHaveBeenCalled();
   });
+
+  it('ignores stale success responses from previous requests', () => {
+    let emitStaleResponse: (value: NewsResponse) => void = (value) => {
+      void value;
+    };
+    let completeStaleResponse: () => void = () => undefined;
+    let emitActiveResponse: (value: NewsResponse) => void = (value) => {
+      void value;
+    };
+    let completeActiveResponse: () => void = () => undefined;
+    const staleRequest$ = new Observable<NewsResponse>((subscriber) => {
+      emitStaleResponse = (value: NewsResponse) => subscriber.next(value);
+      completeStaleResponse = () => subscriber.complete();
+    });
+    const activeRequest$ = new Observable<NewsResponse>((subscriber) => {
+      emitActiveResponse = (value: NewsResponse) => subscriber.next(value);
+      completeActiveResponse = () => subscriber.complete();
+    });
+    const newsServiceMock = {
+      getNews: vi
+        .fn()
+        .mockReturnValueOnce(staleRequest$)
+        .mockReturnValueOnce(activeRequest$),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'economia' });
+    store.load({ section: 'cultura' });
+
+    emitStaleResponse({
+      ...createNewsResponse(),
+      articles: [{ ...createNewsResponse().articles[0], id: 'stale-id', title: 'Stale Title' }],
+      warnings: [],
+    });
+    completeStaleResponse();
+
+    expect(store.loading()).toBe(true);
+    expect(store.data()).toEqual([]);
+
+    emitActiveResponse({
+      ...createNewsResponse(),
+      articles: [{ ...createNewsResponse().articles[0], id: 'active-id', title: 'Active Title' }],
+      warnings: [],
+    });
+    completeActiveResponse();
+
+    expect(store.loading()).toBe(false);
+    expect(store.data()[0]?.id).toBe('active-id');
+    expect(store.data()[0]?.title).toBe('Active Title');
+    expect(store.error()).toBeNull();
+  });
+
+  it('ignores stale errors from previous requests', () => {
+    let failStaleResponse: (error: unknown) => void = (error) => {
+      void error;
+    };
+    let emitActiveResponse: (value: NewsResponse) => void = (value) => {
+      void value;
+    };
+    let completeActiveResponse: () => void = () => undefined;
+    const staleRequest$ = new Observable<NewsResponse>((subscriber) => {
+      failStaleResponse = (error: unknown) => subscriber.error(error);
+    });
+    const activeRequest$ = new Observable<NewsResponse>((subscriber) => {
+      emitActiveResponse = (value: NewsResponse) => subscriber.next(value);
+      completeActiveResponse = () => subscriber.complete();
+    });
+    const newsServiceMock = {
+      getNews: vi
+        .fn()
+        .mockReturnValueOnce(staleRequest$)
+        .mockReturnValueOnce(activeRequest$),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'economia' });
+    store.load({ section: 'cultura' });
+
+    failStaleResponse(new Error('stale error'));
+    expect(store.error()).toBeNull();
+    expect(store.loading()).toBe(true);
+
+    emitActiveResponse(createNewsResponse());
+    completeActiveResponse();
+
+    expect(store.loading()).toBe(false);
+    expect(store.error()).toBeNull();
+    expect(store.data()).toEqual(createNewsResponse().articles);
+  });
 });
 
 function configureStore(newsServiceMock: Pick<NewsService, 'getNews'>): NewsStore {
@@ -124,7 +214,7 @@ function configureStore(newsServiceMock: Pick<NewsService, 'getNews'>): NewsStor
   return TestBed.inject(NewsStore);
 }
 
-function createNewsResponse() {
+function createNewsResponse(): NewsResponse {
   return {
     articles: [
       {
@@ -153,5 +243,5 @@ function createNewsResponse() {
         feedUrl: 'https://example.com/rss.xml',
       },
     ],
-  } as const;
+  };
 }
