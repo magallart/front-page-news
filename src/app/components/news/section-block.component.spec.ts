@@ -1,4 +1,4 @@
-﻿import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 
@@ -7,27 +7,18 @@ import { SectionBlockComponent } from './section-block.component';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 describe('SectionBlockComponent', () => {
-  it('renders section heading, styled CTA and 3 news cards', async () => {
+  it('renders only the news cards grid without section heading or CTA', async () => {
     await TestBed.configureTestingModule({
       imports: [SectionBlockComponent],
       providers: [provideRouter([])],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SectionBlockComponent);
-    fixture.componentRef.setInput('title', 'Economía');
-    fixture.componentRef.setInput('sectionSlug', 'economia');
     fixture.componentRef.setInput('articles', MOCK_ARTICLES);
     fixture.detectChanges();
 
-    const heading = fixture.nativeElement.querySelector('h2') as HTMLElement;
-    expect(heading.textContent?.trim()).toBe('Economía');
-    expect(heading.className).toContain('font-editorial-title');
-
-    const link = fixture.nativeElement.querySelector('a[href="/seccion/economia"]') as HTMLAnchorElement;
-    expect(link).toBeTruthy();
-    expect(link.textContent).toContain('Ver más');
-    expect(link.className).toContain('font-editorial-body');
-    expect(link.querySelector('app-icon-arrow-right')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('h2')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href^="/seccion/"]')).toBeNull();
 
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');
     expect(cards.length).toBe(3);

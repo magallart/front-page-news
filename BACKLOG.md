@@ -248,10 +248,12 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Bloques de portada coherentes en jerarquia visual.
   - "Lo mas leido" definido con criterio implementable.
 - Tasks:
-  - [ ] Definir criterio MVP de "lo mas leido" (proxy por recencia/repeticion de fuente).
-  - [ ] Ajustar algoritmo de seleccion para destacadas.
-  - [ ] Revisar equilibrio de noticias por seccion en portada.
-  - [ ] Ajustar copy y enlaces para mejorar escaneo rapido.
+  - [✔️] Definir criterio MVP de "lo mas leido" (proxy por recencia/repeticion de fuente).
+  - [✔️] Ajustar algoritmo de seleccion para destacadas.
+  - [✔️] Reestructurar bloques de portada con una seleccion mixta (5 filas x 3 noticias), eliminando titulos de seccion y CTA "Ver más", y aplicando balance por seccion y fuente.
+  - [✔️] Revisar equilibrio de noticias por seccion en portada.
+  - [✔️] Añadir bloque de periodicos en portada.
+  - [✔️] Corregir ortografia y tildes en textos visibles de portada/filtros para alinear el copy con español de España.
 
 <a id="fpn-010"></a>
 

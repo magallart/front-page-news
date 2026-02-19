@@ -8,7 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'seccion/:slug',
-    title: 'Front Page News | Seccion',
+    title: 'Front Page News | Sección',
     loadComponent: () => import('./pages/section/section-page.component').then((m) => m.SectionPageComponent),
   },
   {
