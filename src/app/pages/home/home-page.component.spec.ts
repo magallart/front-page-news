@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
+import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
@@ -121,6 +122,39 @@ describe('HomePageComponent', () => {
 
     expect(sourceACount).toBe(3);
     expect(items[0]?.source).toBe('Fuente A');
+  });
+
+  it('selects featured news with section diversity and source cap', async () => {
+    const now = Date.now();
+    const newsStoreMock = createNewsStoreMock({
+      data: [
+        createArticle('a-1', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 1) }),
+        createArticle('a-2', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 2) }),
+        createArticle('a-3', 'actualidad', { sourceName: 'Fuente A', publishedAt: toIso(now, 3) }),
+        createArticle('e-1', 'economia', { sourceName: 'Fuente B', publishedAt: toIso(now, 4) }),
+        createArticle('c-1', 'cultura', { sourceName: 'Fuente C', publishedAt: toIso(now, 5) }),
+        createArticle('d-1', 'deportes', { sourceName: 'Fuente D', publishedAt: toIso(now, 6) }),
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: newsStoreMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const carousel = fixture.debugElement.query(By.directive(NewsCarouselComponent)).componentInstance as NewsCarouselComponent;
+    const items = carousel.articles();
+    const sections = new Set(items.map((item) => item.section));
+    const sourceACount = items.filter((item) => item.source === 'Fuente A').length;
+
+    expect(items).toHaveLength(5);
+    expect(sections.has('economia')).toBe(true);
+    expect(sections.has('cultura')).toBe(true);
+    expect(sections.has('deportes')).toBe(true);
+    expect(sourceACount).toBe(2);
   });
 });
 

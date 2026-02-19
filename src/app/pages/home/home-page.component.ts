@@ -10,6 +10,7 @@ import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { selectFeaturedNews } from '../../utils/featured-news-selection';
 import { rankMostReadNews } from '../../utils/most-read-ranking';
 import { resolveHomeUiState } from '../../utils/ui-state-matrix';
 
@@ -97,7 +98,7 @@ export class HomePageComponent implements OnInit {
     }),
   );
 
-  protected readonly featuredNews = computed(() => this.newsItems().slice(0, 5));
+  protected readonly featuredNews = computed(() => selectFeaturedNews(this.newsItems()));
   protected readonly currentAffairsNews = computed(() => this.getNewsBySection('actualidad').slice(0, 3));
   protected readonly breakingNews = computed(() => this.getNewsBySection('actualidad').slice(0, 6));
   protected readonly economyNews = computed(() => this.getNewsBySection('economia').slice(0, 3));
