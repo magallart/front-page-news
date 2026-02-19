@@ -231,6 +231,12 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
     - [✔️] Añadir tests unitarios para servicios/store (cache hit, cache miss, invalidacion, estados `loading/error/success`).
   - [✔️] Añadir tests de integracion de paginas clave (portada, seccion, detalle) con respuestas de API mockeadas.
   - [✔️] Documentar estrategia de cache cliente (TTL + invalidacion) y criterios de estados de error/parcial para mantenimiento futuro.
+  - [✔️] Corregir respuesta inconsistente del proxy de imagen cuando `content-length` excede limite: devolver `413` antes de emitir headers `200`.
+  - [✔️] Añadir timeout/cancelacion explicita en fetch de proxy de imagen (incluyendo redirects) con `AbortController` y respuesta `504` en timeout.
+  - [✔️] Extraer utilidades compartidas de API para reducir duplicacion:
+    - parse/validacion de catalogo RSS en `api/lib/rss-catalog.ts`
+    - helper de respuesta JSON/cache en `api/lib/send-json.ts`
+    - reutilizacion desde `api/news.ts` y `api/sources.ts`
 
 <a id="fpn-009"></a>
 

@@ -212,6 +212,16 @@ Brief continuity notes to recover context between terminal sessions.
     - switched image proxy response handling to streaming with hard byte limit (no full in-memory buffering)
     - updated API/spec imports to match the new server helper location
     - added/updated coverage for SSRF guard and response body byte-limit helpers
+  - Hardened image-proxy response behavior and timeout handling:
+    - validate oversized upstream `content-length` before sending success headers and return clean `413`
+    - added upstream timeout/cancellation with `AbortController` (including redirects and client disconnect)
+    - mapped upstream timeout to explicit `504` response
+    - added regression tests for oversized-header and timeout-abort scenarios
+  - Reduced API duplication in RSS catalog and JSON response handling:
+    - extracted shared catalog parser/validator to `api/lib/rss-catalog.ts`
+    - extracted shared JSON response helper with cache policy to `api/lib/send-json.ts`
+    - refactored `api/news.ts` and `api/sources.ts` to reuse shared helpers
+  - Created and pushed PR `#7` with the full `FPN-008` hardening/refactor batch.
 - Verification performed:
   - `pnpm run lint` (pass)
   - `pnpm test` (pass)
