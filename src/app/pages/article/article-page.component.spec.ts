@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
@@ -11,6 +11,10 @@ import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 
 import { ArticlePageComponent } from './article-page.component';
+
+import type { NewsResponse } from '../../../interfaces/news-response.interface';
+import type { ParamMap } from '@angular/router';
+import type { Subscriber } from 'rxjs';
 
 describe('ArticlePageComponent', () => {
   it('integrates with /api/news aggregated dataset and renders article content', async () => {
@@ -119,6 +123,75 @@ describe('ArticlePageComponent', () => {
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-missing');
 
     httpController.verify();
+  });
+
+  it('ignores outdated fallback responses when route id changes during in-flight requests', async () => {
+    let emitRouteId: (id: string) => void = () => undefined;
+    const routeParamMap$ = new Observable<ParamMap>((subscriber) => {
+      emitRouteId = (id: string) => subscriber.next(convertToParamMap({ id }));
+      subscriber.next(convertToParamMap({ id: 'news-a' }));
+    });
+    const fallbackSubscribers = new Map<string, Subscriber<NewsResponse>>();
+    const newsServiceMock = {
+      getNews: vi.fn((query: { id?: string }) => {
+        const id = query.id ?? 'unknown';
+        return new Observable<NewsResponse>((subscriber) => {
+          fallbackSubscribers.set(id, subscriber);
+        });
+      }),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ArticlePageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: routeParamMap$ },
+        },
+        {
+          provide: NewsStore,
+          useValue: {
+            loading: signal(false).asReadonly(),
+            data: signal([]).asReadonly(),
+            error: signal<string | null>(null).asReadonly(),
+            warnings: signal([]).asReadonly(),
+            load: vi.fn(),
+          },
+        },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticlePageComponent);
+    fixture.detectChanges();
+
+    emitRouteId('news-b');
+    fixture.detectChanges();
+
+    fallbackSubscribers.get('news-a')?.next({
+      articles: [createArticle('news-a', 'actualidad')],
+      total: 1,
+      page: 1,
+      limit: 1,
+      warnings: [],
+    });
+    fallbackSubscribers.get('news-a')?.complete();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Titulo news-a');
+
+    fallbackSubscribers.get('news-b')?.next({
+      articles: [createArticle('news-b', 'actualidad')],
+      total: 1,
+      page: 1,
+      limit: 1,
+      warnings: [],
+    });
+    fallbackSubscribers.get('news-b')?.complete();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-b');
   });
 
   it('renders article content with metadata, preview cta and right sidebar', async () => {

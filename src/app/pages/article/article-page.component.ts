@@ -137,11 +137,19 @@ export class ArticlePageComponent {
         .pipe(take(1))
         .subscribe({
           next: (response) => {
+            if (this.articleId() !== currentArticleId) {
+              return;
+            }
+
             const matched = response.articles[0];
             this.fallbackArticleSignal.set(matched ? adaptArticleToNewsItem(matched) : null);
             this.fallbackLoadingSignal.set(false);
           },
           error: (error: unknown) => {
+            if (this.articleId() !== currentArticleId) {
+              return;
+            }
+
             this.fallbackArticleSignal.set(null);
             this.fallbackErrorSignal.set(getUserErrorMessage(error, 'No se pudo cargar la noticia.'));
             this.fallbackLoadingSignal.set(false);
