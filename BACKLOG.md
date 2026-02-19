@@ -253,7 +253,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Reestructurar bloques de portada con una seleccion mixta (5 filas x 3 noticias), eliminando titulos de seccion y CTA "Ver más", y aplicando balance por seccion y fuente.
   - [✔️] Revisar equilibrio de noticias por seccion en portada.
   - [✔️] Añadir bloque de periodicos en portada.
-  - [ ] Ajustar copy y enlaces para mejorar escaneo rapido.
+  - [✔️] Corregir ortografia y tildes en textos visibles de portada/filtros para alinear el copy con español de España.
 
 <a id="fpn-010"></a>
 

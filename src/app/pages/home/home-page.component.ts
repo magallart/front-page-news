@@ -43,7 +43,7 @@ import type { OnInit } from '@angular/core';
           <section class="py-4">
             <app-error-state
               headline="No se ha podido cargar la portada"
-              message="No hay conexion con el servicio de noticias. Intentalo de nuevo en unos minutos."
+              message="No hay conexión con el servicio de noticias. Inténtalo de nuevo en unos minutos."
             />
           </section>
         }

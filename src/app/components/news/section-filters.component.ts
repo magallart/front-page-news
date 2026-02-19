@@ -56,7 +56,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
                 [checked]="sortDirection() === 'desc'"
                 (change)="onSortDirectionChange('desc')"
               />
-              <span>Mas recientes primero</span>
+              <span>Más recientes primero</span>
             </label>
 
             <label class="flex cursor-pointer items-center gap-2 text-sm text-background">
@@ -68,7 +68,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
                 [checked]="sortDirection() === 'asc'"
                 (change)="onSortDirectionChange('asc')"
               />
-              <span>Mas antiguas primero</span>
+              <span>Más antiguas primero</span>
             </label>
           </div>
         </section>
