@@ -275,6 +275,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Normalizar artefactos comunes de codificacion (mojibake) en texto de feed (`title`, `summary`, `sourceName`, `author`) para mejorar legibilidad en detalle y listados.
   - [✔️] Ajustar metadatos del slider de portada: incluir `autor | periodico | hora-fecha` y en movil usar 3 columnas con truncado (`...`) para evitar roturas por autores largos.
   - [✔️] Retirar geolocalizacion temporalmente: eliminar solicitud de permisos del navegador y suprimir ciudad/temperatura del header hasta implementar la funcionalidad completa.
+  - [✔️] Añadir boton global "volver arriba" visible tras cierto scroll, con animacion de entrada/salida y desplazamiento suave al top.
 
 
 <a id="fpn-011"></a>
