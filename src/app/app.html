@@ -12,6 +12,8 @@
     [class.pointer-events-auto]="showScrollTopButton()"
     [class.translate-y-0]="showScrollTopButton()"
     [class.opacity-100]="showScrollTopButton()"
+    [attr.tabindex]="showScrollTopButton() ? '0' : '-1'"
+    [attr.aria-hidden]="showScrollTopButton() ? null : 'true'"
     (click)="scrollToTop()"
     aria-label="Volver arriba"
   >
