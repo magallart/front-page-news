@@ -93,6 +93,31 @@ describe('rss-normalization', () => {
     expect(deduped[1]?.id).toBe('2');
     expect(deduped[2]?.id).toBe('3');
   });
+
+  it('prefers specific section over ultima-hora for duplicates with same timestamp', () => {
+    const sameUrl = 'https://example.com/news/shared';
+    const sameTimestamp = '2026-02-17T11:00:00.000Z';
+    const items: readonly Article[] = [
+      makeArticle({
+        id: 'u-1',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'ultima-hora',
+        publishedAt: sameTimestamp,
+      }),
+      makeArticle({
+        id: 'e-1',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'economia',
+        publishedAt: sameTimestamp,
+      }),
+    ];
+
+    const deduped = dedupeAndSortArticles(items);
+
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.id).toBe('e-1');
+    expect(deduped[0]?.sectionSlug).toBe('economia');
+  });
 });
 
 function makeArticle(overrides: Partial<Article>): Article {

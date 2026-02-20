@@ -126,7 +126,7 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
       continue;
     }
 
-    if (isMoreRecent(item.publishedAt, current.publishedAt)) {
+    if (shouldReplaceDedupedArticle(item, current)) {
       uniqueByKey.set(dedupeKey, item);
     }
   }
@@ -136,6 +136,25 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
     const secondTimestamp = second.publishedAt ? Date.parse(second.publishedAt) : Number.NEGATIVE_INFINITY;
     return secondTimestamp - firstTimestamp;
   });
+}
+
+function shouldReplaceDedupedArticle(candidate: Article, current: Article): boolean {
+  const candidateTime = toTimestamp(candidate.publishedAt);
+  const currentTime = toTimestamp(current.publishedAt);
+
+  if (candidateTime > currentTime) {
+    return true;
+  }
+
+  if (candidateTime < currentTime) {
+    return false;
+  }
+
+  if (hasHigherSectionPriority(candidate.sectionSlug, current.sectionSlug)) {
+    return true;
+  }
+
+  return false;
 }
 
 function decodeHtmlEntities(value: string): string {
@@ -177,10 +196,16 @@ function buildTitleDateKey(title: string, publishedAt: string | null): string {
   return `${title.trim().toLowerCase()}|${publishedAt ?? 'no-date'}`;
 }
 
-function isMoreRecent(candidate: string | null, current: string | null): boolean {
-  const candidateTime = candidate ? Date.parse(candidate) : Number.NEGATIVE_INFINITY;
-  const currentTime = current ? Date.parse(current) : Number.NEGATIVE_INFINITY;
-  return candidateTime > currentTime;
+function hasHigherSectionPriority(candidateSection: string, currentSection: string): boolean {
+  return getSectionPriority(candidateSection) > getSectionPriority(currentSection);
+}
+
+function getSectionPriority(sectionSlug: string): number {
+  return sectionSlug === 'ultima-hora' ? 0 : 1;
+}
+
+function toTimestamp(value: string | null): number {
+  return value ? Date.parse(value) : Number.NEGATIVE_INFINITY;
 }
 
 function isValidCodePoint(value: number): boolean {

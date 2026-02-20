@@ -267,6 +267,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Eliminar por completo El Economista del catalogo de feeds y del directorio de fuentes (sources, homepage mapping y referencias en documentacion/tests).
   - [✔️] Forzar que cada navegacion entre paginas empiece en el top de la vista (sin mantener el scroll previo del navegador).
   - [✔️] Suavizar el scroll al top tras navegar entre paginas para evitar saltos bruscos y respetar `prefers-reduced-motion`.
+  - [✔️] Corregir etiqueta de seccion en detalle para que no quede fijada en `ultima-hora` al deduplicar noticias compartidas entre feeds.
 
 
 <a id="fpn-011"></a>
