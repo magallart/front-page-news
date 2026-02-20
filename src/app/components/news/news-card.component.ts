@@ -70,7 +70,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
         <p class="font-editorial-body summary-clamp text-sm leading-[1.2rem] text-muted-foreground">{{ article().summary }}</p>
 
-        <p class="mt-auto text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().author }}</p>
+        <p class="mt-auto truncate whitespace-nowrap text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          {{ article().author }}
+        </p>
       </div>
     </article>
   `,

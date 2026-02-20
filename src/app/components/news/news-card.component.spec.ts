@@ -35,5 +35,9 @@ describe('NewsCardComponent', () => {
     expect(source.className).toContain('text-right');
     expect(source.className).toContain('truncate');
     expect(source.className).toContain('whitespace-nowrap');
+
+    const author = fixture.nativeElement.querySelector('p.mt-auto') as HTMLParagraphElement;
+    expect(author.className).toContain('truncate');
+    expect(author.className).toContain('whitespace-nowrap');
   });
 });

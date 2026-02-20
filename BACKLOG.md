@@ -278,6 +278,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Añadir boton global "volver arriba" visible tras cierto scroll, con animacion de entrada/salida y desplazamiento suave al top.
   - [✔️] Restringir el slider de portada para mostrar solo noticias con imagen real (excluyendo placeholders sin foto).
   - [✔️] Alinear a la derecha el nombre del periodico en `news-card` y forzar una sola linea con truncado para fuentes largas.
+  - [✔️] Limitar autores en `news-card` a una sola linea con truncado (`...`) para evitar variaciones de altura entre tarjetas.
 
 
 <a id="fpn-011"></a>
