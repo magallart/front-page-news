@@ -1,4 +1,4 @@
-# SESSION LOG
+﻿# SESSION LOG
 
 Brief continuity notes to recover context between terminal sessions.
 
@@ -77,7 +77,7 @@ Brief continuity notes to recover context between terminal sessions.
   - Finalized homepage editorial mockup for `FPN-003` with iterative UI refinements:
     - hero carousel polish (overlay contrast, height tuning, controls/icons, text clamping).
     - breaking-news polish (spacing/separators, live badge pulse, CTA behavior/accessibility contrast).
-    - section blocks and CTA link polish (`Ver más` + arrow icon alignment).
+    - section blocks and CTA link polish (`Ver mÃ¡s` + arrow icon alignment).
     - most-read redesign and rename to `app-most-read-news`, including right-column width alignment and 10 items.
     - news-card consolidation to selected variant and typography/spacing adjustments.
   - Added/updated SVG icon components in `src/app/components/icons` for carousel/CTA/most-read actions.
@@ -173,7 +173,7 @@ Brief continuity notes to recover context between terminal sessions.
   - Improved section UX and data behavior:
     - removed hard API max limit and raised frontend feed request limit.
     - added progressive reveal in section lists (`24` initial + `12` per click).
-    - updated CTA styling/text (`Ver m�s noticias`) with eye icon and spacing adjustments.
+    - updated CTA styling/text (`Ver mï¿½s noticias`) with eye icon and spacing adjustments.
   - Improved image resilience and feed compatibility:
     - image proxy endpoint `api/image`.
     - fallback image handling in cards/content.
@@ -246,3 +246,73 @@ Brief continuity notes to recover context between terminal sessions.
     - revised `BACKLOG.md` tasks/status for delivered `FPN-009` scope.
     - maintained `SESSION.md` continuity with compact per-day summary.
     - improved PR title/body quality and traceability before merge.
+
+## 2026-02-20
+
+- What changed:
+  - Consolidated a large pre-release stabilization pass for `FPN-010` (UX, feed quality, layout consistency, and polish).
+  - Feed/source cleanup and quality:
+    - removed `El Economista` from the application (sources/catalog/logo/references) due to poor feed quality.
+    - improved duplicate-news handling to avoid losing richer variants (especially images) when the same story appears in multiple feeds.
+    - improved image selection strategy by context:
+      - card/listing uses suitable smaller image variant when available.
+      - article detail uses the best larger image variant.
+      - fallback to single available image when no alternatives exist.
+    - improved parser/image fallback behavior to reduce missing-image and pixelated-image cases.
+  - Navigation and reading UX:
+    - enforced navigation-to-top between pages.
+    - softened top scroll behavior to avoid abrupt jumps.
+    - added global “back to top” floating action button with smooth scroll and updated visual styling.
+  - Article detail fixes:
+    - fixed section label behavior in article detail (avoiding incorrect fixed labels).
+    - removed large “no image” placeholder in detail; when image is unavailable, content now flows directly after metadata.
+    - added text normalization for encoding issues (mojibake) and HTML numeric entities in feed text fields (`title`, `summary`, `source`, `author`).
+  - Home slider and metadata improvements:
+    - updated metadata format to include author + source + time/date.
+    - improved responsive metadata layout for mobile/tablet.
+    - added truncation safeguards for very long author lists.
+    - restricted homepage slider entries to items that have real images.
+  - Header and section navigation improvements:
+    - reorganized header sections (alphabetical, two-row desktop layout) and refined spacing.
+    - kept `Última hora` in responsive side menu while excluding it from desktop section row.
+    - made ticker `Última hora` label clickable to `/seccion/ultima-hora`.
+  - News-card layout consistency:
+    - forced source name to one line and right alignment.
+    - forced author metadata to one line with truncation.
+  - Footer and secondary layout refinements:
+    - simplified footer from multi-column to a compact minimal layout.
+    - removed non-essential center text for cleaner composition.
+    - adjusted source logos block behavior for tablet to fixed two-row layout.
+  - Loading-state system refactor (major):
+    - replaced plain loading texts with structural skeleton UIs matching final layout proportions.
+    - built reusable skeleton architecture in `src/app/components/news/skeletons`:
+      - `skeleton-block`
+      - `news-card-skeleton`
+      - `breaking-news-skeleton`
+      - `most-read-skeleton`
+      - `source-directory-skeleton`
+      - `news-carousel-skeleton`
+      - `home-page-skeleton`
+      - `section-page-skeleton`
+      - `article-page-skeleton`
+    - integrated real loading states:
+      - section page now renders dedicated section skeleton.
+      - article page now renders dedicated article skeleton.
+      - home skeleton refactored to compose reusable blocks.
+    - iterated visual fidelity so skeleton structure/spacing closely tracks final components and reduces layout shift.
+  - Temporary preview route lifecycle:
+    - created temporary `/home-skeleton` route for rapid visual iteration.
+    - removed the temporary route after validation completion.
+  - Backlog/session governance updates:
+    - updated `BACKLOG.md` (`FPN-010`) with skeleton-system task and completion status.
+    - refreshed `SESSION.md` with full-day summary for continuity.
+  - Validation and quality gates:
+    - repeatedly validated changes with `pnpm run lint` and `pnpm test -- --watch=false` throughout the session.
+  - Git workflow:
+    - renamed branch from `docs/fpn-000-backlog-realignment-for-v1` to `feat/fpn-010-v1-pre-release-fixes`.
+    - pushed new branch and removed old remote branch name.
+    - created atomic commits for skeleton work:
+      - `feat(skeletons): [FPN-010] modularize home loading skeleton into reusable blocks`
+      - `feat(section): [FPN-010] add dedicated section-page loading skeleton`
+      - `feat(article): [FPN-010] add dedicated article-page loading skeleton`
+      - `chore(router): [FPN-010] remove temporary home-skeleton route and update backlog`
