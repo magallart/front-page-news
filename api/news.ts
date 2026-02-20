@@ -22,6 +22,10 @@ const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'data/rss-sources.json');
 const FEED_FETCH_TIMEOUT_MS = 8000;
 const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=120, stale-while-revalidate=600';
 
+export const config = {
+  includeFiles: ['data/rss-sources.json'],
+};
+
 interface ApiRequest extends IncomingMessage {
   readonly method?: string;
   readonly url?: string;
