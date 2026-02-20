@@ -11,6 +11,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'data/rss-sources.json');
 const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=300, stale-while-revalidate=900';
 
+export const config = {
+  includeFiles: ['data/rss-sources.json'],
+};
+
 interface ApiRequest extends IncomingMessage {
   readonly method?: string;
 }
