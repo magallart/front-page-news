@@ -286,6 +286,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Ajustar la sección "Visita las webs oficiales..." para que en tablet muestre logos en 2 líneas horizontales, simplificando el componente y eliminando la variante de 1 línea.
   - [✔️] Simplificar el footer para dejar un layout limpio con logo y redes en una sola fila, eliminando las columnas editoriales y el texto central.
   - [✔️] Implementar skeleton estructurado de la home en estado de carga y extraerlo a `home-page-skeleton` como componente dedicado para mejorar UX y mantenimiento.
+  - [✔️] Crear sistema de skeletons reutilizables (`home`, `sección`, `detalle` y bloques compartidos), aplicarlo en estados de carga reales.
 
 
 <a id="fpn-011"></a>
