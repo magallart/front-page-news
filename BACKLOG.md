@@ -268,6 +268,9 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Forzar que cada navegacion entre paginas empiece en el top de la vista (sin mantener el scroll previo del navegador).
   - [✔️] Suavizar el scroll al top tras navegar entre paginas para evitar saltos bruscos y respetar `prefers-reduced-motion`.
   - [✔️] Corregir etiqueta de seccion en detalle para que no quede fijada en `ultima-hora` al deduplicar noticias compartidas entre feeds.
+  - [✔️] Evitar perdida de imagen en noticias duplicadas entre feeds, fusionando variantes para conservar `imageUrl` y seccion editorial.
+  - [✔️] Priorizar en parser la imagen principal de `media:content` (mayor tamano) frente a `media:thumbnail` para evitar fotos pixeladas.
+  - [✔️] Seleccionar imagen segun contexto: miniatura en `news-card` y principal en detalle, con fallback a unica imagen disponible.
 
 
 <a id="fpn-011"></a>
