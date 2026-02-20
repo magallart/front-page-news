@@ -1,15 +1,15 @@
 import { resolve } from 'node:path';
 
 
-import { WARNING_CODE } from '../src/interfaces/warning.interface';
-import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher';
-import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query';
-import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normalization';
-import { parseFeedItems } from '../src/lib/rss-parser';
-import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog';
+import { WARNING_CODE } from '../src/interfaces/warning.interface.js';
+import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher.js';
+import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query.js';
+import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normalization.js';
+import { parseFeedItems } from '../src/lib/rss-parser.js';
+import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog.js';
 
-import { loadRssCatalogRecords } from './lib/rss-catalog';
-import { sendJson } from './lib/send-json';
+import { loadRssCatalogRecords } from './lib/rss-catalog.js';
+import { sendJson } from './lib/send-json.js';
 
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
