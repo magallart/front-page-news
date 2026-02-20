@@ -38,12 +38,12 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
         } @else if (sectionUiState() === uiViewState.ERROR_TOTAL) {
           <app-error-state
             headline="No se han podido cargar noticias"
-            message="Estamos teniendo problemas para cargar esta secciÃ³n. IntÃ©ntalo de nuevo en unos minutos."
+            message="Estamos teniendo problemas para cargar esta sección. Inténtalo de nuevo en unos minutos."
           />
         } @else if (sectionUiState() === uiViewState.EMPTY) {
           <app-error-state
-            headline="No hay noticias en esta secciÃ³n"
-            message="No encontramos resultados para los filtros actuales. Prueba con otra combinaciÃ³n."
+            headline="No hay noticias en esta sección"
+            message="No encontramos resultados para los filtros actuales. Prueba con otra combinación."
           />
         } @else {
           <div class="mb-4 flex justify-start">
@@ -83,7 +83,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
                 (click)="loadMoreNews()"
               >
                 <app-icon-eye />
-                Ver mÃ¡s noticias
+                Ver más noticias
               </button>
             </div>
           }
