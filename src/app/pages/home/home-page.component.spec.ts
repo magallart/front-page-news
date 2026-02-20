@@ -109,7 +109,7 @@ describe('HomePageComponent', () => {
     const loadingSection = fixture.nativeElement.querySelector('section[aria-label="Cargando portada"]');
 
     expect(loadingSection).toBeTruthy();
-    expect(fixture.nativeElement.querySelectorAll('.home-skeleton').length).toBeGreaterThan(20);
+    expect(fixture.nativeElement.querySelectorAll('.fp-skeleton-block').length).toBeGreaterThan(20);
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeFalsy();
   });

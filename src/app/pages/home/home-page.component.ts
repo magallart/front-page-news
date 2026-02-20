@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
-import { HomePageSkeletonComponent } from '../../components/news/home-page-skeleton.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
+import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';

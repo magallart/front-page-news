@@ -17,6 +17,6 @@ describe('HomePageSkeletonComponent', () => {
     expect(root.querySelector('section[aria-label="Cargando portada"]')).toBeTruthy();
     expect(root.textContent).toContain('En directo');
     expect(root.textContent).toContain('Lo más leído');
-    expect(root.querySelectorAll('.home-skeleton').length).toBeGreaterThan(20);
+    expect(root.querySelectorAll('.fp-skeleton-block').length).toBeGreaterThan(20);
   });
 });
