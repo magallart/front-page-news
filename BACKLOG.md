@@ -26,7 +26,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
-| [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
+| [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
 | [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
@@ -257,19 +257,15 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 <a id="fpn-010"></a>
 
-### [FPN-010] Calidad MVP
+### [FPN-010] Revisión de la aplicación para la 1.0
 
-- Description: Subir calidad tecnica antes de publicar una primera version usable.
+- Description: Consolidar en un solo ticket los bugs y cambios de ultima hora antes de publicar la version 1.0.
 - DoD:
-  - `pnpm run lint`, `pnpm test`, `pnpm run build` en verde.
-  - Casos criticos cubiertos por unit/e2e.
-  - A11y y SEO basico aceptables para MVP.
+  - Todas las correcciones acordadas en la sesion quedarán funcionalmente operativas y validadas.
+  - Mantener funcionalidades actuales de la aplicación.
 - Tasks:
-  - [ ] Unit tests para normalizacion RSS y servicios frontend.
-  - [ ] E2E smoke: portada, seccion, detalle, enlace externo.
-  - [ ] Revisar accesibilidad: landmarks, foco, teclado, contraste.
-  - [ ] Revisar performance basica de listas y carga inicial.
-  - [ ] Configurar metadatos SEO minimos por ruta.
+  - [ ] 
+
 
 <a id="fpn-011"></a>
 
@@ -291,13 +287,14 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 ### [FPN-012] Roadmap post-1.0
 
-- Description: Definir funcionalidades de evolucion para implementar despues de cerrar la version 1.0.
+- Description: Definir y priorizar mejoras para una segunda fase del producto tras el release 1.0.
 - DoD:
-  - Lista de mejoras post-1.0 priorizada.
-  - Criterios de entrada y alcance de cada mejora definidos.
-  - Dependencias tecnicas y riesgos principales documentados.
+  - Lista de iniciativas post-1.0 priorizada por impacto/esfuerzo.
+  - Dependencias y riesgos principales identificados.
+  - Alcance recomendado para la siguiente iteracion documentado.
 - Tasks:
-  - [ ] Mejorar geolocalizacion para detectar ciudad del usuario de forma robusta y mostrar el tiempo real en cabecera.
-  - [ ] Permitir que el usuario agregue sus propios enlaces RSS y construya un feed personalizado.
-  - [ ] Crear modo de lectura para dislexia (fuente adaptada para personas con dislexia y opcion de activacion).
-
+  - [ ] Consolidar mejoras candidatas detectadas durante el cierre MVP.
+  - [ ] Clasificar iniciativas por tipo (producto, UX, performance, plataforma).
+  - [ ] Priorizar backlog post-1.0 con criterios de impacto y coste.
+  - [ ] Identificar prerequisitos tecnicos para las 3 prioridades principales.
+  - [ ] Definir propuesta de alcance para la siguiente iteracion.
