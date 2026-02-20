@@ -1,4 +1,4 @@
-import { WARNING_CODE } from '../interfaces/warning.interface';
+import { WARNING_CODE } from '../interfaces/warning.interface.js';
 
 import type { Source } from '../interfaces/source.interface';
 import type { Warning } from '../interfaces/warning.interface';

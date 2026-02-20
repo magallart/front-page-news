@@ -1,10 +1,10 @@
 import { resolve } from 'node:path';
 
 
-import { buildSourcesResponseFromRecords } from '../src/lib/rss-sources-catalog';
+import { buildSourcesResponseFromRecords } from '../src/lib/rss-sources-catalog.js';
 
-import { loadRssCatalogRecords } from './lib/rss-catalog';
-import { sendJson } from './lib/send-json';
+import { loadRssCatalogRecords } from './lib/rss-catalog.js';
+import { sendJson } from './lib/send-json.js';
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 

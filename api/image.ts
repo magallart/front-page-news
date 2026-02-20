@@ -1,7 +1,7 @@
 import { once } from 'node:events';
 
-import { PayloadTooLargeError, streamResponseBodyWithLimit } from './lib/response-body-limit';
-import { isPublicHttpUrl } from './lib/ssrf-guard';
+import { PayloadTooLargeError, streamResponseBodyWithLimit } from './lib/response-body-limit.js';
+import { isPublicHttpUrl } from './lib/ssrf-guard.js';
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
