@@ -1,12 +1,12 @@
 import { resolve } from 'node:path';
 
 
-import { WARNING_CODE } from '../src/interfaces/warning.interface.js';
 import { fetchFeedsConcurrently } from '../src/lib/feed-fetcher.js';
 import { applyNewsFilters, parseNewsQuery } from '../src/lib/news-query.js';
 import { dedupeAndSortArticles, normalizeFeedItem } from '../src/lib/rss-normalization.js';
 import { parseFeedItems } from '../src/lib/rss-parser.js';
 import { buildSourceFeedTargetsFromRecords } from '../src/lib/rss-sources-catalog.js';
+import { WARNING_CODE } from '../src/lib/warning-code.js';
 
 import { loadRssCatalogRecords } from './lib/rss-catalog.js';
 import { sendJson } from './lib/send-json.js';

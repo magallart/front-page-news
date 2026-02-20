@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { WARNING_CODE } from '../interfaces/warning.interface';
-
 import { fetchFeedsConcurrently } from './feed-fetcher';
+import { WARNING_CODE } from './warning-code';
 
 import type { Source } from '../interfaces/source.interface';
 
