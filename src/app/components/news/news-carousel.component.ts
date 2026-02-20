@@ -50,8 +50,16 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
               <p class="font-editorial-body max-w-2xl truncate text-sm leading-6 text-primary-foreground/90 sm:text-base">
                 {{ article.summary }}
               </p>
-              <p class="text-xs font-medium uppercase tracking-[0.08em] text-primary-foreground/90 sm:text-sm">
-                Por {{ article.author }} - {{ article.publishedAt }}
+              <p
+                class="grid grid-cols-[minmax(0,1.6fr)_auto_minmax(0,1fr)_auto_minmax(0,1.2fr)] items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-primary-foreground/90 sm:text-sm"
+              >
+                <span class="min-w-0 truncate">
+                  Por {{ article.author }}
+                </span>
+                <span aria-hidden="true" class="shrink-0 text-primary-foreground/75">|</span>
+                <span class="min-w-0 truncate">{{ article.source }}</span>
+                <span aria-hidden="true" class="shrink-0 text-primary-foreground/75">|</span>
+                <span class="min-w-0 truncate text-right">{{ formatArticlePublishedAt(article.publishedAt) }}</span>
               </p>
             </div>
           </a>
@@ -124,6 +132,40 @@ export class NewsCarouselComponent {
     this.activeSlideIndex.set(nextIndex);
     this.rotationTimer.restart();
   }
+
+  protected formatArticlePublishedAt(publishedAt: string): string {
+    const date = new Date(publishedAt);
+    const formattedDate = formatDateLabel(date);
+    const formattedTime = formatTimeLabel(date);
+
+    return `${formattedTime} - ${formattedDate}`;
+  }
+}
+
+function formatTimeLabel(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return '--:--';
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
+function formatDateLabel(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return '--.--.----';
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+    .format(date)
+    .replaceAll('/', '.');
 }
 
 function createRotationTimer(onTick: () => void): { restart: () => void } {

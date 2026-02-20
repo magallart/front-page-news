@@ -51,6 +51,33 @@ describe('NewsCarouselComponent', () => {
 
     vi.useRealTimers();
   });
+
+  it('shows author, source and formatted publication datetime in hero metadata', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [
+      {
+        ...MOCK_ARTICLES[0],
+        author: 'Antonio Rodríguez',
+        source: 'El País',
+        publishedAt: '2026-02-20T12:33:00.000Z',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const heroParagraphs = Array.from(
+      fixture.nativeElement.querySelectorAll('[data-testid="carousel-hero"] p')
+    ) as HTMLParagraphElement[];
+    const metaText = heroParagraphs[heroParagraphs.length - 1]?.textContent?.replace(/\s+/g, ' ')?.trim() ?? '';
+
+    expect(metaText).toContain('Por Antonio Rodríguez');
+    expect(metaText).toContain('El País');
+    expect(metaText).toMatch(/\d{2}:\d{2} - 20\.02\.2026$/);
+  });
 });
 
 function getHeroTitle(rootElement: HTMLElement): string {

@@ -273,6 +273,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Seleccionar imagen segun contexto: miniatura en `news-card` y principal en detalle, con fallback a unica imagen disponible.
   - [✔️] En detalle de noticia, ocultar por completo el bloque de imagen cuando no exista foto valida o falle su carga, manteniendo el texto justo bajo la metadata.
   - [✔️] Normalizar artefactos comunes de codificacion (mojibake) en texto de feed (`title`, `summary`, `sourceName`, `author`) para mejorar legibilidad en detalle y listados.
+  - [✔️] Ajustar metadatos del slider de portada: incluir `autor | periodico | hora-fecha` y en movil usar 3 columnas con truncado (`...`) para evitar roturas por autores largos.
 
 
 <a id="fpn-011"></a>
