@@ -18,9 +18,13 @@ describe('NavbarTickerComponent', () => {
     const rootText = fixture.nativeElement.textContent as string;
     expect(rootText).toContain('Última hora');
 
-    const links = fixture.nativeElement.querySelectorAll('a');
-    expect(links.length).toBe(MOCK_HEADLINES.length * 2);
-    expect((links[0] as HTMLAnchorElement).getAttribute('href')).toContain('/noticia/demo-noticia-001');
+    const links = Array.from(fixture.nativeElement.querySelectorAll('a')) as HTMLAnchorElement[];
+    const breakingLink = links.find((link) => link.textContent?.includes('Última hora'));
+    const headlineLinks = links.filter((link) => link.getAttribute('href')?.startsWith('/noticia/'));
+
+    expect(breakingLink?.getAttribute('href')).toBe('/seccion/ultima-hora');
+    expect(headlineLinks.length).toBe(MOCK_HEADLINES.length * 2);
+    expect(headlineLinks[0]?.getAttribute('href')).toContain('/noticia/demo-noticia-001');
   });
 });
 

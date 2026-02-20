@@ -65,11 +65,12 @@ import type { TickerHeadline } from '../../../../interfaces/ticker-headline.inte
     <div class="bg-secondary text-secondary-foreground" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">
       <app-page-container>
         <div class="flex items-center gap-4 py-2 text-sm">
-          <span
-            class="breaking-badge inline-flex shrink-0 rounded bg-primary px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-secondary"
+          <a
+            class="breaking-badge inline-flex shrink-0 rounded bg-primary px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-secondary transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
+            routerLink="/seccion/ultima-hora"
           >
             {{ breakingLabel }}
-          </span>
+          </a>
 
           <div class="ticker-window min-w-0 flex-1">
             <div class="ticker-marquee">

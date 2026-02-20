@@ -282,6 +282,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Reordenar y actualizar secciones del header principal en orden alfabético, excluyendo `Todas` y distribuyendolas en dos líneas para mejorar legibilidad.
   - [✔️] Mantener `Última hora` solo en el menú lateral responsive, excluyendola de la navegación principal desktop.
   - [✔️] Decodificar entidades HTML numéricas del feed (p. ej. `&#8211;`, `&#124;`) en `title`, `summary`, `sourceName` y `author` para mostrar caracteres legibles.
+  - [✔️] Hacer clicable la etiqueta `Última hora` del ticker del header para navegar a la sección `/seccion/ultima-hora`.
 
 
 <a id="fpn-011"></a>
