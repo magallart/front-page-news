@@ -59,11 +59,15 @@ export class AppNavbarComponent {
 
   protected readonly links: readonly NavLink[] = [
     { label: 'Actualidad', href: '/seccion/actualidad', exact: false },
-    { label: 'Sucesos', href: '/seccion/sucesos', exact: false },
+    { label: 'Ciencia', href: '/seccion/ciencia', exact: false },
+    { label: 'Cultura', href: '/seccion/cultura', exact: false },
     { label: 'Deportes', href: '/seccion/deportes', exact: false },
     { label: 'Economía', href: '/seccion/economia', exact: false },
-    { label: 'Cultura', href: '/seccion/cultura', exact: false },
+    { label: 'España', href: '/seccion/espana', exact: false },
+    { label: 'Internacional', href: '/seccion/internacional', exact: false },
     { label: 'Opinión', href: '/seccion/opinion', exact: false },
+    { label: 'Sociedad', href: '/seccion/sociedad', exact: false },
+    { label: 'Tecnología', href: '/seccion/tecnologia', exact: false },
   ];
 
   protected readonly topLinks: readonly TopLink[] = [
@@ -163,7 +167,6 @@ export class AppNavbarComponent {
   }
 
 }
-
 function formatDateLabel(date: Date): string {
   return new Intl.DateTimeFormat('es-ES', {
     weekday: 'long',
@@ -181,3 +184,4 @@ function formatCompactDateLabel(date: Date): string {
   const year = String(date.getFullYear()).slice(-2);
   return `${day}-${month}-${year}`;
 }
+

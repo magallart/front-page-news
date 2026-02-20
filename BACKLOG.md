@@ -279,6 +279,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Restringir el slider de portada para mostrar solo noticias con imagen real (excluyendo placeholders sin foto).
   - [✔️] Alinear a la derecha el nombre del periodico en `news-card` y forzar una sola linea con truncado para fuentes largas.
   - [✔️] Limitar autores en `news-card` a una sola linea con truncado (`...`) para evitar variaciones de altura entre tarjetas.
+  - [✔️] Reordenar y actualizar secciones del header principal en orden alfabético, excluyendo `Todas` y distribuyendolas en dos líneas para mejorar legibilidad.
 
 
 <a id="fpn-011"></a>

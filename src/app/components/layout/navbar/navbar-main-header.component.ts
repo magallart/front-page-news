@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { IconSearchComponent } from '../../icons/icon-search.component';
@@ -67,20 +67,37 @@ import type { TopLink } from '../../../../interfaces/top-link.interface';
         <div class="w-10"></div>
 
         <nav aria-label="Navegacion principal" class="flex-1">
-          <ul class="flex flex-wrap items-center justify-center gap-2 text-sm sm:gap-4">
-            @for (link of links(); track link.href) {
-              <li>
-                <a
-                  class="inline-flex border-b-2 border-transparent px-2 py-2 text-sm font-semibold uppercase tracking-[0.14em] text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                  [routerLink]="link.href"
-                  routerLinkActive="border-primary text-primary"
-                  [routerLinkActiveOptions]="{ exact: link.exact }"
-                >
-                  {{ link.label }}
-                </a>
-              </li>
-            }
-          </ul>
+          <div>
+            <ul class="flex items-center justify-center gap-3 text-sm sm:gap-6">
+              @for (link of primaryLinks(); track link.href) {
+                <li>
+                  <a
+                    class="inline-flex border-b-2 border-transparent px-2 py-2 text-sm font-semibold uppercase tracking-[0.14em] text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    [routerLink]="link.href"
+                    routerLinkActive="border-primary text-primary"
+                    [routerLinkActiveOptions]="{ exact: link.exact }"
+                  >
+                    {{ link.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+
+            <ul class="flex items-center justify-center gap-3 text-sm sm:gap-6">
+              @for (link of secondaryLinks(); track link.href) {
+                <li>
+                  <a
+                    class="inline-flex border-b-2 border-transparent px-2 py-2 text-sm font-semibold uppercase tracking-[0.14em] text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    [routerLink]="link.href"
+                    routerLinkActive="border-primary text-primary"
+                    [routerLinkActiveOptions]="{ exact: link.exact }"
+                  >
+                    {{ link.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
         </nav>
 
         <button
@@ -98,4 +115,6 @@ export class NavbarMainHeaderComponent {
   readonly links = input.required<readonly NavLink[]>();
   readonly topLinks = input.required<readonly TopLink[]>();
   readonly topbarMeta = input.required<string>();
+  protected readonly primaryLinks = computed(() => this.links().slice(0, 6));
+  protected readonly secondaryLinks = computed(() => this.links().slice(6, 11));
 }
