@@ -35,39 +35,39 @@ Brief continuity notes to recover context between terminal sessions.
 
 - What changed:
   - Completed and stabilized header/navbar implementation for desktop + responsive:
-    - sticky behavior by scroll on desktop
-    - sticky-first mobile/tablet header with hamburger menu
-    - ticker interactions (rotation, pause, links)
-    - naming cleanup and component split for navbar subparts
+    - sticky behavior by scroll on desktop.
+    - sticky-first mobile/tablet header with hamburger menu.
+    - ticker interactions (rotation, pause, links).
+    - naming cleanup and component split for navbar subparts.
   - Centralized mock data into `src/app/mocks` and introduced `MockNewsService` to consume mocks from pages/layout.
   - Refactored footer data to centralized mocks and validated responsive behavior.
   - Added broad automated coverage for header and footer:
-    - unit tests for navbar/footer subcomponents and container behaviors
-    - e2e flows for desktop/mobile navigation and interactions
-    - visual snapshot coverage for header (desktop/tablet/mobile, open/closed states) and footer (desktop/mobile)
+    - unit tests for navbar/footer subcomponents and container behaviors.
+    - e2e flows for desktop/mobile navigation and interactions.
+    - visual snapshot coverage for header (desktop/tablet/mobile, open/closed states) and footer (desktop/mobile).
   - Updated `BACKLOG.md` (FPN-003) with completed tasks from this session.
   - Updated `AGENTS.md` with new rules:
-    - interfaces in individual files under `interfaces` (with scoped local exception)
-    - icons as SVG components in `src/app/components/icons`
+    - interfaces in individual files under `interfaces` (with scoped local exception).
+    - icons as SVG components in `src/app/components/icons`.
 
 ## 2026-02-12
 
 - What changed:
   - Reworked hero carousel section to match editorial layout reference:
-    - converted `app-news-carousel` from 3-card grid into a single hero slide with image overlay text
-    - added inline carousel controls and dot navigation on hero
-    - added right-side `En directo` panel for `Ultima hora` style headlines inside the same carousel section
-    - kept anchor compatibility by preserving `id=\"breaking-news\"` in the right panel
+    - converted `app-news-carousel` from 3-card grid into a single hero slide with image overlay text.
+    - added inline carousel controls and dot navigation on hero.
+    - added right-side `En directo` panel for `Ultima hora` style headlines inside the same carousel section.
+    - kept anchor compatibility by preserving `id=\"breaking-news\"` in the right panel.
   - Updated home page composition to feed breaking items directly into `app-news-carousel` and remove duplicate standalone breaking block.
   - Updated carousel unit tests to validate hero title rotation (manual and timed).
 - Files touched:
-  - `src/app/components/news/news-carousel.component.ts`
-  - `src/app/pages/home/home-page.component.ts`
-  - `src/app/components/news/news-carousel.component.spec.ts`
-  - `SESSION.md`
+  - `src/app/components/news/news-carousel.component.ts`.
+  - `src/app/pages/home/home-page.component.ts`.
+  - `src/app/components/news/news-carousel.component.spec.ts`.
+  - `SESSION.md`.
 - Verification performed:
-  - `pnpm run lint` (pass)
-  - `pnpm test` (pass)
+  - `pnpm run lint` (pass).
+  - `pnpm test` (pass).
 - Next pending step (if any):
   - Review spacing/typography details in-browser against target screenshot and fine-tune visual parity.
 
@@ -75,16 +75,16 @@ Brief continuity notes to recover context between terminal sessions.
 
 - What changed:
   - Finalized homepage editorial mockup for `FPN-003` with iterative UI refinements:
-    - hero carousel polish (overlay contrast, height tuning, controls/icons, text clamping)
-    - breaking-news polish (spacing/separators, live badge pulse, CTA behavior/accessibility contrast)
-    - section blocks and CTA link polish (`Ver más` + arrow icon alignment)
-    - most-read redesign and rename to `app-most-read-news`, including right-column width alignment and 10 items
-    - news-card consolidation to selected variant and typography/spacing adjustments
+    - hero carousel polish (overlay contrast, height tuning, controls/icons, text clamping).
+    - breaking-news polish (spacing/separators, live badge pulse, CTA behavior/accessibility contrast).
+    - section blocks and CTA link polish (`Ver más` + arrow icon alignment).
+    - most-read redesign and rename to `app-most-read-news`, including right-column width alignment and 10 items.
+    - news-card consolidation to selected variant and typography/spacing adjustments.
   - Added/updated SVG icon components in `src/app/components/icons` for carousel/CTA/most-read actions.
   - Expanded automated test coverage for homepage:
-    - new unit tests for `current-news-block`, `section-block`, `most-read-news`, and `home-page`
-    - e2e checks for homepage structure/styles/layout consistency
-    - responsive visual snapshots (desktop and mobile) for homepage content
+    - new unit tests for `current-news-block`, `section-block`, `most-read-news`, and `home-page`.
+    - e2e checks for homepage structure/styles/layout consistency.
+    - responsive visual snapshots (desktop and mobile) for homepage content.
   - Added architecture guidance in `AGENTS.md` for when to create per-component folders.
   - Opened PR with GitHub CLI and merged changes into `main`.
 
@@ -93,17 +93,17 @@ Brief continuity notes to recover context between terminal sessions.
 
 - What changed:
   - Completed ticket `FPN-004` for section-page UX and behavior:
-    - implemented collapsible filters panel with `Mostrar/Ocultar filtros` button
-    - added local Tabler SVG icon component (`filter`) and integrated it in the toggle button
-    - finalized filters layout with source selection, sort options, and bulk actions (`SELECCIONAR TODO` / `QUITAR TODO`)
-    - ensured filters are hidden when the section has no news and preserved centered empty/error state behavior
+    - implemented collapsible filters panel with `Mostrar/Ocultar filtros` button.
+    - added local Tabler SVG icon component (`filter`) and integrated it in the toggle button.
+    - finalized filters layout with source selection, sort options, and bulk actions (`SELECCIONAR TODO` / `QUITAR TODO`).
+    - ensured filters are hidden when the section has no news and preserved centered empty/error state behavior.
   - Expanded automated coverage for filters and section-page interactions:
-    - stronger unit tests for `section-filters` events and UI states
-    - additional section-page tests for filter toggle/empty outcomes
-    - new e2e flow for section filters behavior
+    - stronger unit tests for `section-filters` events and UI states.
+    - additional section-page tests for filter toggle/empty outcomes.
+    - new e2e flow for section filters behavior.
   - Updated backlog scope for `FPN-004`:
-    - removed pending task `Anadir bloque secundario de apoyo editorial`
-    - marked detail navigation task as completed
+    - removed pending task `Anadir bloque secundario de apoyo editorial`.
+    - marked detail navigation task as completed.
   - Opened PR `#2`, refined it to concise summary format, and merged to `main`.
   - Synced local `main` with remote after merge.
 
@@ -112,14 +112,14 @@ Brief continuity notes to recover context between terminal sessions.
 - What changed:
   - Completed ticket `FPN-005` and merged PR `#3` to `main`.
   - Built the article detail page with editorial two-column layout and responsive behavior:
-    - main article content in the center
-    - right sidebar with `breaking-news` and `most-read-news` on desktop only
+    - main article content in the center.
+    - right sidebar with `breaking-news` and `most-read-news` on desktop only.
   - Added new article components and supporting icons:
-    - `article-content`, `article-metadata`, `article-preview-cta`, `article-locked-preview`, `article-not-found`
-    - `icon-external-link`, `icon-exclamation-circle`
+    - `article-content`, `article-metadata`, `article-preview-cta`, `article-locked-preview`, `article-not-found`.
+    - `icon-external-link`, `icon-exclamation-circle`.
   - Implemented mobile/desktop metadata behavior:
-    - mobile date format `DD-MM-YY`
-    - centered metadata labels on mobile and left-aligned on desktop
+    - mobile date format `DD-MM-YY`.
+    - centered metadata labels on mobile and left-aligned on desktop.
   - Added fallback handling for missing article fields, including image fallback to `/images/no-image.jpg`.
   - Extended unit tests for article page and new components, including responsive and fallback scenarios.
   - Updated `BACKLOG.md` to mark `FPN-005` completed and keep task list aligned with delivered scope.
@@ -134,19 +134,19 @@ Brief continuity notes to recover context between terminal sessions.
     - Correct handling of per-feed section mapping to avoid wrong section attribution.
     - Correct error behavior for catalog failures (`500`) and `no-store` cache policy for non-2xx responses.
   - Improved parser robustness:
-    - support for XML attributes with single quotes and double quotes
-    - CDATA extraction when wrapped by whitespace/newlines
+    - support for XML attributes with single quotes and double quotes.
+    - CDATA extraction when wrapped by whitespace/newlines.
   - Expanded test coverage with endpoint contract tests for `/api/news`:
-    - filters, warnings, cache headers, catalog errors
-    - shared feed key mapping scenarios to avoid section overwrite issues
+    - filters, warnings, cache headers, catalog errors.
+    - shared feed key mapping scenarios to avoid section overwrite issues.
   - Separated catalog concerns:
-    - kept `docs/rss-sources.md` for manual validation and health-check script
-    - introduced `data/rss-sources.json` as typed runtime source for API
-    - added `RssSourceRecord` and adapted catalog utilities to consume typed records
+    - kept `docs/rss-sources.md` for manual validation and health-check script.
+    - introduced `data/rss-sources.json` as typed runtime source for API.
+    - added `RssSourceRecord` and adapted catalog utilities to consume typed records.
   - Updated `BACKLOG.md`:
-    - marked FPN-007 tasks as completed
-    - added explicit tasks for the catalog split/json migration
-    - reordered and expanded FPN-008 tasks for Angular API integration (`signals` + `shareReplay` strategy)
+    - marked FPN-007 tasks as completed.
+    - added explicit tasks for the catalog split/json migration.
+    - reordered and expanded FPN-008 tasks for Angular API integration (`signals` + `shareReplay` strategy).
   - Synced local `main` with `origin/main` after merge.
 
 ## 2026-02-18
@@ -154,42 +154,42 @@ Brief continuity notes to recover context between terminal sessions.
 - What changed:
   - Completed ticket `FPN-008` end-to-end (Angular integration with real API) and closed all remaining backlog subtasks.
   - Replaced mock data flow in UI with real API consumption:
-    - homepage connected to `/api/news`
-    - section page connected by `slug` with typed filters (`source`, `q`, `page`, `limit`)
-    - article detail connected to aggregated dataset with fallback fetch by `id` when missing
+    - homepage connected to `/api/news`.
+    - section page connected by `slug` with typed filters (`source`, `q`, `page`, `limit`).
+    - article detail connected to aggregated dataset with fallback fetch by `id` when missing.
   - Implemented typed frontend data layer:
-    - `SourcesService` and `NewsService` with strict adapters and runtime validation
-    - request cache with `shareReplay` and explicit TTLs
-    - cache invalidation APIs (`clear`, `invalidateBySection`, `forceRefresh`)
-    - extracted service/store interfaces into dedicated interface files
+    - `SourcesService` and `NewsService` with strict adapters and runtime validation.
+    - request cache with `shareReplay` and explicit TTLs.
+    - cache invalidation APIs (`clear`, `invalidateBySection`, `forceRefresh`).
+    - extracted service/store interfaces into dedicated interface files.
   - Added state stores with Angular signals:
-    - `SourcesStore`: `loading`, `data`, `error`, reusable initial load + refresh
-    - `NewsStore`: `loading`, `data`, `error`, `warnings`, `lastUpdated`, manual refresh
+    - `SourcesStore`: `loading`, `data`, `error`, reusable initial load + refresh.
+    - `NewsStore`: `loading`, `data`, `error`, `warnings`, `lastUpdated`, manual refresh.
   - Defined and integrated UI state matrix (`loading`, `empty`, `error total`, `error parcial`) for home/section/detail.
   - Integrated global HTTP error handling:
-    - added typed `AppHttpError`
-    - added interceptor and shared user-facing error mapping utilities
-    - aligned store/article fallback error behavior
+    - added typed `AppHttpError`.
+    - added interceptor and shared user-facing error mapping utilities.
+    - aligned store/article fallback error behavior.
   - Improved section UX and data behavior:
-    - removed hard API max limit and raised frontend feed request limit
-    - added progressive reveal in section lists (`24` initial + `12` per click)
-    - updated CTA styling/text (`Ver m�s noticias`) with eye icon and spacing adjustments
+    - removed hard API max limit and raised frontend feed request limit.
+    - added progressive reveal in section lists (`24` initial + `12` per click).
+    - updated CTA styling/text (`Ver m�s noticias`) with eye icon and spacing adjustments.
   - Improved image resilience and feed compatibility:
-    - image proxy endpoint `api/image`
-    - fallback image handling in cards/content
-    - parser support to derive YouTube thumbnails from video links
+    - image proxy endpoint `api/image`.
+    - fallback image handling in cards/content.
+    - parser support to derive YouTube thumbnails from video links.
   - Removed legacy mock dependencies after API integration:
-    - removed `MockNewsService` and unused news mocks
-    - moved locked preview patterns to constants
-    - removed `footer.mock` and inlined static footer data in component
+    - removed `MockNewsService` and unused news mocks.
+    - moved locked preview patterns to constants.
+    - removed `footer.mock` and inlined static footer data in component.
   - Expanded and stabilized test coverage:
-    - service/store unit tests for cache hit, cache miss, TTL, invalidation, `forceRefresh`
-    - store state tests for `loading`/`error`/`success`
-    - integration tests for home/section/article pages with mocked HTTP API responses
-    - interceptor/error-mapper tests
+    - service/store unit tests for cache hit, cache miss, TTL, invalidation, `forceRefresh`.
+    - store state tests for `loading`/`error`/`success`.
+    - integration tests for home/section/article pages with mocked HTTP API responses.
+    - interceptor/error-mapper tests.
   - Documentation and backlog alignment:
-    - created `docs/cache-and-ui-states.md` (English) with cache strategy + UI state criteria
-    - updated `BACKLOG.md` to mark `FPN-008` completed and backfilled missing completed improvements
+    - created `docs/cache-and-ui-states.md` (English) with cache strategy + UI state criteria.
+    - updated `BACKLOG.md` to mark `FPN-008` completed and backfilled missing completed improvements.
   - Created multiple atomic commits across feature, refactor, test, and docs scopes, all tied to `FPN-008`.
 
 ## 2026-02-19
@@ -201,27 +201,48 @@ Brief continuity notes to recover context between terminal sessions.
   - Updated `serve` build targets to reference `front-page-news`.
   - Renamed package name in `package.json` to `front-page-news`.
   - Hardened quality gates to prevent false greens:
-    - updated `lint` script to run `lint:eslint` + `typecheck`
-    - added `typecheck` script for both `tsconfig.app.json` and `tsconfig.api.json`
-    - expanded Angular ESLint scope to include `api/**/*.ts`
-    - added ESLint guard for `src/**/*.ts` to forbid `node:*` imports (excluding `*.spec.ts`)
+    - updated `lint` script to run `lint:eslint` + `typecheck`.
+    - added `typecheck` script for both `tsconfig.app.json` and `tsconfig.api.json`.
+    - expanded Angular ESLint scope to include `api/**/*.ts`.
+    - added ESLint guard for `src/**/*.ts` to forbid `node:*` imports (excluding `*.spec.ts`).
   - Hardened `api/image` against SSRF and large payload memory risk:
-    - moved server-only guards/helpers to `api/lib` (`ssrf-guard.ts`, `response-body-limit.ts`)
-    - blocked credentialed URLs and non-HTTP protocols
-    - switched image fetch to manual redirect handling with safety validation at each redirect hop
-    - switched image proxy response handling to streaming with hard byte limit (no full in-memory buffering)
-    - updated API/spec imports to match the new server helper location
-    - added/updated coverage for SSRF guard and response body byte-limit helpers
+    - moved server-only guards/helpers to `api/lib` (`ssrf-guard.ts`, `response-body-limit.ts`).
+    - blocked credentialed URLs and non-HTTP protocols.
+    - switched image fetch to manual redirect handling with safety validation at each redirect hop.
+    - switched image proxy response handling to streaming with hard byte limit (no full in-memory buffering).
+    - updated API/spec imports to match the new server helper location.
+    - added/updated coverage for SSRF guard and response body byte-limit helpers.
   - Hardened image-proxy response behavior and timeout handling:
-    - validate oversized upstream `content-length` before sending success headers and return clean `413`
-    - added upstream timeout/cancellation with `AbortController` (including redirects and client disconnect)
-    - mapped upstream timeout to explicit `504` response
-    - added regression tests for oversized-header and timeout-abort scenarios
+    - validate oversized upstream `content-length` before sending success headers and return clean `413`.
+    - added upstream timeout/cancellation with `AbortController` (including redirects and client disconnect).
+    - mapped upstream timeout to explicit `504` response.
+    - added regression tests for oversized-header and timeout-abort scenarios.
   - Reduced API duplication in RSS catalog and JSON response handling:
     - extracted shared catalog parser/validator to `api/lib/rss-catalog.ts`
     - extracted shared JSON response helper with cache policy to `api/lib/send-json.ts`
     - refactored `api/news.ts` and `api/sources.ts` to reuse shared helpers
   - Created and pushed PR `#7` with the full `FPN-008` hardening/refactor batch.
-- Verification performed:
-  - `pnpm run lint` (pass)
-  - `pnpm test` (pass)
+  - Completed ticket `FPN-009` with homepage editorial improvements and merged PR `#8` to `main`.
+  - Implemented new homepage content strategies as reusable utils:
+    - `most-read` ranking based on recency and source repetition signals.
+    - featured-news selection with section diversity and source caps.
+    - mixed-news selection/chunking for compact multi-row editorial blocks.
+  - Refactored home composition to keep `HomePageComponent` focused on rendering:
+    - extracted selection logic to pure utility functions with dedicated tests.
+    - adjusted breaking ticker direction and verified UX behavior.
+    - replaced sectioned blocks with curated mixed rows (5x3) and tuned spacing.
+  - Added source directory component in homepage right rail:
+    - integrated newspaper logos from `public/images/sources`.
+    - iterated visual design (grid rhythm, hover tooltip, zoom, separators, spacing, typography).
+    - linked each source to official homepage URLs for navigation consistency.
+  - Fixed PR-reported regressions and added guard tests:
+    - ignored stale store/fallback responses to prevent outdated UI writes on route/query changes.
+    - restored thumbnail acceptance for `media:thumbnail` URLs without file extension.
+    - resolved source directory links to publisher homepages instead of RSS/CDN hosts.
+  - Tooling and workflow cleanup:
+    - removed unused Husky/commitlint setup after confirming hooks were no longer part of active workflow.
+    - standardized new commit messages in English and kept atomic task-based commit structure.
+  - Updated project docs/workflow artifacts:
+    - revised `BACKLOG.md` tasks/status for delivered `FPN-009` scope.
+    - maintained `SESSION.md` continuity with compact per-day summary.
+    - improved PR title/body quality and traceability before merge.
