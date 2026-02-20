@@ -42,14 +42,30 @@ describe('selectFeaturedNews', () => {
     expect(selected).toHaveLength(4);
     expect(sourceACount).toBe(2);
   });
+
+  it('only selects featured news that have a real image', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('with-image-1', 'actualidad', 'Fuente A', toIso(now, 1), 'https://example.com/1.jpg'),
+      createNewsItem('without-image-1', 'economia', 'Fuente B', toIso(now, 2), '/images/no-image.jpg'),
+      createNewsItem('without-image-2', 'cultura', 'Fuente C', toIso(now, 3), '   '),
+      createNewsItem('with-image-2', 'deportes', 'Fuente D', toIso(now, 4), 'https://example.com/2.jpg'),
+    ] as const;
+
+    const selected = selectFeaturedNews(items);
+
+    expect(selected).toHaveLength(2);
+    expect(selected.every((item) => item.imageUrl !== '/images/no-image.jpg')).toBe(true);
+    expect(selected.map((item) => item.id)).toEqual(['with-image-1', 'with-image-2']);
+  });
 });
 
-function createNewsItem(id: string, section: string, source: string, publishedAt: string) {
+function createNewsItem(id: string, section: string, source: string, publishedAt: string, imageUrl = 'https://example.com/image.jpg') {
   return {
     id,
     title: id,
     summary: id,
-    imageUrl: 'https://example.com/image.jpg',
+    imageUrl,
     source,
     section,
     publishedAt,

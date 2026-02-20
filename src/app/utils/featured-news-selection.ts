@@ -4,11 +4,12 @@ const FEATURED_NEWS_LIMIT = 5;
 const FEATURED_MAX_PER_SOURCE = 2;
 
 export function selectFeaturedNews(items: readonly NewsItem[]): readonly NewsItem[] {
-  if (items.length <= 1) {
-    return items;
+  const itemsWithImage = items.filter((item) => hasFeaturedImage(item.imageUrl));
+  if (itemsWithImage.length <= 1) {
+    return itemsWithImage;
   }
 
-  const sortedByRecency = [...items].sort(compareByRecencyDesc);
+  const sortedByRecency = [...itemsWithImage].sort(compareByRecencyDesc);
   const selectedIds = new Set<string>();
   const selectedPerSource = new Map<string, number>();
   const selected: NewsItem[] = [];
@@ -52,6 +53,11 @@ export function selectFeaturedNews(items: readonly NewsItem[]): readonly NewsIte
   }
 
   return selected;
+}
+
+function hasFeaturedImage(imageUrl: string): boolean {
+  const normalized = imageUrl.trim();
+  return normalized.length > 0 && normalized !== '/images/no-image.jpg';
 }
 
 function canSelectFromSource(
