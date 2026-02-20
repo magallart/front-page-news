@@ -54,7 +54,7 @@ export function extractSafeSummary(value: string | null): string {
   const withoutTags = withoutStyles.replace(/<[^>]*>/g, ' ');
   const decodedEntities = decodeHtmlEntities(withoutTags);
 
-  return decodedEntities.replace(/\s+/g, ' ').trim();
+  return normalizeFeedText(decodedEntities.replace(/\s+/g, ' ').trim());
 }
 
 export function canonicalizeUrl(value: string | null): string | null {
@@ -90,7 +90,7 @@ export function buildStableArticleId(
 }
 
 export function normalizeFeedItem(item: RawFeedItem): Article | null {
-  const title = item.title?.trim() ?? '';
+  const title = normalizeFeedText(item.title?.trim() ?? '');
   if (!title) {
     return null;
   }
@@ -109,9 +109,9 @@ export function normalizeFeedItem(item: RawFeedItem): Article | null {
     imageUrl: item.imageUrl?.trim() || null,
     thumbnailUrl: item.thumbnailUrl?.trim() || null,
     sourceId: item.sourceId,
-    sourceName: item.sourceName,
+    sourceName: normalizeFeedText(item.sourceName),
     sectionSlug: item.sectionSlug,
-    author: item.author?.trim() || null,
+    author: normalizeNullableFeedText(item.author),
     publishedAt: normalizedDate,
   };
 }
@@ -238,4 +238,40 @@ function safeFromCodePoint(value: number): string | null {
   } catch {
     return null;
   }
+}
+
+function normalizeNullableFeedText(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = normalizeFeedText(value);
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeFeedText(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const score = mojibakeScore(trimmed);
+  if (score === 0) {
+    return trimmed;
+  }
+
+  const repaired = decodeUtf8FromSingleByteText(trimmed);
+  return mojibakeScore(repaired) < score ? repaired : trimmed;
+}
+
+function mojibakeScore(value: string): number {
+  let score = 0;
+  score += (value.match(/Ã|Â|â/g) ?? []).length * 2;
+  score += (value.match(/�/g) ?? []).length * 3;
+  return score;
+}
+
+function decodeUtf8FromSingleByteText(value: string): string {
+  const bytes = Uint8Array.from(value, (character) => character.charCodeAt(0) & 0xff);
+  return new TextDecoder('utf-8').decode(bytes);
 }

@@ -5,6 +5,7 @@ import {
   dedupeAndSortArticles,
   extractSafeSummary,
   normalizeDateToIso,
+  normalizeFeedItem,
 } from './rss-normalization';
 
 import type { Article } from '../interfaces/article.interface';
@@ -25,6 +26,12 @@ describe('rss-normalization', () => {
       '<p>Ultima <strong>hora</strong> &amp; analisis</p><script>alert("x")</script><style>.x{}</style>';
 
     expect(extractSafeSummary(raw)).toBe('Ultima hora & analisis');
+  });
+
+  it('repairs common mojibake in extracted summary text', () => {
+    const raw = '<p>SegÃºn fuentes, se abren nuevas lÃ­neas para los prÃ³ximos dÃ­as.</p>';
+
+    expect(extractSafeSummary(raw)).toBe('Según fuentes, se abren nuevas líneas para los próximos días.');
   });
 
   it('keeps invalid numeric entities without throwing', () => {
@@ -144,6 +151,27 @@ describe('rss-normalization', () => {
     expect(deduped[0]?.id).toBe('newer-without-image');
     expect(deduped[0]?.sectionSlug).toBe('economia');
     expect(deduped[0]?.imageUrl).toBe('https://cdn.example.com/image.jpg');
+  });
+
+  it('repairs mojibake in feed item title and author during normalization', () => {
+    const normalized = normalizeFeedItem({
+      externalId: 'id-1',
+      title: 'AnÃ¡lisis del dÃ­a',
+      summary: '<p>Texto</p>',
+      url: 'https://example.com/news/a',
+      sourceId: 'source-a',
+      sourceName: 'PeriÃ³dico Demo',
+      sectionSlug: 'opinion',
+      author: 'RedacciÃ³n Demo',
+      publishedAt: 'Fri, 20 Feb 2026 10:00:00 GMT',
+      imageUrl: null,
+      thumbnailUrl: null,
+    });
+
+    expect(normalized).not.toBeNull();
+    expect(normalized?.title).toBe('Análisis del día');
+    expect(normalized?.sourceName).toBe('Periódico Demo');
+    expect(normalized?.author).toBe('Redacción Demo');
   });
 });
 
