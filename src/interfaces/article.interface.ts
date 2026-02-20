@@ -6,6 +6,7 @@ export interface Article {
   readonly url: string;
   readonly canonicalUrl: string | null;
   readonly imageUrl: string | null;
+  readonly thumbnailUrl?: string | null;
   readonly sourceId: string;
   readonly sourceName: string;
   readonly sectionSlug: string;

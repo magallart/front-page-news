@@ -110,6 +110,26 @@ describe('rss-parser', () => {
     expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/thumbnail.jpg');
   });
 
+  it('prioritizes media:content image over media:thumbnail and picks largest media image', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+        <channel>
+          <item>
+            <guid>guid-4c</guid>
+            <title>Titular con multiples imagenes</title>
+            <link>https://example.com/rss-4c</link>
+            <media:thumbnail url="https://cdn.example.com/thumb.jpg" width="150" height="100" />
+            <media:content url="https://cdn.example.com/large.jpg" type="image/jpeg" width="2048" height="1365" />
+            <media:content url="https://cdn.example.com/small.jpg" type="image/jpeg" width="640" height="480" />
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'cultura' });
+    expect(result.items[0]?.imageUrl).toBe('https://cdn.example.com/large.jpg');
+  });
+
   it('accepts media:thumbnail urls without image extension', () => {
     const source = makeSource();
     const xml = `<?xml version="1.0"?>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -42,9 +42,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           [routerLink]="['/noticia', article().id]"
           class="block overflow-hidden rounded-lg bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          @if (article().imageUrl) {
+          @if (previewImageUrl()) {
             <img
-              [src]="article().imageUrl"
+              [src]="previewImageUrl()"
               [alt]="article().title"
               class="aspect-[16/9] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
               loading="lazy"
@@ -74,6 +74,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 export class NewsCardComponent {
   readonly article = input.required<NewsItem>();
   private readonly fallbackImageUrl = '/images/no-image.jpg';
+  protected readonly previewImageUrl = computed(() => this.article().thumbnailUrl ?? this.article().imageUrl);
 
   protected onImageError(event: Event): void {
     const imageElement = event.target as HTMLImageElement | null;

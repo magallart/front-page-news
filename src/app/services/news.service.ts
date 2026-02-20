@@ -144,6 +144,7 @@ function toArticle(value: unknown, index: number): Article {
     url: asString(record['url'], `articles[${index}].url`),
     canonicalUrl: asNullableString(record['canonicalUrl'], `articles[${index}].canonicalUrl`),
     imageUrl: asNullableString(record['imageUrl'], `articles[${index}].imageUrl`),
+    thumbnailUrl: asOptionalNullableString(record['thumbnailUrl'], `articles[${index}].thumbnailUrl`),
     sourceId: asString(record['sourceId'], `articles[${index}].sourceId`),
     sourceName: asString(record['sourceName'], `articles[${index}].sourceName`),
     sectionSlug: asString(record['sectionSlug'], `articles[${index}].sectionSlug`),
@@ -197,6 +198,14 @@ function asNullableString(value: unknown, field: string): string | null {
   }
 
   return value;
+}
+
+function asOptionalNullableString(value: unknown, field: string): string | null | undefined {
+  if (typeof value === 'undefined') {
+    return undefined;
+  }
+
+  return asNullableString(value, field);
 }
 
 function asNumber(value: unknown, field: string): number {
