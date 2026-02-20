@@ -35,7 +35,11 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           >
             {{ article().section }}
           </p>
-          <p class="text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().source }}</p>
+          <p
+            class="ml-auto max-w-[11rem] truncate text-right text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground whitespace-nowrap"
+          >
+            {{ article().source }}
+          </p>
         </div>
 
         <a
