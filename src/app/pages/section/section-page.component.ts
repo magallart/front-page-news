@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
@@ -9,6 +9,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
+import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
@@ -23,6 +24,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
     NewsCardComponent,
     ErrorStateComponent,
     SectionFiltersComponent,
+    SectionPageSkeletonComponent,
     IconFilterComponent,
     IconEyeComponent,
   ],
@@ -32,16 +34,16 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
         <h1 class="sr-only">{{ sectionTitle() }}</h1>
 
         @if (sectionUiState() === uiViewState.LOADING) {
-          <p class="text-sm text-muted-foreground">Cargando sección...</p>
+          <app-section-page-skeleton />
         } @else if (sectionUiState() === uiViewState.ERROR_TOTAL) {
           <app-error-state
             headline="No se han podido cargar noticias"
-            message="Estamos teniendo problemas para cargar esta sección. Inténtalo de nuevo en unos minutos."
+            message="Estamos teniendo problemas para cargar esta secciÃ³n. IntÃ©ntalo de nuevo en unos minutos."
           />
         } @else if (sectionUiState() === uiViewState.EMPTY) {
           <app-error-state
-            headline="No hay noticias en esta sección"
-            message="No encontramos resultados para los filtros actuales. Prueba con otra combinación."
+            headline="No hay noticias en esta secciÃ³n"
+            message="No encontramos resultados para los filtros actuales. Prueba con otra combinaciÃ³n."
           />
         } @else {
           <div class="mb-4 flex justify-start">
@@ -81,7 +83,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
                 (click)="loadMoreNews()"
               >
                 <app-icon-eye />
-                Ver más noticias
+                Ver mÃ¡s noticias
               </button>
             </div>
           }
@@ -258,3 +260,4 @@ function parsePositiveNumber(value: string | null, fallback: number): number {
 
   return parsed;
 }
+

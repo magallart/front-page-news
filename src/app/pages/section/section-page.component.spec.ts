@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+﻿import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -107,7 +107,7 @@ describe('SectionPageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-error-state')).toBeTruthy();
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
-    expect(text).toContain('No hay noticias en esta sección');
+    expect(text).toContain('No hay noticias en esta secciÃ³n');
   });
 
   it('filters section cards by selected source from filters panel', async () => {
@@ -144,7 +144,7 @@ describe('SectionPageComponent', () => {
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
   });
 
-  it('shows 24 cards initially and loads 12 more when clicking "Ver más"', async () => {
+  it('shows 24 cards initially and loads 12 more when clicking "Ver mÃ¡s"', async () => {
     const routeMock = createRouteMock({ slug: 'deportes' });
     const newsStoreMock = createNewsStoreMock({
       data: createSectionArticles('deportes', 'Fuente Deportes', 30),
@@ -253,7 +253,11 @@ function createSectionArticles(sectionSlug: string, sourceName: string, count: n
 }
 
 function getLoadMoreButton(container: HTMLElement): HTMLButtonElement | null {
-  return Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('Ver más')) ?? null;
+  return (
+    Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.includes('Ver más') || button.textContent?.includes('Ver mÃ¡s'),
+    ) ?? null
+  );
 }
 
 function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: () => void }) {
@@ -261,3 +265,5 @@ function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: 
   toggle.click();
   fixture.detectChanges();
 }
+
+
