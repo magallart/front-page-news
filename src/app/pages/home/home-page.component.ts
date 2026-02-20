@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
+import { HomePageSkeletonComponent } from '../../components/news/home-page-skeleton.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
@@ -26,6 +27,7 @@ import type { OnInit } from '@angular/core';
   imports: [
     PageContainerComponent,
     ErrorStateComponent,
+    HomePageSkeletonComponent,
     NewsCarouselComponent,
     BreakingNewsComponent,
     MostReadNewsComponent,
@@ -36,9 +38,7 @@ import type { OnInit } from '@angular/core';
     <app-page-container>
       @switch (uiState()) {
         @case (uiViewState.LOADING) {
-          <section class="space-y-4 py-4 sm:space-y-6">
-            <p class="text-sm text-muted-foreground">Cargando portada...</p>
-          </section>
+          <app-home-page-skeleton />
         }
         @case (uiViewState.ERROR_TOTAL) {
           <section class="py-4">

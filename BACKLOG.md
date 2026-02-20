@@ -285,6 +285,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Hacer clicable la etiqueta `Última hora` del ticker del header para navegar a la sección `/seccion/ultima-hora`.
   - [✔️] Ajustar la sección "Visita las webs oficiales..." para que en tablet muestre logos en 2 líneas horizontales, simplificando el componente y eliminando la variante de 1 línea.
   - [✔️] Simplificar el footer para dejar un layout limpio con logo y redes en una sola fila, eliminando las columnas editoriales y el texto central.
+  - [✔️] Implementar skeleton estructurado de la home en estado de carga y extraerlo a `home-page-skeleton` como componente dedicado para mejorar UX y mantenimiento.
 
 
 <a id="fpn-011"></a>
