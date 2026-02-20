@@ -24,6 +24,7 @@ describe('api-ui-adapters', () => {
       title: 'Titulo',
       summary: 'Resumen',
       imageUrl: '/images/no-image.jpg',
+      thumbnailUrl: '/images/no-image.jpg',
       source: 'Fuente Uno',
       section: 'actualidad',
       publishedAt: '',

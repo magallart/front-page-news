@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+﻿import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -261,3 +261,5 @@ function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: 
   toggle.click();
   fixture.detectChanges();
 }
+
+

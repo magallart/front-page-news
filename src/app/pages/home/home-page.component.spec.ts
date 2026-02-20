@@ -90,6 +90,30 @@ describe('HomePageComponent', () => {
     expect(pageText).not.toContain('Ver más');
   });
 
+  it('renders structured skeleton blocks while loading with no data', async () => {
+    const newsStoreMock = createNewsStoreMock({ data: [], loading: true });
+    const sourcesStoreMock = createSourcesStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const loadingSection = fixture.nativeElement.querySelector('section[aria-label="Cargando portada"]');
+
+    expect(loadingSection).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('.fp-skeleton-block').length).toBeGreaterThan(20);
+    expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeFalsy();
+  });
+
   it('renders total error state when api fails and there is no data', async () => {
     const newsStoreMock = createNewsStoreMock({
       data: [],

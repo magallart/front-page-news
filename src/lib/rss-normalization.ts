@@ -11,6 +11,7 @@ export interface RawFeedItem {
   readonly author: string | null;
   readonly publishedAt: string | null;
   readonly imageUrl: string | null;
+  readonly thumbnailUrl: string | null;
 }
 
 const HTML_ENTITY_MAP: Record<string, string> = {
@@ -51,9 +52,7 @@ export function extractSafeSummary(value: string | null): string {
   const withoutScripts = value.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ' ');
   const withoutStyles = withoutScripts.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, ' ');
   const withoutTags = withoutStyles.replace(/<[^>]*>/g, ' ');
-  const decodedEntities = decodeHtmlEntities(withoutTags);
-
-  return decodedEntities.replace(/\s+/g, ' ').trim();
+  return normalizeFeedText(withoutTags.replace(/\s+/g, ' ').trim());
 }
 
 export function canonicalizeUrl(value: string | null): string | null {
@@ -89,7 +88,7 @@ export function buildStableArticleId(
 }
 
 export function normalizeFeedItem(item: RawFeedItem): Article | null {
-  const title = item.title?.trim() ?? '';
+  const title = normalizeFeedText(item.title?.trim() ?? '');
   if (!title) {
     return null;
   }
@@ -106,10 +105,11 @@ export function normalizeFeedItem(item: RawFeedItem): Article | null {
     url: item.url?.trim() ?? '',
     canonicalUrl,
     imageUrl: item.imageUrl?.trim() || null,
+    thumbnailUrl: item.thumbnailUrl?.trim() || null,
     sourceId: item.sourceId,
-    sourceName: item.sourceName,
+    sourceName: normalizeFeedText(item.sourceName),
     sectionSlug: item.sectionSlug,
-    author: item.author?.trim() || null,
+    author: normalizeNullableFeedText(item.author),
     publishedAt: normalizedDate,
   };
 }
@@ -126,9 +126,7 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
       continue;
     }
 
-    if (isMoreRecent(item.publishedAt, current.publishedAt)) {
-      uniqueByKey.set(dedupeKey, item);
-    }
+    uniqueByKey.set(dedupeKey, mergeDedupedArticles(current, item));
   }
 
   return Array.from(uniqueByKey.values()).sort((first, second) => {
@@ -136,6 +134,32 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
     const secondTimestamp = second.publishedAt ? Date.parse(second.publishedAt) : Number.NEGATIVE_INFINITY;
     return secondTimestamp - firstTimestamp;
   });
+}
+
+function mergeDedupedArticles(current: Article, candidate: Article): Article {
+  const candidateIsPreferred = isCandidatePreferred(candidate, current);
+  const preferred = candidateIsPreferred ? candidate : current;
+  const fallback = candidateIsPreferred ? current : candidate;
+
+  return {
+    ...preferred,
+    sectionSlug: pickBestSectionSlug(preferred.sectionSlug, fallback.sectionSlug),
+    imageUrl: preferred.imageUrl ?? fallback.imageUrl,
+    thumbnailUrl: preferred.thumbnailUrl ?? fallback.thumbnailUrl ?? preferred.imageUrl ?? fallback.imageUrl,
+    author: preferred.author ?? fallback.author,
+    summary: preferred.summary || fallback.summary,
+  };
+}
+
+function isCandidatePreferred(candidate: Article, current: Article): boolean {
+  const candidateTime = toTimestamp(candidate.publishedAt);
+  const currentTime = toTimestamp(current.publishedAt);
+
+  if (candidateTime !== currentTime) {
+    return candidateTime > currentTime;
+  }
+
+  return hasHigherSectionPriority(candidate.sectionSlug, current.sectionSlug);
 }
 
 function decodeHtmlEntities(value: string): string {
@@ -177,10 +201,24 @@ function buildTitleDateKey(title: string, publishedAt: string | null): string {
   return `${title.trim().toLowerCase()}|${publishedAt ?? 'no-date'}`;
 }
 
-function isMoreRecent(candidate: string | null, current: string | null): boolean {
-  const candidateTime = candidate ? Date.parse(candidate) : Number.NEGATIVE_INFINITY;
-  const currentTime = current ? Date.parse(current) : Number.NEGATIVE_INFINITY;
-  return candidateTime > currentTime;
+function hasHigherSectionPriority(candidateSection: string, currentSection: string): boolean {
+  return getSectionPriority(candidateSection) > getSectionPriority(currentSection);
+}
+
+function pickBestSectionSlug(primarySection: string, secondarySection: string): string {
+  if (hasHigherSectionPriority(secondarySection, primarySection)) {
+    return secondarySection;
+  }
+
+  return primarySection;
+}
+
+function getSectionPriority(sectionSlug: string): number {
+  return sectionSlug === 'ultima-hora' ? 0 : 1;
+}
+
+function toTimestamp(value: string | null): number {
+  return value ? Date.parse(value) : Number.NEGATIVE_INFINITY;
 }
 
 function isValidCodePoint(value: number): boolean {
@@ -198,4 +236,41 @@ function safeFromCodePoint(value: number): string | null {
   } catch {
     return null;
   }
+}
+
+function normalizeNullableFeedText(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = normalizeFeedText(value);
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeFeedText(value: string): string {
+  const decodedEntities = decodeHtmlEntities(value);
+  const trimmed = decodedEntities.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const score = mojibakeScore(trimmed);
+  if (score === 0) {
+    return trimmed;
+  }
+
+  const repaired = decodeUtf8FromSingleByteText(trimmed);
+  return mojibakeScore(repaired) < score ? repaired : trimmed;
+}
+
+function mojibakeScore(value: string): number {
+  let score = 0;
+  score += (value.match(/Ã|Â|â/g) ?? []).length * 2;
+  score += (value.match(/�/g) ?? []).length * 3;
+  return score;
+}
+
+function decodeUtf8FromSingleByteText(value: string): string {
+  const bytes = Uint8Array.from(value, (character) => character.charCodeAt(0) & 0xff);
+  return new TextDecoder('utf-8').decode(bytes);
 }

@@ -33,34 +33,44 @@ export function parseFeedItems(input: ParseFeedInput): ParsedFeedItems {
 
 function parseRssItems(xml: string, source: Source, sectionSlug: string): readonly RawFeedItem[] {
   const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
-  return blocks.map((block) => ({
-    externalId: extractTagText(block, ['guid']),
-    title: extractTagText(block, ['title']),
-    summary: extractTagText(block, ['description', 'content:encoded']),
-    url: extractTagText(block, ['link']),
-    sourceId: source.id,
-    sourceName: source.name,
-    sectionSlug,
-    author: extractTagText(block, ['dc:creator', 'author']),
-    publishedAt: extractTagText(block, ['pubDate', 'dc:date']),
-    imageUrl: extractImageUrl(block),
-  }));
+  return blocks.map((block) => {
+    const imageSelection = extractImageSelection(block);
+
+    return {
+      externalId: extractTagText(block, ['guid']),
+      title: extractTagText(block, ['title']),
+      summary: extractTagText(block, ['description', 'content:encoded']),
+      url: extractTagText(block, ['link']),
+      sourceId: source.id,
+      sourceName: source.name,
+      sectionSlug,
+      author: extractTagText(block, ['dc:creator', 'author']),
+      publishedAt: extractTagText(block, ['pubDate', 'dc:date']),
+      imageUrl: imageSelection.largeUrl,
+      thumbnailUrl: imageSelection.smallUrl,
+    };
+  });
 }
 
 function parseAtomEntries(xml: string, source: Source, sectionSlug: string): readonly RawFeedItem[] {
   const blocks = xml.match(/<entry\b[\s\S]*?<\/entry>/gi) ?? [];
-  return blocks.map((block) => ({
-    externalId: extractTagText(block, ['id']),
-    title: extractTagText(block, ['title']),
-    summary: extractTagText(block, ['summary', 'content']),
-    url: extractAtomEntryLink(block),
-    sourceId: source.id,
-    sourceName: source.name,
-    sectionSlug,
-    author: extractAtomAuthor(block),
-    publishedAt: extractTagText(block, ['published', 'updated']),
-    imageUrl: extractImageUrl(block),
-  }));
+  return blocks.map((block) => {
+    const imageSelection = extractImageSelection(block);
+
+    return {
+      externalId: extractTagText(block, ['id']),
+      title: extractTagText(block, ['title']),
+      summary: extractTagText(block, ['summary', 'content']),
+      url: extractAtomEntryLink(block),
+      sourceId: source.id,
+      sourceName: source.name,
+      sectionSlug,
+      author: extractAtomAuthor(block),
+      publishedAt: extractTagText(block, ['published', 'updated']),
+      imageUrl: imageSelection.largeUrl,
+      thumbnailUrl: imageSelection.smallUrl,
+    };
+  });
 }
 
 function extractTagText(block: string, tagNames: readonly string[]): string | null {
@@ -80,53 +90,89 @@ function extractTagText(block: string, tagNames: readonly string[]): string | nu
   return null;
 }
 
-function extractImageUrl(block: string): string | null {
-  const thumbnailTags = block.match(/<media:thumbnail\b[^>]*>/gi) ?? [];
-  for (const tag of thumbnailTags) {
-    const thumbnailUrl = extractAttribute(tag, 'url');
-    if (isHttpUrl(thumbnailUrl)) {
-      return thumbnailUrl;
-    }
-  }
+interface ImageSelection {
+  readonly largeUrl: string | null;
+  readonly smallUrl: string | null;
+}
 
+function extractImageSelection(block: string): ImageSelection {
   const mediaContentTags = block.match(/<media:content\b[^>]*>/gi) ?? [];
+  const mediaImageCandidates: { url: string; area: number }[] = [];
   for (const tag of mediaContentTags) {
     const mediaUrl = extractAttribute(tag, 'url');
     const mediaType = extractAttribute(tag, 'type');
     if (isImageMediaCandidate(mediaUrl, mediaType)) {
-      return mediaUrl;
+      const width = parsePositiveNumber(extractAttribute(tag, 'width'));
+      const height = parsePositiveNumber(extractAttribute(tag, 'height'));
+      mediaImageCandidates.push({
+        url: mediaUrl,
+        area: width > 0 && height > 0 ? width * height : 0,
+      });
+      continue;
     }
 
     const youtubeThumbnail = toYouTubeThumbnailUrl(mediaUrl);
     if (youtubeThumbnail) {
-      return youtubeThumbnail;
+      return { largeUrl: youtubeThumbnail, smallUrl: youtubeThumbnail };
     }
+  }
+
+  const thumbnailTags = block.match(/<media:thumbnail\b[^>]*>/gi) ?? [];
+  const thumbnailCandidates: string[] = [];
+  for (const tag of thumbnailTags) {
+    const thumbnailUrl = extractAttribute(tag, 'url');
+    if (isHttpUrl(thumbnailUrl)) {
+      thumbnailCandidates.push(thumbnailUrl);
+    }
+  }
+
+  if (mediaImageCandidates.length > 0) {
+    mediaImageCandidates.sort((first, second) => second.area - first.area);
+    const largeUrl = mediaImageCandidates[0]?.url ?? null;
+    const smallestMediaUrl = mediaImageCandidates[mediaImageCandidates.length - 1]?.url ?? null;
+    const smallUrl = thumbnailCandidates[0] ?? smallestMediaUrl ?? largeUrl;
+
+    return { largeUrl, smallUrl };
+  }
+
+  if (thumbnailCandidates.length > 0) {
+    const thumbnailUrl = thumbnailCandidates[0] ?? null;
+    return { largeUrl: thumbnailUrl, smallUrl: thumbnailUrl };
   }
 
   const enclosureTag = block.match(/<enclosure\b[^>]*>/i)?.[0] ?? null;
   const enclosureUrl = enclosureTag ? extractAttribute(enclosureTag, 'url') : null;
   const enclosureType = enclosureTag ? extractAttribute(enclosureTag, 'type') : null;
   if (isImageMediaCandidate(enclosureUrl, enclosureType)) {
-    return enclosureUrl;
+    return { largeUrl: enclosureUrl, smallUrl: enclosureUrl };
   }
 
   const enclosureYoutubeThumbnail = toYouTubeThumbnailUrl(enclosureUrl);
   if (enclosureYoutubeThumbnail) {
-    return enclosureYoutubeThumbnail;
+    return { largeUrl: enclosureYoutubeThumbnail, smallUrl: enclosureYoutubeThumbnail };
   }
 
   const imageTag = block.match(/<img\b[^>]*>/i)?.[0] ?? null;
   const imageUrl = imageTag ? extractAttribute(imageTag, 'src') : null;
   if (isImageUrl(imageUrl)) {
-    return imageUrl;
+    return { largeUrl: imageUrl, smallUrl: imageUrl };
   }
 
   const inlineYoutubeThumbnail = toYouTubeThumbnailUrl(imageUrl);
   if (inlineYoutubeThumbnail) {
-    return inlineYoutubeThumbnail;
+    return { largeUrl: inlineYoutubeThumbnail, smallUrl: inlineYoutubeThumbnail };
   }
 
-  return null;
+  return { largeUrl: null, smallUrl: null };
+}
+
+function parsePositiveNumber(value: string | null): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
 function extractAtomEntryLink(block: string): string | null {

@@ -27,7 +27,44 @@ describe('ArticleContentComponent', () => {
     expect(fixture.nativeElement.querySelector('app-article-preview-cta')).toBeTruthy();
   });
 
-  it('uses fallback image and text when article fields are empty', async () => {
+  it('hides image block when article has no image', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ArticleContentComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticleContentComponent);
+    fixture.componentRef.setInput('article', {
+      ...MOCK_ARTICLE,
+      imageUrl: '/images/no-image.jpg',
+    });
+    fixture.detectChanges();
+
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement | null;
+    expect(image).toBeNull();
+  });
+
+  it('hides image when it fails to load', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ArticleContentComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticleContentComponent);
+    fixture.componentRef.setInput('article', MOCK_ARTICLE);
+    fixture.detectChanges();
+
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+    expect(image).toBeTruthy();
+
+    image.dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    const imageAfterError = fixture.nativeElement.querySelector('img') as HTMLImageElement | null;
+    expect(imageAfterError).toBeNull();
+  });
+
+  it('uses fallback text when article fields are empty', async () => {
     await TestBed.configureTestingModule({
       imports: [ArticleContentComponent],
       providers: [provideRouter([])],
@@ -48,13 +85,13 @@ describe('ArticleContentComponent', () => {
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Noticia sin titular disponible');
-    expect(text).toContain('RedacciÃ³n Front Page News');
+    expect(text).toContain('Redacción Front Page News');
     expect(text).toContain('Front Page News');
     expect(text).toContain('Actualidad');
     expect(text).toContain('Esta noticia no incluye resumen disponible en este momento.');
 
-    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
-    expect(image.src).toContain('/images/no-image.jpg');
+    const image = fixture.nativeElement.querySelector('img') as HTMLImageElement | null;
+    expect(image).toBeNull();
   });
 });
 

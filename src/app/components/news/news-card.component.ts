@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -35,16 +35,20 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           >
             {{ article().section }}
           </p>
-          <p class="text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().source }}</p>
+          <p
+            class="ml-auto max-w-[11rem] truncate text-right text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground whitespace-nowrap"
+          >
+            {{ article().source }}
+          </p>
         </div>
 
         <a
           [routerLink]="['/noticia', article().id]"
           class="block overflow-hidden rounded-lg bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          @if (article().imageUrl) {
+          @if (previewImageUrl()) {
             <img
-              [src]="article().imageUrl"
+              [src]="previewImageUrl()"
               [alt]="article().title"
               class="aspect-[16/9] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
               loading="lazy"
@@ -66,7 +70,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
         <p class="font-editorial-body summary-clamp text-sm leading-[1.2rem] text-muted-foreground">{{ article().summary }}</p>
 
-        <p class="mt-auto text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">{{ article().author }}</p>
+        <p class="mt-auto truncate whitespace-nowrap text-[0.65rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          {{ article().author }}
+        </p>
       </div>
     </article>
   `,
@@ -74,6 +80,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 export class NewsCardComponent {
   readonly article = input.required<NewsItem>();
   private readonly fallbackImageUrl = '/images/no-image.jpg';
+  protected readonly previewImageUrl = computed(() => this.article().thumbnailUrl ?? this.article().imageUrl);
 
   protected onImageError(event: Event): void {
     const imageElement = event.target as HTMLImageElement | null;

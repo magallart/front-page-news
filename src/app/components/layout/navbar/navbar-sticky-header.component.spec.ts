@@ -14,7 +14,7 @@ describe('NavbarStickyHeaderComponent', () => {
     const fixture = TestBed.createComponent(NavbarStickyHeaderComponent);
     fixture.componentRef.setInput('visible', false);
     fixture.componentRef.setInput('menuOpen', false);
-    fixture.componentRef.setInput('topbarMeta', '11-02-26 · MADRID 24ºC');
+    fixture.componentRef.setInput('topbarMeta', '11-02-26');
     fixture.detectChanges();
 
     const root = fixture.nativeElement.querySelector('div.sticky') as HTMLDivElement;
@@ -35,7 +35,7 @@ describe('NavbarStickyHeaderComponent', () => {
     const fixture = TestBed.createComponent(NavbarStickyHeaderComponent);
     fixture.componentRef.setInput('visible', true);
     fixture.componentRef.setInput('menuOpen', true);
-    fixture.componentRef.setInput('topbarMeta', '11-02-26 · MADRID 24ºC');
+    fixture.componentRef.setInput('topbarMeta', '11-02-26');
     fixture.detectChanges();
 
     const toggleSpy = vi.fn();

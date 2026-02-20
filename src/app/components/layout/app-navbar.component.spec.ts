@@ -10,7 +10,6 @@ import { AppNavbarComponent } from './app-navbar.component';
 describe('AppNavbarComponent', () => {
   it('shows sticky header by default on mobile viewport', async () => {
     mockMatchMedia(true);
-    mockNoGeolocation();
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
@@ -26,7 +25,6 @@ describe('AppNavbarComponent', () => {
 
   it('keeps sticky hidden on desktop until crossing scroll threshold', async () => {
     mockMatchMedia(false);
-    mockNoGeolocation();
     setWindowScrollY(0);
 
     await TestBed.configureTestingModule({
@@ -49,7 +47,6 @@ describe('AppNavbarComponent', () => {
 
   it('closes side menu when scroll returns below desktop threshold', async () => {
     mockMatchMedia(false);
-    mockNoGeolocation();
     setWindowScrollY(260);
 
     await TestBed.configureTestingModule({
@@ -71,9 +68,8 @@ describe('AppNavbarComponent', () => {
     expect(component.shouldShowSticky()).toBe(false);
   });
 
-  it('formats compact sticky meta label in mobile viewport', async () => {
+  it('formats compact sticky meta label in mobile viewport without city or temperature', async () => {
     mockMatchMedia(true);
-    mockNoGeolocation();
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
@@ -84,30 +80,8 @@ describe('AppNavbarComponent', () => {
     fixture.detectChanges();
 
     const component = asNavbarTestInstance(fixture.componentInstance);
-    component.city.set('Bilbao');
-    component.temperature.set(18);
-
     const label = component.stickyTopbarMeta();
-    expect(label).toMatch(/^\d{2}-\d{2}-\d{2}\s\u00B7\sBILBAO\s18\u00BAC$/);
-  });
-
-  it('updates city and temperature from geolocation + weather APIs', async () => {
-    mockMatchMedia(false);
-    mockGeoSuccess(40.4, -3.7);
-    mockFetchSuccess('Valencia', 27.2);
-
-    await TestBed.configureTestingModule({
-      imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(AppNavbarComponent);
-    fixture.detectChanges();
-
-    const component = asNavbarTestInstance(fixture.componentInstance);
-    await vi.waitFor(() => {
-      expect(component.topbarMeta()).toContain(`VALENCIA 27\u00BAC`);
-    });
+    expect(label).toMatch(/^\d{2}-\d{2}-\d{2}$/);
   });
 });
 
@@ -117,8 +91,6 @@ function asNavbarTestInstance(component: AppNavbarComponent): NavbarTestInstance
     topbarMeta: map['topbarMeta'] as Signal<string>,
     stickyTopbarMeta: map['stickyTopbarMeta'] as Signal<string>,
     shouldShowSticky: map['shouldShowSticky'] as Signal<boolean>,
-    city: map['city'] as WritableSignal<string>,
-    temperature: map['temperature'] as WritableSignal<number | null>,
     menuOpen: map['menuOpen'] as WritableSignal<boolean>,
   };
 }
@@ -147,43 +119,6 @@ function setWindowScrollY(value: number): void {
     writable: true,
     value,
   });
-}
-
-function mockNoGeolocation(): void {
-  Object.defineProperty(globalThis.navigator, 'geolocation', {
-    configurable: true,
-    value: undefined,
-  });
-}
-
-function mockGeoSuccess(latitude: number, longitude: number): void {
-  Object.defineProperty(globalThis.navigator, 'geolocation', {
-    configurable: true,
-    value: {
-      getCurrentPosition: (success: PositionCallback): void => {
-        success({
-          coords: { latitude, longitude } as GeolocationCoordinates,
-        } as GeolocationPosition);
-      },
-    },
-  });
-}
-
-function mockFetchSuccess(city: string, temperature: number): void {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValueOnce({
-      json: async () => ({
-        results: [{ name: city }],
-      }),
-    })
-    .mockResolvedValueOnce({
-      json: async () => ({
-        current: { temperature_2m: temperature },
-      }),
-    });
-
-  vi.stubGlobal('fetch', fetchMock);
 }
 
 function createNewsStoreMock() {
@@ -218,8 +153,6 @@ interface NavbarTestInstance {
   readonly topbarMeta: Signal<string>;
   readonly stickyTopbarMeta: Signal<string>;
   readonly shouldShowSticky: Signal<boolean>;
-  readonly city: WritableSignal<string>;
-  readonly temperature: WritableSignal<number | null>;
   readonly menuOpen: WritableSignal<boolean>;
 }
 

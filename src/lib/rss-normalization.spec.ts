@@ -5,6 +5,7 @@ import {
   dedupeAndSortArticles,
   extractSafeSummary,
   normalizeDateToIso,
+  normalizeFeedItem,
 } from './rss-normalization';
 
 import type { Article } from '../interfaces/article.interface';
@@ -25,6 +26,12 @@ describe('rss-normalization', () => {
       '<p>Ultima <strong>hora</strong> &amp; analisis</p><script>alert("x")</script><style>.x{}</style>';
 
     expect(extractSafeSummary(raw)).toBe('Ultima hora & analisis');
+  });
+
+  it('repairs common mojibake in extracted summary text', () => {
+    const raw = '<p>SegÃºn fuentes, se abren nuevas lÃ­neas para los prÃ³ximos dÃ­as.</p>';
+
+    expect(extractSafeSummary(raw)).toBe('Según fuentes, se abren nuevas líneas para los próximos días.');
   });
 
   it('keeps invalid numeric entities without throwing', () => {
@@ -92,6 +99,99 @@ describe('rss-normalization', () => {
     expect(deduped[0]?.id).toBe('5');
     expect(deduped[1]?.id).toBe('2');
     expect(deduped[2]?.id).toBe('3');
+  });
+
+  it('prefers specific section over ultima-hora for duplicates with same timestamp', () => {
+    const sameUrl = 'https://example.com/news/shared';
+    const sameTimestamp = '2026-02-17T11:00:00.000Z';
+    const items: readonly Article[] = [
+      makeArticle({
+        id: 'u-1',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'ultima-hora',
+        publishedAt: sameTimestamp,
+      }),
+      makeArticle({
+        id: 'e-1',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'economia',
+        publishedAt: sameTimestamp,
+      }),
+    ];
+
+    const deduped = dedupeAndSortArticles(items);
+
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.id).toBe('e-1');
+    expect(deduped[0]?.sectionSlug).toBe('economia');
+  });
+
+  it('keeps image from duplicate variant when preferred item has no image', () => {
+    const sameUrl = 'https://example.com/news/shared-image';
+    const items: readonly Article[] = [
+      makeArticle({
+        id: 'base',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'economia',
+        publishedAt: '2026-02-20T11:00:00.000Z',
+        imageUrl: 'https://cdn.example.com/image.jpg',
+      }),
+      makeArticle({
+        id: 'newer-without-image',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'ultima-hora',
+        publishedAt: '2026-02-20T11:05:00.000Z',
+        imageUrl: null,
+      }),
+    ];
+
+    const deduped = dedupeAndSortArticles(items);
+
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.id).toBe('newer-without-image');
+    expect(deduped[0]?.sectionSlug).toBe('economia');
+    expect(deduped[0]?.imageUrl).toBe('https://cdn.example.com/image.jpg');
+  });
+
+  it('repairs mojibake in feed item title and author during normalization', () => {
+    const normalized = normalizeFeedItem({
+      externalId: 'id-1',
+      title: 'AnÃ¡lisis del dÃ­a',
+      summary: '<p>Texto</p>',
+      url: 'https://example.com/news/a',
+      sourceId: 'source-a',
+      sourceName: 'PeriÃ³dico Demo',
+      sectionSlug: 'opinion',
+      author: 'RedacciÃ³n Demo',
+      publishedAt: 'Fri, 20 Feb 2026 10:00:00 GMT',
+      imageUrl: null,
+      thumbnailUrl: null,
+    });
+
+    expect(normalized).not.toBeNull();
+    expect(normalized?.title).toBe('Análisis del día');
+    expect(normalized?.sourceName).toBe('Periódico Demo');
+    expect(normalized?.author).toBe('Redacción Demo');
+  });
+  it('decodes numeric html entities in feed item text fields', () => {
+    const normalized = normalizeFeedItem({
+      externalId: 'id-2',
+      title: 'Mercados &#8211; cierre &#124; analisis',
+      summary: '<p>Resumen</p>',
+      url: 'https://example.com/news/b',
+      sourceId: 'source-b',
+      sourceName: 'Diario &#124; Economico',
+      sectionSlug: 'economia',
+      author: 'Redaccion &#8211; Madrid',
+      publishedAt: 'Fri, 20 Feb 2026 12:00:00 GMT',
+      imageUrl: null,
+      thumbnailUrl: null,
+    });
+
+    expect(normalized).not.toBeNull();
+    expect(normalized?.title).toBe('Mercados – cierre | analisis');
+    expect(normalized?.sourceName).toBe('Diario | Economico');
+    expect(normalized?.author).toBe('Redaccion – Madrid');
   });
 });
 

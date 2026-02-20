@@ -26,7 +26,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
-| [FPN-010](#fpn-010) | Calidad MVP | Tests, a11y, SEO basico, rendimiento y hardening minimo. | [ ] |
+| [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
 | [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
@@ -257,19 +257,37 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 <a id="fpn-010"></a>
 
-### [FPN-010] Calidad MVP
+### [FPN-010] Revisión de la aplicación para la 1.0
 
-- Description: Subir calidad tecnica antes de publicar una primera version usable.
+- Description: Consolidar en un solo ticket los bugs y cambios de ultima hora antes de publicar la version 1.0.
 - DoD:
-  - `pnpm run lint`, `pnpm test`, `pnpm run build` en verde.
-  - Casos criticos cubiertos por unit/e2e.
-  - A11y y SEO basico aceptables para MVP.
+  - Todas las correcciones acordadas en la sesion quedarán funcionalmente operativas y validadas.
+  - Mantener funcionalidades actuales de la aplicación.
 - Tasks:
-  - [ ] Unit tests para normalizacion RSS y servicios frontend.
-  - [ ] E2E smoke: portada, seccion, detalle, enlace externo.
-  - [ ] Revisar accesibilidad: landmarks, foco, teclado, contraste.
-  - [ ] Revisar performance basica de listas y carga inicial.
-  - [ ] Configurar metadatos SEO minimos por ruta.
+  - [✔️] Eliminar por completo El Economista del catalogo de feeds y del directorio de fuentes (sources, homepage mapping y referencias en documentacion/tests).
+  - [✔️] Forzar que cada navegacion entre paginas empiece en el top de la vista (sin mantener el scroll previo del navegador).
+  - [✔️] Suavizar el scroll al top tras navegar entre paginas para evitar saltos bruscos y respetar `prefers-reduced-motion`.
+  - [✔️] Corregir etiqueta de seccion en detalle para que no quede fijada en `ultima-hora` al deduplicar noticias compartidas entre feeds.
+  - [✔️] Evitar perdida de imagen en noticias duplicadas entre feeds, fusionando variantes para conservar `imageUrl` y seccion editorial.
+  - [✔️] Priorizar en parser la imagen principal de `media:content` (mayor tamano) frente a `media:thumbnail` para evitar fotos pixeladas.
+  - [✔️] Seleccionar imagen segun contexto: miniatura en `news-card` y principal en detalle, con fallback a unica imagen disponible.
+  - [✔️] En detalle de noticia, ocultar por completo el bloque de imagen cuando no exista foto valida o falle su carga, manteniendo el texto justo bajo la metadata.
+  - [✔️] Normalizar artefactos comunes de codificacion (mojibake) en texto de feed (`title`, `summary`, `sourceName`, `author`) para mejorar legibilidad en detalle y listados.
+  - [✔️] Ajustar metadatos del slider de portada: incluir `autor | periodico | hora-fecha` y en movil usar 3 columnas con truncado (`...`) para evitar roturas por autores largos.
+  - [✔️] Retirar geolocalizacion temporalmente: eliminar solicitud de permisos del navegador y suprimir ciudad/temperatura del header hasta implementar la funcionalidad completa.
+  - [✔️] Añadir boton global "volver arriba" visible tras cierto scroll, con animacion de entrada/salida y desplazamiento suave al top.
+  - [✔️] Restringir el slider de portada para mostrar solo noticias con imagen real (excluyendo placeholders sin foto).
+  - [✔️] Alinear a la derecha el nombre del periodico en `news-card` y forzar una sola linea con truncado para fuentes largas.
+  - [✔️] Limitar autores en `news-card` a una sola linea con truncado (`...`) para evitar variaciones de altura entre tarjetas.
+  - [✔️] Reordenar y actualizar secciones del header principal en orden alfabético, excluyendo `Todas` y distribuyendolas en dos líneas para mejorar legibilidad.
+  - [✔️] Mantener `Última hora` solo en el menú lateral responsive, excluyendola de la navegación principal desktop.
+  - [✔️] Decodificar entidades HTML numéricas del feed (p. ej. `&#8211;`, `&#124;`) en `title`, `summary`, `sourceName` y `author` para mostrar caracteres legibles.
+  - [✔️] Hacer clicable la etiqueta `Última hora` del ticker del header para navegar a la sección `/seccion/ultima-hora`.
+  - [✔️] Ajustar la sección "Visita las webs oficiales..." para que en tablet muestre logos en 2 líneas horizontales, simplificando el componente y eliminando la variante de 1 línea.
+  - [✔️] Simplificar el footer para dejar un layout limpio con logo y redes en una sola fila, eliminando las columnas editoriales y el texto central.
+  - [✔️] Implementar skeleton estructurado de la home en estado de carga y extraerlo a `home-page-skeleton` como componente dedicado para mejorar UX y mantenimiento.
+  - [✔️] Crear sistema de skeletons reutilizables (`home`, `sección`, `detalle` y bloques compartidos), aplicarlo en estados de carga reales.
+
 
 <a id="fpn-011"></a>
 
@@ -291,13 +309,14 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 ### [FPN-012] Roadmap post-1.0
 
-- Description: Definir funcionalidades de evolucion para implementar despues de cerrar la version 1.0.
+- Description: Definir y priorizar mejoras para una segunda fase del producto tras el release 1.0.
 - DoD:
-  - Lista de mejoras post-1.0 priorizada.
-  - Criterios de entrada y alcance de cada mejora definidos.
-  - Dependencias tecnicas y riesgos principales documentados.
+  - Lista de iniciativas post-1.0 priorizada por impacto/esfuerzo.
+  - Dependencias y riesgos principales identificados.
+  - Alcance recomendado para la siguiente iteracion documentado.
 - Tasks:
-  - [ ] Mejorar geolocalizacion para detectar ciudad del usuario de forma robusta y mostrar el tiempo real en cabecera.
-  - [ ] Permitir que el usuario agregue sus propios enlaces RSS y construya un feed personalizado.
-  - [ ] Crear modo de lectura para dislexia (fuente adaptada para personas con dislexia y opcion de activacion).
-
+  - [ ] Consolidar mejoras candidatas detectadas durante el cierre MVP.
+  - [ ] Clasificar iniciativas por tipo (producto, UX, performance, plataforma).
+  - [ ] Priorizar backlog post-1.0 con criterios de impacto y coste.
+  - [ ] Identificar prerequisitos tecnicos para las 3 prioridades principales.
+  - [ ] Definir propuesta de alcance para la siguiente iteracion.

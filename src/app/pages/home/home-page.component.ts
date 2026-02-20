@@ -6,6 +6,7 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
+import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
@@ -26,6 +27,7 @@ import type { OnInit } from '@angular/core';
   imports: [
     PageContainerComponent,
     ErrorStateComponent,
+    HomePageSkeletonComponent,
     NewsCarouselComponent,
     BreakingNewsComponent,
     MostReadNewsComponent,
@@ -36,9 +38,7 @@ import type { OnInit } from '@angular/core';
     <app-page-container>
       @switch (uiState()) {
         @case (uiViewState.LOADING) {
-          <section class="space-y-4 py-4 sm:space-y-6">
-            <p class="text-sm text-muted-foreground">Cargando portada...</p>
-          </section>
+          <app-home-page-skeleton />
         }
         @case (uiViewState.ERROR_TOTAL) {
           <section class="py-4">

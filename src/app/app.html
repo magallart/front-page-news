@@ -3,5 +3,21 @@
   <main class="py-6 sm:py-8">
     <router-outlet />
   </main>
+  <button
+    type="button"
+    class="fixed bottom-5 right-4 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-secondary-foreground/25 bg-secondary text-primary shadow-subtle transition-all duration-300 hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
+    [class.pointer-events-none]="!showScrollTopButton()"
+    [class.translate-y-4]="!showScrollTopButton()"
+    [class.opacity-0]="!showScrollTopButton()"
+    [class.pointer-events-auto]="showScrollTopButton()"
+    [class.translate-y-0]="showScrollTopButton()"
+    [class.opacity-100]="showScrollTopButton()"
+    [attr.tabindex]="showScrollTopButton() ? '0' : '-1'"
+    [attr.aria-hidden]="showScrollTopButton() ? null : 'true'"
+    (click)="scrollToTop()"
+    aria-label="Volver arriba"
+  >
+    <app-icon-chevron-up />
+  </button>
   <app-footer />
 </div>

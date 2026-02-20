@@ -21,6 +21,9 @@ export function adaptArticleToNewsItem(article: Article): NewsItem {
     title: normalizedTitle,
     summary: normalizeString(article.summary, DEFAULT_NEWS_SUMMARY),
     imageUrl: toDisplayImageUrl(normalizeNullableString(article.imageUrl, DEFAULT_NEWS_IMAGE_URL)),
+    thumbnailUrl: toDisplayImageUrl(
+      normalizeNullableString(article.thumbnailUrl ?? article.imageUrl, DEFAULT_NEWS_IMAGE_URL)
+    ),
     source: normalizedSource,
     section: normalizedSection,
     publishedAt: normalizeNullableString(article.publishedAt, ''),

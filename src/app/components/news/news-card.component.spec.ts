@@ -30,5 +30,14 @@ describe('NewsCardComponent', () => {
     fixture.detectChanges();
 
     expect(image.getAttribute('src')).toBe('/images/no-image.jpg');
+
+    const source = fixture.nativeElement.querySelector('div.flex.items-center.justify-between p:last-child') as HTMLParagraphElement;
+    expect(source.className).toContain('text-right');
+    expect(source.className).toContain('truncate');
+    expect(source.className).toContain('whitespace-nowrap');
+
+    const author = fixture.nativeElement.querySelector('p.mt-auto') as HTMLParagraphElement;
+    expect(author.className).toContain('truncate');
+    expect(author.className).toContain('whitespace-nowrap');
   });
 });
