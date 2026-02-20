@@ -158,6 +158,7 @@ This file acts as the **single source of truth** for global conventions and deci
 | Performance, perf budgets, lazy loading       | `agents/performance.md`  |
 | Tests, regressions, QA                        | `agents/testing.md`      |
 | Git workflow, commits, PR hygiene             | `agents/git.md`          |
+| Vercel deployment and serverless runtime      | `agents/vercel.md`       |
 
 ## Final Notes
 
