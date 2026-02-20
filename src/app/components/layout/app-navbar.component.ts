@@ -50,8 +50,6 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
 export class AppNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly newsStore = inject(NewsStore);
-  private readonly city = signal('Madrid');
-  private readonly temperature = signal<number | null>(24);
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = 12;
 
@@ -80,14 +78,10 @@ export class AppNavbarComponent {
   ];
 
   protected readonly topbarMeta = computed(() => {
-    const dateLabel = formatDateLabel(new Date());
-    const tempLabel = this.temperature() === null ? '--' : `${this.temperature()}\u00BAC`;
-    return `${dateLabel} \u00B7 ${this.city().toUpperCase()} ${tempLabel}`;
+    return formatDateLabel(new Date());
   });
   protected readonly stickyTopbarMeta = computed(() => {
-    const dateLabel = this.isMobileViewport() ? formatCompactDateLabel(new Date()) : formatDateLabel(new Date());
-    const tempLabel = this.temperature() === null ? '--' : `${this.temperature()}\u00BAC`;
-    return `${dateLabel} \u00B7 ${this.city().toUpperCase()} ${tempLabel}`;
+    return this.isMobileViewport() ? formatCompactDateLabel(new Date()) : formatDateLabel(new Date());
   });
 
   protected readonly tickerHeadlines = computed<readonly TickerHeadline[]>(() =>
@@ -101,7 +95,6 @@ export class AppNavbarComponent {
     this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
     this.initResponsiveMode();
     this.initStickyOnScroll();
-    void this.loadCityAndWeather();
   }
 
   protected toggleMenu(): void {
@@ -169,64 +162,6 @@ export class AppNavbarComponent {
     });
   }
 
-  private async loadCityAndWeather(): Promise<void> {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      return;
-    }
-
-    const position = await new Promise<GeolocationPosition | null>((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        (value) => resolve(value),
-        () => resolve(null),
-        { timeout: 3500 },
-      );
-    });
-
-    if (!position) {
-      return;
-    }
-
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-
-    try {
-      const [geoResponse, weatherResponse] = await Promise.all([
-        fetch(
-          `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=es&format=json`,
-        ),
-        fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`,
-        ),
-      ]);
-
-      const geoJson = (await geoResponse.json()) as OpenMeteoReverseGeocodingResponse;
-      const weatherJson = (await weatherResponse.json()) as OpenMeteoWeatherResponse;
-
-      const detectedCity = geoJson.results?.[0]?.name;
-      if (detectedCity) {
-        this.city.set(detectedCity);
-      }
-
-      const detectedTemperature = weatherJson.current?.temperature_2m;
-      if (typeof detectedTemperature === 'number') {
-        this.temperature.set(Math.round(detectedTemperature));
-      }
-    } catch {
-      // Fallback values remain visible when location/weather lookup fails.
-    }
-  }
-}
-
-interface OpenMeteoReverseGeocodingResponse {
-  readonly results?: readonly {
-    readonly name?: string;
-  }[];
-}
-
-interface OpenMeteoWeatherResponse {
-  readonly current?: {
-    readonly temperature_2m?: number;
-  };
 }
 
 function formatDateLabel(date: Date): string {

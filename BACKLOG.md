@@ -274,6 +274,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] En detalle de noticia, ocultar por completo el bloque de imagen cuando no exista foto valida o falle su carga, manteniendo el texto justo bajo la metadata.
   - [✔️] Normalizar artefactos comunes de codificacion (mojibake) en texto de feed (`title`, `summary`, `sourceName`, `author`) para mejorar legibilidad en detalle y listados.
   - [✔️] Ajustar metadatos del slider de portada: incluir `autor | periodico | hora-fecha` y en movil usar 3 columnas con truncado (`...`) para evitar roturas por autores largos.
+  - [✔️] Retirar geolocalizacion temporalmente: eliminar solicitud de permisos del navegador y suprimir ciudad/temperatura del header hasta implementar la funcionalidad completa.
 
 
 <a id="fpn-011"></a>
