@@ -271,6 +271,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Evitar perdida de imagen en noticias duplicadas entre feeds, fusionando variantes para conservar `imageUrl` y seccion editorial.
   - [✔️] Priorizar en parser la imagen principal de `media:content` (mayor tamano) frente a `media:thumbnail` para evitar fotos pixeladas.
   - [✔️] Seleccionar imagen segun contexto: miniatura en `news-card` y principal en detalle, con fallback a unica imagen disponible.
+  - [✔️] En detalle de noticia, ocultar por completo el bloque de imagen cuando no exista foto valida o falle su carga, manteniendo el texto justo bajo la metadata.
 
 
 <a id="fpn-011"></a>
