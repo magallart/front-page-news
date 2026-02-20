@@ -11,6 +11,7 @@ export interface RawFeedItem {
   readonly author: string | null;
   readonly publishedAt: string | null;
   readonly imageUrl: string | null;
+  readonly thumbnailUrl: string | null;
 }
 
 const HTML_ENTITY_MAP: Record<string, string> = {
@@ -106,6 +107,7 @@ export function normalizeFeedItem(item: RawFeedItem): Article | null {
     url: item.url?.trim() ?? '',
     canonicalUrl,
     imageUrl: item.imageUrl?.trim() || null,
+    thumbnailUrl: item.thumbnailUrl?.trim() || null,
     sourceId: item.sourceId,
     sourceName: item.sourceName,
     sectionSlug: item.sectionSlug,
@@ -126,9 +128,7 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
       continue;
     }
 
-    if (shouldReplaceDedupedArticle(item, current)) {
-      uniqueByKey.set(dedupeKey, item);
-    }
+    uniqueByKey.set(dedupeKey, mergeDedupedArticles(current, item));
   }
 
   return Array.from(uniqueByKey.values()).sort((first, second) => {
@@ -138,23 +138,30 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
   });
 }
 
-function shouldReplaceDedupedArticle(candidate: Article, current: Article): boolean {
+function mergeDedupedArticles(current: Article, candidate: Article): Article {
+  const candidateIsPreferred = isCandidatePreferred(candidate, current);
+  const preferred = candidateIsPreferred ? candidate : current;
+  const fallback = candidateIsPreferred ? current : candidate;
+
+  return {
+    ...preferred,
+    sectionSlug: pickBestSectionSlug(preferred.sectionSlug, fallback.sectionSlug),
+    imageUrl: preferred.imageUrl ?? fallback.imageUrl,
+    thumbnailUrl: preferred.thumbnailUrl ?? fallback.thumbnailUrl ?? preferred.imageUrl ?? fallback.imageUrl,
+    author: preferred.author ?? fallback.author,
+    summary: preferred.summary || fallback.summary,
+  };
+}
+
+function isCandidatePreferred(candidate: Article, current: Article): boolean {
   const candidateTime = toTimestamp(candidate.publishedAt);
   const currentTime = toTimestamp(current.publishedAt);
 
-  if (candidateTime > currentTime) {
-    return true;
+  if (candidateTime !== currentTime) {
+    return candidateTime > currentTime;
   }
 
-  if (candidateTime < currentTime) {
-    return false;
-  }
-
-  if (hasHigherSectionPriority(candidate.sectionSlug, current.sectionSlug)) {
-    return true;
-  }
-
-  return false;
+  return hasHigherSectionPriority(candidate.sectionSlug, current.sectionSlug);
 }
 
 function decodeHtmlEntities(value: string): string {
@@ -198,6 +205,14 @@ function buildTitleDateKey(title: string, publishedAt: string | null): string {
 
 function hasHigherSectionPriority(candidateSection: string, currentSection: string): boolean {
   return getSectionPriority(candidateSection) > getSectionPriority(currentSection);
+}
+
+function pickBestSectionSlug(primarySection: string, secondarySection: string): string {
+  if (hasHigherSectionPriority(secondarySection, primarySection)) {
+    return secondarySection;
+  }
+
+  return primarySection;
 }
 
 function getSectionPriority(sectionSlug: string): number {

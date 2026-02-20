@@ -118,6 +118,33 @@ describe('rss-normalization', () => {
     expect(deduped[0]?.id).toBe('e-1');
     expect(deduped[0]?.sectionSlug).toBe('economia');
   });
+
+  it('keeps image from duplicate variant when preferred item has no image', () => {
+    const sameUrl = 'https://example.com/news/shared-image';
+    const items: readonly Article[] = [
+      makeArticle({
+        id: 'base',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'economia',
+        publishedAt: '2026-02-20T11:00:00.000Z',
+        imageUrl: 'https://cdn.example.com/image.jpg',
+      }),
+      makeArticle({
+        id: 'newer-without-image',
+        canonicalUrl: sameUrl,
+        sectionSlug: 'ultima-hora',
+        publishedAt: '2026-02-20T11:05:00.000Z',
+        imageUrl: null,
+      }),
+    ];
+
+    const deduped = dedupeAndSortArticles(items);
+
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.id).toBe('newer-without-image');
+    expect(deduped[0]?.sectionSlug).toBe('economia');
+    expect(deduped[0]?.imageUrl).toBe('https://cdn.example.com/image.jpg');
+  });
 });
 
 function makeArticle(overrides: Partial<Article>): Article {
