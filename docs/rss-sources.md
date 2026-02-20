@@ -309,10 +309,6 @@
 - URL: https://www.elcorreo.com/rss/2.0/?section=economia
 - Sección: Economía
 
-## 10
-- Nombre periódico: El Economista
-- URL: https://www.eleconomista.es/rss/rss-economia.php
-- Sección: Economía
 
 ## 11
 - Nombre periódico: El Periódico Mediterráneo
@@ -382,10 +378,6 @@
 - URL: https://www.elcorreo.com/rss/2.0/?section=tecnologia
 - Sección: Tecnología
 
-## 6
-- Nombre periódico: El Economista
-- URL: https://www.eleconomista.es/rss/rss-category.php?category=tecnologia
-- Sección: Tecnología
 
 ## 7
 - Nombre periódico: Expansión

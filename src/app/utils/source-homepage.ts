@@ -6,7 +6,6 @@ const SOURCE_HOMEPAGE_BY_ID: Readonly<Record<string, string>> = {
   'source-el-confidencial': 'https://www.elconfidencial.com',
   'source-el-correo': 'https://www.elcorreo.com',
   'source-el-diario-es': 'https://www.eldiario.es',
-  'source-el-economista': 'https://www.eleconomista.es',
   'source-el-espanol': 'https://www.elespanol.com',
   'source-el-mundo': 'https://www.elmundo.es',
   'source-el-pais': 'https://elpais.com',

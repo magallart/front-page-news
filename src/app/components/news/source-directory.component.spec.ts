@@ -60,10 +60,10 @@ describe('SourceDirectoryComponent', () => {
     const fixture = TestBed.createComponent(SourceDirectoryComponent);
     fixture.componentRef.setInput('items', [
       {
-        id: 'source-economista',
-        name: 'El Economista',
-        url: 'https://eleconomista.es',
-        logoUrl: '/images/sources/source-economista.png',
+        id: 'source-a',
+        name: 'Periodico A',
+        url: 'https://periodico-a.test',
+        logoUrl: '/images/sources/source-a.png',
       },
     ]);
     fixture.detectChanges();

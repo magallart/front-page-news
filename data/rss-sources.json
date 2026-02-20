@@ -285,11 +285,6 @@
     "sectionName": "Economía"
   },
   {
-    "sourceName": "El Economista",
-    "feedUrl": "https://www.eleconomista.es/rss/rss-economia.php",
-    "sectionName": "Economía"
-  },
-  {
     "sourceName": "El Periódico Mediterráneo",
     "feedUrl": "https://www.elperiodicomediterraneo.com/rss/section/22023",
     "sectionName": "Economía"
@@ -347,11 +342,6 @@
   {
     "sourceName": "El Correo",
     "feedUrl": "https://www.elcorreo.com/rss/2.0/?section=tecnologia",
-    "sectionName": "Tecnología"
-  },
-  {
-    "sourceName": "El Economista",
-    "feedUrl": "https://www.eleconomista.es/rss/rss-category.php?category=tecnologia",
     "sectionName": "Tecnología"
   },
   {

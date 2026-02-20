@@ -264,7 +264,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Todas las correcciones acordadas en la sesion quedarán funcionalmente operativas y validadas.
   - Mantener funcionalidades actuales de la aplicación.
 - Tasks:
-  - [ ] 
+  - [✔️] Eliminar por completo El Economista del catalogo de feeds y del directorio de fuentes (sources, homepage mapping y referencias en documentacion/tests).
 
 
 <a id="fpn-011"></a>
