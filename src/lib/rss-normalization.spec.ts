@@ -173,6 +173,26 @@ describe('rss-normalization', () => {
     expect(normalized?.sourceName).toBe('Periódico Demo');
     expect(normalized?.author).toBe('Redacción Demo');
   });
+  it('decodes numeric html entities in feed item text fields', () => {
+    const normalized = normalizeFeedItem({
+      externalId: 'id-2',
+      title: 'Mercados &#8211; cierre &#124; analisis',
+      summary: '<p>Resumen</p>',
+      url: 'https://example.com/news/b',
+      sourceId: 'source-b',
+      sourceName: 'Diario &#124; Economico',
+      sectionSlug: 'economia',
+      author: 'Redaccion &#8211; Madrid',
+      publishedAt: 'Fri, 20 Feb 2026 12:00:00 GMT',
+      imageUrl: null,
+      thumbnailUrl: null,
+    });
+
+    expect(normalized).not.toBeNull();
+    expect(normalized?.title).toBe('Mercados – cierre | analisis');
+    expect(normalized?.sourceName).toBe('Diario | Economico');
+    expect(normalized?.author).toBe('Redaccion – Madrid');
+  });
 });
 
 function makeArticle(overrides: Partial<Article>): Article {

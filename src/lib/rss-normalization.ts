@@ -52,9 +52,7 @@ export function extractSafeSummary(value: string | null): string {
   const withoutScripts = value.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ' ');
   const withoutStyles = withoutScripts.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, ' ');
   const withoutTags = withoutStyles.replace(/<[^>]*>/g, ' ');
-  const decodedEntities = decodeHtmlEntities(withoutTags);
-
-  return normalizeFeedText(decodedEntities.replace(/\s+/g, ' ').trim());
+  return normalizeFeedText(withoutTags.replace(/\s+/g, ' ').trim());
 }
 
 export function canonicalizeUrl(value: string | null): string | null {
@@ -250,7 +248,8 @@ function normalizeNullableFeedText(value: string | null): string | null {
 }
 
 function normalizeFeedText(value: string): string {
-  const trimmed = value.trim();
+  const decodedEntities = decodeHtmlEntities(value);
+  const trimmed = decodedEntities.trim();
   if (!trimmed) {
     return '';
   }
