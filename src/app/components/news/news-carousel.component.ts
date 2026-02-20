@@ -51,15 +51,15 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                 {{ article.summary }}
               </p>
               <p
-                class="grid grid-cols-[minmax(0,1.6fr)_auto_minmax(0,1fr)_auto_minmax(0,1.2fr)] items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-primary-foreground/90 sm:text-sm"
+                class="grid grid-cols-[minmax(0,1.6fr)_auto_minmax(0,1fr)_auto_minmax(0,1.2fr)] items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-primary-foreground/90 sm:flex sm:items-center sm:gap-2 sm:text-sm"
               >
-                <span class="min-w-0 truncate">
+                <span class="min-w-0 truncate sm:max-w-[16rem] lg:max-w-[20rem]">
                   Por {{ article.author }}
                 </span>
                 <span aria-hidden="true" class="shrink-0 text-primary-foreground/75">|</span>
                 <span class="min-w-0 truncate">{{ article.source }}</span>
                 <span aria-hidden="true" class="shrink-0 text-primary-foreground/75">|</span>
-                <span class="min-w-0 truncate text-right">{{ formatArticlePublishedAt(article.publishedAt) }}</span>
+                <span class="min-w-0 truncate text-right sm:shrink-0">{{ formatArticlePublishedAt(article.publishedAt) }}</span>
               </p>
             </div>
           </a>
