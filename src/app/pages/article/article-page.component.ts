@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map, take } from 'rxjs';
@@ -9,6 +9,7 @@ import { ArticleNotFoundComponent } from '../../components/news/article-not-foun
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
+import { ArticlePageSkeletonComponent } from '../../components/news/skeletons/article-page-skeleton.component';
 import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsService } from '../../services/news.service';
@@ -28,34 +29,37 @@ import { resolveDetailUiState } from '../../utils/ui-state-matrix';
     BreakingNewsComponent,
     ErrorStateComponent,
     MostReadNewsComponent,
+    ArticlePageSkeletonComponent,
   ],
   template: `
     <app-page-container>
-      <section class="space-y-6 py-4 sm:space-y-8">
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start">
-          <div>
-            @if (detailUiState() === uiViewState.LOADING) {
-              <p class="text-sm text-muted-foreground">Cargando noticia...</p>
-            } @else if (detailUiState() === uiViewState.ERROR_TOTAL) {
-              <app-error-state
-                headline="No se ha podido cargar la noticia"
-                message="Estamos teniendo problemas para cargar este contenido. Inténtalo de nuevo en unos minutos."
-              />
-            } @else if (article(); as item) {
-              <app-article-content [article]="item" />
-            } @else {
-              <app-article-not-found />
-            }
-          </div>
-
-          <aside class="hidden lg:block lg:pl-5">
-            <app-breaking-news [items]="breakingNews()" />
-            <div class="mt-8">
-              <app-most-read-news [items]="mostReadNews()" />
+      @if (detailUiState() === uiViewState.LOADING) {
+        <app-article-page-skeleton />
+      } @else {
+        <section class="space-y-6 py-4 sm:space-y-8">
+          <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start">
+            <div>
+              @if (detailUiState() === uiViewState.ERROR_TOTAL) {
+                <app-error-state
+                  headline="No se ha podido cargar la noticia"
+                  message="Estamos teniendo problemas para cargar este contenido. Inténtalo de nuevo en unos minutos."
+                />
+              } @else if (article(); as item) {
+                <app-article-content [article]="item" />
+              } @else {
+                <app-article-not-found />
+              }
             </div>
-          </aside>
-        </div>
-      </section>
+
+            <aside class="hidden lg:block lg:pl-5">
+              <app-breaking-news [items]="breakingNews()" />
+              <div class="mt-8">
+                <app-most-read-news [items]="mostReadNews()" />
+              </div>
+            </aside>
+          </div>
+        </section>
+      }
     </app-page-container>
   `,
 })
@@ -158,3 +162,4 @@ export class ArticlePageComponent {
     });
   }
 }
+
