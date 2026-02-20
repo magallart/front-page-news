@@ -61,6 +61,14 @@ import type { SocialLink } from '../../../../interfaces/social-link.interface';
               {{ link.label }}
             </a>
           }
+
+          <a
+            class="block rounded-md px-3 py-2 text-sm font-semibold uppercase tracking-[0.12em] text-foreground transition duration-200 hover:bg-primary/10 hover:text-primary"
+            routerLink="/seccion/ultima-hora"
+            (click)="closed.emit()"
+          >
+            Última hora
+          </a>
         </nav>
 
         <div class="mt-8 border-t border-border pt-6">
