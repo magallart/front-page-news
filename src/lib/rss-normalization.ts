@@ -249,28 +249,7 @@ function normalizeNullableFeedText(value: string | null): string | null {
 
 function normalizeFeedText(value: string): string {
   const decodedEntities = decodeHtmlEntities(value);
-  const trimmed = decodedEntities.trim();
-  if (!trimmed) {
-    return '';
-  }
-
-  const score = mojibakeScore(trimmed);
-  if (score === 0) {
-    return trimmed;
-  }
-
-  const repaired = decodeUtf8FromSingleByteText(trimmed);
-  return mojibakeScore(repaired) < score ? repaired : trimmed;
+  return decodedEntities.trim();
 }
 
-function mojibakeScore(value: string): number {
-  let score = 0;
-  score += (value.match(/Ã|Â|â/g) ?? []).length * 2;
-  score += (value.match(/�/g) ?? []).length * 3;
-  return score;
-}
 
-function decodeUtf8FromSingleByteText(value: string): string {
-  const bytes = Uint8Array.from(value, (character) => character.charCodeAt(0) & 0xff);
-  return new TextDecoder('utf-8').decode(bytes);
-}

@@ -1,4 +1,4 @@
-import type { Article } from '../../interfaces/article.interface';
+﻿import type { Article } from '../../interfaces/article.interface';
 import type { Source } from '../../interfaces/source.interface';
 import type { NewsItem } from '../interfaces/news-item.interface';
 import type { SourceFilterItem } from '../interfaces/source-filter-item.interface';
@@ -116,3 +116,4 @@ function toDisplayImageUrl(imageUrl: string): string {
 
   return DEFAULT_NEWS_IMAGE_URL;
 }
+

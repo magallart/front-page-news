@@ -50,6 +50,38 @@ describe('feed-fetcher', () => {
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]?.code).toBe(WARNING_CODE.SOURCE_TIMEOUT);
   });
+
+  it('decodes feed body using charset from content-type header', async () => {
+    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
+    const feedBytes = buildXmlBytesWithSingleByteChar('ISO-8859-1');
+    const fetchFn = async () =>
+      new Response(feedBytes, {
+        status: 200,
+        headers: { 'content-type': 'application/rss+xml; charset=ISO-8859-1' },
+      });
+
+    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
+
+    expect(result.warnings).toHaveLength(0);
+    expect(result.successes).toHaveLength(1);
+    expect(result.successes[0]?.body).toContain('<title>España</title>');
+  });
+
+  it('falls back to xml declaration encoding when content-type has no charset', async () => {
+    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
+    const feedBytes = buildXmlBytesWithSingleByteChar('ISO-8859-1');
+    const fetchFn = async () =>
+      new Response(feedBytes, {
+        status: 200,
+        headers: { 'content-type': 'application/rss+xml' },
+      });
+
+    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
+
+    expect(result.warnings).toHaveLength(0);
+    expect(result.successes).toHaveLength(1);
+    expect(result.successes[0]?.body).toContain('<title>España</title>');
+  });
 });
 
 function makeSource(id: string, feedUrl: string): Source {
@@ -60,4 +92,17 @@ function makeSource(id: string, feedUrl: string): Source {
     feedUrl,
     sectionSlugs: ['actualidad'],
   };
+}
+
+function buildXmlBytesWithSingleByteChar(encoding: string): Uint8Array {
+  const encoder = new TextEncoder();
+  const prefix = encoder.encode(
+    `<?xml version="1.0" encoding="${encoding}"?><rss><channel><item><title>Espa`
+  );
+  const suffix = encoder.encode('a</title></item></channel></rss>');
+  const bytes = new Uint8Array(prefix.length + 1 + suffix.length);
+  bytes.set(prefix, 0);
+  bytes[prefix.length] = 0xf1; // "ñ" in ISO-8859-1/Windows-1252
+  bytes.set(suffix, prefix.length + 1);
+  return bytes;
 }

@@ -4,6 +4,8 @@ import type { Source } from '../interfaces/source.interface';
 import type { Warning } from '../interfaces/warning.interface';
 
 const DEFAULT_FETCH_TIMEOUT_MS = 8000;
+const FEED_SNIPPET_BYTES = 2048;
+const FALLBACK_CHARSETS = ['utf-8', 'windows-1252'] as const;
 
 interface FeedFetchSuccess {
   readonly sourceId: string;
@@ -94,14 +96,15 @@ async function fetchSingleFeed(
       };
     }
 
-    const body = await response.text();
+    const contentType = response.headers.get('content-type');
+    const body = await decodeFeedResponseBody(response, contentType);
     return {
       success: true,
       data: {
         sourceId: source.id,
         feedUrl: source.feedUrl,
         body,
-        contentType: response.headers.get('content-type'),
+        contentType,
       },
     };
   } catch (error) {
@@ -140,4 +143,89 @@ function toErrorMessage(error: unknown): string {
     return error.message;
   }
   return String(error);
+}
+
+async function decodeFeedResponseBody(response: Response, contentType: string | null): Promise<string> {
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const xmlSnippet = decodeLatin1(bytes.subarray(0, Math.min(bytes.length, FEED_SNIPPET_BYTES)));
+  const headerCharset = extractCharsetFromContentType(contentType);
+  const xmlCharset = extractXmlEncoding(xmlSnippet);
+  const candidates = buildCharsetCandidates(headerCharset, xmlCharset);
+
+  let fallbackDecoded: string | null = null;
+  for (const candidate of candidates) {
+    const decoded = tryDecode(bytes, candidate);
+    if (decoded === null) {
+      continue;
+    }
+
+    if (fallbackDecoded === null) {
+      fallbackDecoded = decoded;
+    }
+
+    if (!decoded.includes('\uFFFD')) {
+      return decoded;
+    }
+  }
+
+  return fallbackDecoded ?? decodeLatin1(bytes);
+}
+
+function extractCharsetFromContentType(contentType: string | null): string | null {
+  if (!contentType) {
+    return null;
+  }
+
+  const charsetMatch = contentType.match(/;\s*charset\s*=\s*("?)([^";,\s]+)\1/i);
+  if (!charsetMatch?.[2]) {
+    return null;
+  }
+
+  return normalizeCharsetLabel(charsetMatch[2]);
+}
+
+function extractXmlEncoding(xmlSnippet: string): string | null {
+  const xmlDeclarationMatch = xmlSnippet.match(/<\?xml\b[^>]*\bencoding\s*=\s*(['"])([^'"]+)\1/i);
+  if (!xmlDeclarationMatch?.[2]) {
+    return null;
+  }
+
+  return normalizeCharsetLabel(xmlDeclarationMatch[2]);
+}
+
+function normalizeCharsetLabel(charset: string): string {
+  return charset.trim().toLowerCase();
+}
+
+function buildCharsetCandidates(
+  headerCharset: string | null,
+  xmlCharset: string | null
+): readonly string[] {
+  const unique = new Set<string>();
+  if (headerCharset) {
+    unique.add(headerCharset);
+  }
+
+  if (xmlCharset) {
+    unique.add(xmlCharset);
+  }
+
+  for (const fallbackCharset of FALLBACK_CHARSETS) {
+    unique.add(fallbackCharset);
+  }
+
+  return Array.from(unique);
+}
+
+function tryDecode(bytes: Uint8Array, charset: string): string | null {
+  try {
+    return new TextDecoder(charset).decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+function decodeLatin1(bytes: Uint8Array): string {
+  return new TextDecoder('windows-1252').decode(bytes);
 }

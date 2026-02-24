@@ -28,12 +28,6 @@ describe('rss-normalization', () => {
     expect(extractSafeSummary(raw)).toBe('Ultima hora & analisis');
   });
 
-  it('repairs common mojibake in extracted summary text', () => {
-    const raw = '<p>SegÃºn fuentes, se abren nuevas lÃ­neas para los prÃ³ximos dÃ­as.</p>';
-
-    expect(extractSafeSummary(raw)).toBe('Según fuentes, se abren nuevas líneas para los próximos días.');
-  });
-
   it('keeps invalid numeric entities without throwing', () => {
     const raw = '<p>Texto &#9999999999; y &#xD800; y &#x110000;</p>';
 
@@ -153,26 +147,6 @@ describe('rss-normalization', () => {
     expect(deduped[0]?.imageUrl).toBe('https://cdn.example.com/image.jpg');
   });
 
-  it('repairs mojibake in feed item title and author during normalization', () => {
-    const normalized = normalizeFeedItem({
-      externalId: 'id-1',
-      title: 'AnÃ¡lisis del dÃ­a',
-      summary: '<p>Texto</p>',
-      url: 'https://example.com/news/a',
-      sourceId: 'source-a',
-      sourceName: 'PeriÃ³dico Demo',
-      sectionSlug: 'opinion',
-      author: 'RedacciÃ³n Demo',
-      publishedAt: 'Fri, 20 Feb 2026 10:00:00 GMT',
-      imageUrl: null,
-      thumbnailUrl: null,
-    });
-
-    expect(normalized).not.toBeNull();
-    expect(normalized?.title).toBe('Análisis del día');
-    expect(normalized?.sourceName).toBe('Periódico Demo');
-    expect(normalized?.author).toBe('Redacción Demo');
-  });
   it('decodes numeric html entities in feed item text fields', () => {
     const normalized = normalizeFeedItem({
       externalId: 'id-2',
@@ -189,9 +163,9 @@ describe('rss-normalization', () => {
     });
 
     expect(normalized).not.toBeNull();
-    expect(normalized?.title).toBe('Mercados – cierre | analisis');
+    expect(normalized?.title).toBe('Mercados \u2013 cierre | analisis');
     expect(normalized?.sourceName).toBe('Diario | Economico');
-    expect(normalized?.author).toBe('Redaccion – Madrid');
+    expect(normalized?.author).toBe('Redaccion \u2013 Madrid');
   });
 });
 

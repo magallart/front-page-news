@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+ï»¿import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { ArticleLockedPreviewComponent } from './article-locked-preview.component';
@@ -41,8 +41,8 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
       }
 
       <div class="font-editorial-body space-y-5 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-        @for (paragraph of articleParagraphs(); track $index) {
-          <p>{{ paragraph }}</p>
+        @if (safeArticle().summary) {
+          <p>{{ safeArticle().summary }}</p>
         }
       </div>
 
@@ -68,12 +68,12 @@ export class ArticleContentComponent {
 
     return {
       title: normalizeOrFallback(item.title, 'Noticia sin titular disponible'),
-      summary: normalizeOrFallback(item.summary, 'Esta noticia no incluye resumen disponible en este momento.'),
+      summary: item.summary.trim(),
       imageUrl,
       source,
       section,
       publishedAt: item.publishedAt,
-      author: normalizeOrFallback(item.author, 'Redacción Front Page News'),
+      author: normalizeOrFallback(item.author, 'Redacci\u00F3n Front Page News'),
       url: normalizeOrFallback(item.url, '/'),
     } as const;
   });
@@ -92,15 +92,6 @@ export class ArticleContentComponent {
   });
 
   protected readonly formattedSection = computed(() => formatSectionLabel(this.safeArticle().section));
-  protected readonly articleParagraphs = computed(() => {
-    const item = this.safeArticle();
-
-    return [
-      item.summary,
-      `Según fuentes de ${item.source}, este avance refuerza la cobertura en ${formatSectionLabel(item.section).toLowerCase()} y abre nuevas líneas de seguimiento editorial en los próximos días.`,
-      'El equipo de redacción mantendrá esta historia en actualización constante para aportar contexto, datos verificados y el impacto directo en la audiencia.',
-    ] as const;
-  });
 
   protected onImageError(): void {
     this.hiddenImageUrl.set(this.safeArticle().imageUrl);

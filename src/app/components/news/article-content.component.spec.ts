@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+ï»¿import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 
@@ -85,10 +85,10 @@ describe('ArticleContentComponent', () => {
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();
     expect(text).toContain('Noticia sin titular disponible');
-    expect(text).toContain('Redacción Front Page News');
+    expect(text).toContain('Redacci\u00F3n Front Page News');
     expect(text).toContain('Front Page News');
     expect(text).toContain('Actualidad');
-    expect(text).toContain('Esta noticia no incluye resumen disponible en este momento.');
+    expect(text).not.toContain('Esta noticia no incluye resumen disponible en este momento.');
 
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement | null;
     expect(image).toBeNull();
@@ -106,3 +106,4 @@ const MOCK_ARTICLE: NewsItem = {
   author: 'Ana Redactora',
   url: 'https://example.com/full-article',
 };
+

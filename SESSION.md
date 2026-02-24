@@ -316,3 +316,19 @@ Brief continuity notes to recover context between terminal sessions.
       - `feat(section): [FPN-010] add dedicated section-page loading skeleton`
       - `feat(article): [FPN-010] add dedicated article-page loading skeleton`
       - `chore(router): [FPN-010] remove temporary home-skeleton route and update backlog`
+
+## 2026-02-24 (final)
+
+- What changed:
+  - Stabilized text encoding end-to-end for news ingestion and rendering.
+  - Updated feed decoding in `src/lib/feed-fetcher.ts` to decode from raw bytes with charset detection:
+    - `Content-Type` charset first.
+    - XML declaration encoding fallback.
+    - controlled fallback order (`utf-8`, `windows-1252`) selecting non-corrupt output.
+  - Added charset-focused coverage in `src/lib/feed-fetcher.spec.ts` (header charset + XML encoding fallback).
+  - Simplified `src/lib/rss-normalization.ts` by removing mojibake-repair heuristics and keeping safe normalization (entity decode + trim).
+  - Cleaned `src/lib/rss-normalization.spec.ts` to remove obsolete mojibake-repair expectations and keep relevant normalization tests.
+  - Fixed frontend text corruption root cause in article detail:
+    - corrected file encoding issues in `src/app/components/news/article-content.component.ts` and its spec.
+    - removed hardcoded synthetic editorial paragraphs from article detail so the article body reflects feed-provided text only.
+  - Kept article detail behavior aligned with current parser contract: detail renders the normalized feed `summary` value only.
