@@ -332,3 +332,23 @@ Brief continuity notes to recover context between terminal sessions.
     - corrected file encoding issues in `src/app/components/news/article-content.component.ts` and its spec.
     - removed hardcoded synthetic editorial paragraphs from article detail so the article body reflects feed-provided text only.
   - Kept article detail behavior aligned with current parser contract: detail renders the normalized feed `summary` value only.
+
+## 2026-02-26
+
+- What changed:
+  - Refactored Vercel Functions architecture to reduce coupling between `/api` and frontend runtime modules.
+  - Removed runtime imports from `/api` into `src/lib`:
+    - `api/news.ts` and `api/sources.ts` now consume server modules from `api/lib` directly.
+    - Removed dynamic `getModuleExport` workaround in API handlers.
+  - Added dedicated API constants under `api/constants`:
+    - `news.constants.ts`, `sources.constants.ts`, `image.constants.ts`, `warning-code.constants.ts`.
+  - Added dedicated API interfaces under `api/interfaces`:
+    - `api-request.interface.ts`, `feed-success-like.interface.ts`, `feed-fetch-result-like.interface.ts`,
+      `news-handler-dependencies.interface.ts`, `parsed-feeds-result.interface.ts`.
+  - Added server-side processing modules in `api/lib` (mirroring shared feed/query/catalog behavior for Functions runtime isolation):
+    - `feed-fetcher.ts`, `news-query.ts`, `rss-normalization.ts`, `rss-parser.ts`, `rss-sources-catalog.ts`.
+  - Cleaned import ordering and grouping in API files to satisfy linting conventions.
+  - Fixed a TypeScript BodyInit compatibility issue in `src/lib/feed-fetcher.spec.ts` by returning `ArrayBuffer` in test fixture helper.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass).

@@ -1,22 +1,19 @@
 import { once } from 'node:events';
 
+import {
+  CACHE_CONTROL_ERROR,
+  CACHE_CONTROL_SUCCESS,
+  MAX_IMAGE_BYTES,
+  MAX_REDIRECTS,
+  REDIRECT_STATUS_CODES,
+  SUPPORTED_PROTOCOLS,
+  UPSTREAM_FETCH_TIMEOUT_MS,
+} from './constants/image.constants.js';
 import { PayloadTooLargeError, streamResponseBodyWithLimit } from './lib/response-body-limit.js';
 import { isPublicHttpUrl } from './lib/ssrf-guard.js';
 
-import type { IncomingMessage, ServerResponse } from 'node:http';
-
-const CACHE_CONTROL_SUCCESS = 'public, s-maxage=600, stale-while-revalidate=86400';
-const CACHE_CONTROL_ERROR = 'no-store, max-age=0';
-const SUPPORTED_PROTOCOLS = new Set(['http:', 'https:']);
-const MAX_REDIRECTS = 5;
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const UPSTREAM_FETCH_TIMEOUT_MS = 8000;
-const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
-
-interface ApiRequest extends IncomingMessage {
-  readonly method?: string;
-  readonly url?: string;
-}
+import type { ApiRequest } from './interfaces/api-request.interface';
+import type { ServerResponse } from 'node:http';
 
 export default async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
   if (request.method !== 'GET') {

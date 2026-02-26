@@ -94,7 +94,7 @@ function makeSource(id: string, feedUrl: string): Source {
   };
 }
 
-function buildXmlBytesWithSingleByteChar(encoding: string): Uint8Array {
+function buildXmlBytesWithSingleByteChar(encoding: string): ArrayBuffer {
   const encoder = new TextEncoder();
   const prefix = encoder.encode(
     `<?xml version="1.0" encoding="${encoding}"?><rss><channel><item><title>Espa`
@@ -104,5 +104,5 @@ function buildXmlBytesWithSingleByteChar(encoding: string): Uint8Array {
   bytes.set(prefix, 0);
   bytes[prefix.length] = 0xf1; // "ñ" in ISO-8859-1/Windows-1252
   bytes.set(suffix, prefix.length + 1);
-  return bytes;
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
 }

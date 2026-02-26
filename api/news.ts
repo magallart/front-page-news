@@ -1,88 +1,27 @@
-import { resolve } from 'node:path';
-
-
-import * as feedFetcherModule from '../src/lib/feed-fetcher.js';
-import * as newsQueryModule from '../src/lib/news-query.js';
-import * as rssNormalizationModule from '../src/lib/rss-normalization.js';
-import * as rssParserModule from '../src/lib/rss-parser.js';
-import * as rssSourcesCatalogModule from '../src/lib/rss-sources-catalog.js';
-import * as warningCodeModule from '../src/lib/warning-code.js';
-
+import { CACHE_CONTROL_HEADER_VALUE, FEED_FETCH_TIMEOUT_MS, RSS_SOURCES_FILE_PATH } from './constants/news.constants.js';
+import { WARNING_CODE } from './constants/warning-code.constants.js';
+import { fetchFeedsConcurrently } from './lib/feed-fetcher.js';
+import { applyNewsFilters, parseNewsQuery } from './lib/news-query.js';
 import { loadRssCatalogRecords } from './lib/rss-catalog.js';
+import { dedupeAndSortArticles, normalizeFeedItem } from './lib/rss-normalization.js';
+import { parseFeedItems } from './lib/rss-parser.js';
+import { buildSourceFeedTargetsFromRecords } from './lib/rss-sources-catalog.js';
 import { sendJson } from './lib/send-json.js';
 
+import type { ApiRequest } from './interfaces/api-request.interface';
+import type { FeedSuccessLike } from './interfaces/feed-success-like.interface';
+import type { NewsHandlerDependencies } from './interfaces/news-handler-dependencies.interface';
+import type { ParsedFeedsResult } from './interfaces/parsed-feeds-result.interface';
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
-import type { WarningCode } from '../src/interfaces/warning.interface';
 import type { Warning } from '../src/interfaces/warning.interface';
-import type { fetchFeedsConcurrently as fetchFeedsConcurrentlyType } from '../src/lib/feed-fetcher';
-import type { applyNewsFilters as applyNewsFiltersType, parseNewsQuery as parseNewsQueryType } from '../src/lib/news-query';
-import type { dedupeAndSortArticles as dedupeAndSortArticlesType, normalizeFeedItem as normalizeFeedItemType } from '../src/lib/rss-normalization';
-import type { parseFeedItems as parseFeedItemsType } from '../src/lib/rss-parser';
-import type { buildSourceFeedTargetsFromRecords as buildSourceFeedTargetsFromRecordsType } from '../src/lib/rss-sources-catalog';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-
-const RSS_SOURCES_FILE_PATH = resolve(process.cwd(), 'data/rss-sources.json');
-const FEED_FETCH_TIMEOUT_MS = 8000;
-const CACHE_CONTROL_HEADER_VALUE = 'public, s-maxage=120, stale-while-revalidate=600';
-const fetchFeedsConcurrently = getModuleExport<FetchFeedsConcurrently>(feedFetcherModule, 'fetchFeedsConcurrently');
-const parseNewsQuery = getModuleExport<ParseNewsQuery>(newsQueryModule, 'parseNewsQuery');
-const applyNewsFilters = getModuleExport<ApplyNewsFilters>(newsQueryModule, 'applyNewsFilters');
-const dedupeAndSortArticles = getModuleExport<DedupeAndSortArticles>(rssNormalizationModule, 'dedupeAndSortArticles');
-const normalizeFeedItem = getModuleExport<NormalizeFeedItem>(rssNormalizationModule, 'normalizeFeedItem');
-const parseFeedItems = getModuleExport<ParseFeedItems>(rssParserModule, 'parseFeedItems');
-const buildSourceFeedTargetsFromRecords = getModuleExport<BuildSourceFeedTargetsFromRecords>(
-  rssSourcesCatalogModule,
-  'buildSourceFeedTargetsFromRecords'
-);
-const WARNING_CODE = getModuleExport<WarningCodeCatalog>(warningCodeModule, 'WARNING_CODE');
+import type { ServerResponse } from 'node:http';
 
 export const config = {
   includeFiles: ['data/rss-sources.json'],
 };
-
-interface ApiRequest extends IncomingMessage {
-  readonly method?: string;
-  readonly url?: string;
-}
-
-type FetchFeedsConcurrently = typeof fetchFeedsConcurrentlyType;
-type ParseNewsQuery = typeof parseNewsQueryType;
-type ApplyNewsFilters = typeof applyNewsFiltersType;
-type DedupeAndSortArticles = typeof dedupeAndSortArticlesType;
-type NormalizeFeedItem = typeof normalizeFeedItemType;
-type ParseFeedItems = typeof parseFeedItemsType;
-type BuildSourceFeedTargetsFromRecords = typeof buildSourceFeedTargetsFromRecordsType;
-
-interface WarningCodeCatalog {
-  readonly SOURCE_FETCH_FAILED: WarningCode;
-  readonly SOURCE_PARSE_FAILED: WarningCode;
-  readonly SOURCE_TIMEOUT: WarningCode;
-  readonly INVALID_ITEM_SKIPPED: WarningCode;
-}
-
-interface FeedSuccessLike {
-  readonly sourceId: string;
-  readonly feedUrl: string;
-  readonly body: string;
-}
-
-interface FeedFetchResultLike {
-  readonly successes: readonly FeedSuccessLike[];
-  readonly warnings: readonly Warning[];
-}
-
-interface NewsHandlerDependencies {
-  readonly loadSourcesCatalog: () => Promise<readonly SourceFeedTarget[]>;
-  readonly fetchFeeds: (sources: readonly Source[], timeoutMs: number) => Promise<FeedFetchResultLike>;
-}
-
-interface ParsedFeedsResult {
-  readonly articles: readonly Article[];
-  readonly warnings: readonly Warning[];
-}
 
 const defaultDependencies: NewsHandlerDependencies = {
   loadSourcesCatalog,
@@ -264,24 +203,5 @@ function buildUniqueFetchSources(targets: readonly SourceFeedTarget[]): readonly
 
 function toFeedTargetKey(sourceId: string, feedUrl: string): string {
   return `${sourceId}|${feedUrl}`;
-}
-
-function getModuleExport<T>(moduleRecord: unknown, exportName: string): T {
-  if (isRecord(moduleRecord) && exportName in moduleRecord) {
-    return moduleRecord[exportName] as T;
-  }
-
-  if (isRecord(moduleRecord) && 'default' in moduleRecord) {
-    const defaultExport = moduleRecord['default'];
-    if (isRecord(defaultExport) && exportName in defaultExport) {
-      return defaultExport[exportName] as T;
-    }
-  }
-
-  throw new Error(`Unable to resolve export "${exportName}" from runtime module`);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
 }
 
