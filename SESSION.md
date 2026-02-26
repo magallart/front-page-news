@@ -355,6 +355,9 @@ Brief continuity notes to recover context between terminal sessions.
     - when all sources are cleared (`Quitar todo` / uncheck all), filters remain available and news can be recovered without reloading.
     - replaced split source-selection signals with one atomic signal to avoid intermediate UI states that briefly showed inconsistent empty-state copy.
     - added regression coverage for clear-all + recovery flow.
+  - Adjusted locked article preview density:
+    - reduced synthetic preview skeleton text from 2 paragraphs to 1 paragraph in news detail.
+    - updated related unit tests to match the new locked-preview structure.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).

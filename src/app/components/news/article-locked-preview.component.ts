@@ -34,6 +34,6 @@ function pickRandomParagraphs(pool: readonly (readonly number[])[]): readonly (r
     shuffled[randomIndex] = current;
   }
 
-  const paragraphCount = 2;
+  const paragraphCount = 1;
   return shuffled.slice(0, paragraphCount);
 }

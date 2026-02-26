@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ArticleLockedPreviewComponent } from './article-locked-preview.component';
 
 describe('ArticleLockedPreviewComponent', () => {
-  it('renders a blurred locked preview skeleton with exactly 2 paragraphs', async () => {
+  it('renders a blurred locked preview skeleton with exactly 1 paragraph', async () => {
     await TestBed.configureTestingModule({
       imports: [ArticleLockedPreviewComponent],
     }).compileComponents();
@@ -17,10 +17,10 @@ describe('ArticleLockedPreviewComponent', () => {
 
     const paragraphs = fixture.nativeElement.querySelectorAll('div.space-y-3');
     const lockedParagraphCount = paragraphs.length;
-    expect(lockedParagraphCount).toBe(2);
+    expect(lockedParagraphCount).toBe(1);
 
     const lines = fixture.nativeElement.querySelectorAll('div.skeleton-line');
-    expect(lines.length).toBeGreaterThanOrEqual(8);
+    expect(lines.length).toBeGreaterThanOrEqual(4);
 
     const blurredContainer = fixture.nativeElement.querySelector('.blur-\\[4px\\]') as HTMLElement;
     expect(blurredContainer).toBeTruthy();
