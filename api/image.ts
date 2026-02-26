@@ -8,11 +8,12 @@ import {
   REDIRECT_STATUS_CODES,
   SUPPORTED_PROTOCOLS,
   UPSTREAM_FETCH_TIMEOUT_MS,
-} from './constants/image.constants.js';
+} from '../server/constants/image.constants.js';
+
 import { PayloadTooLargeError, streamResponseBodyWithLimit } from './lib/response-body-limit.js';
 import { isPublicHttpUrl } from './lib/ssrf-guard.js';
 
-import type { ApiRequest } from './interfaces/api-request.interface';
+import type { ApiRequest } from '../server/interfaces/api-request.interface';
 import type { ServerResponse } from 'node:http';
 
 export default async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {

@@ -352,3 +352,17 @@ Brief continuity notes to recover context between terminal sessions.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).
+
+## 2026-02-26 (hobby deployment fix)
+
+- What changed:
+  - Fixed Vercel Hobby function-count issue by reducing files under `/api` back to route entrypoints + essential shared helpers.
+  - Moved non-route API support code out of `/api` into root `server/`:
+    - `server/constants/*`
+    - `server/interfaces/*`
+    - `server/lib/*`
+  - Updated `api/news.ts`, `api/sources.ts`, and `api/image.ts` imports to consume the new `server/*` paths.
+  - Preserved existing API behavior while ensuring helper files are no longer treated as individual Serverless Functions.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass).

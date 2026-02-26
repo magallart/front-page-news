@@ -1,17 +1,18 @@
-import { CACHE_CONTROL_HEADER_VALUE, FEED_FETCH_TIMEOUT_MS, RSS_SOURCES_FILE_PATH } from './constants/news.constants.js';
-import { WARNING_CODE } from './constants/warning-code.constants.js';
-import { fetchFeedsConcurrently } from './lib/feed-fetcher.js';
-import { applyNewsFilters, parseNewsQuery } from './lib/news-query.js';
+import { CACHE_CONTROL_HEADER_VALUE, FEED_FETCH_TIMEOUT_MS, RSS_SOURCES_FILE_PATH } from '../server/constants/news.constants.js';
+import { WARNING_CODE } from '../server/constants/warning-code.constants.js';
+import { fetchFeedsConcurrently } from '../server/lib/feed-fetcher.js';
+import { applyNewsFilters, parseNewsQuery } from '../server/lib/news-query.js';
+import { dedupeAndSortArticles, normalizeFeedItem } from '../server/lib/rss-normalization.js';
+import { parseFeedItems } from '../server/lib/rss-parser.js';
+import { buildSourceFeedTargetsFromRecords } from '../server/lib/rss-sources-catalog.js';
+
 import { loadRssCatalogRecords } from './lib/rss-catalog.js';
-import { dedupeAndSortArticles, normalizeFeedItem } from './lib/rss-normalization.js';
-import { parseFeedItems } from './lib/rss-parser.js';
-import { buildSourceFeedTargetsFromRecords } from './lib/rss-sources-catalog.js';
 import { sendJson } from './lib/send-json.js';
 
-import type { ApiRequest } from './interfaces/api-request.interface';
-import type { FeedSuccessLike } from './interfaces/feed-success-like.interface';
-import type { NewsHandlerDependencies } from './interfaces/news-handler-dependencies.interface';
-import type { ParsedFeedsResult } from './interfaces/parsed-feeds-result.interface';
+import type { ApiRequest } from '../server/interfaces/api-request.interface';
+import type { FeedSuccessLike } from '../server/interfaces/feed-success-like.interface';
+import type { NewsHandlerDependencies } from '../server/interfaces/news-handler-dependencies.interface';
+import type { ParsedFeedsResult } from '../server/interfaces/parsed-feeds-result.interface';
 import type { Article } from '../src/interfaces/article.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';

@@ -1,9 +1,10 @@
-import { CACHE_CONTROL_HEADER_VALUE, RSS_SOURCES_FILE_PATH } from './constants/sources.constants.js';
+import { CACHE_CONTROL_HEADER_VALUE, RSS_SOURCES_FILE_PATH } from '../server/constants/sources.constants.js';
+import { buildSourcesResponseFromRecords } from '../server/lib/rss-sources-catalog.js';
+
 import { loadRssCatalogRecords } from './lib/rss-catalog.js';
-import { buildSourcesResponseFromRecords } from './lib/rss-sources-catalog.js';
 import { sendJson } from './lib/send-json.js';
 
-import type { ApiRequest } from './interfaces/api-request.interface';
+import type { ApiRequest } from '../server/interfaces/api-request.interface';
 import type { ServerResponse } from 'node:http';
 
 export const config = {
