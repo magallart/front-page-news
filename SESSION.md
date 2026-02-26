@@ -366,3 +366,13 @@ Brief continuity notes to recover context between terminal sessions.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).
+
+## 2026-02-26 (hobby deployment fix - esm boundary)
+
+- What changed:
+  - Fixed Vercel runtime export error after moving support modules to `server/*`.
+  - Added `server/package.json` with `"type": "module"` so Node serverless runtime treats `server/*.js` as ESM and resolves named exports correctly.
+  - This aligns with the Vercel agent guidance for module boundary consistency when API runtime imports execute outside `/api`.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass).
