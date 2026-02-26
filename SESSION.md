@@ -351,6 +351,10 @@ Brief continuity notes to recover context between terminal sessions.
     - Vercel Hobby `/api` function-count limit awareness.
     - mandatory ESM boundary (`package.json` with `"type": "module"`) for runtime folders imported by `api/*`.
     - post-refactor runtime checklist (file-count validation + deployed endpoint smoke tests).
+  - Fixed section-page filters recovery and transient empty-state flicker:
+    - when all sources are cleared (`Quitar todo` / uncheck all), filters remain available and news can be recovered without reloading.
+    - replaced split source-selection signals with one atomic signal to avoid intermediate UI states that briefly showed inconsistent empty-state copy.
+    - added regression coverage for clear-all + recovery flow.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).

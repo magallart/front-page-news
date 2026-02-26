@@ -293,6 +293,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Definir boundary ESM explícito para runtime server compartido (`server/package.json` con `"type": "module"`) y corregir errores de named exports en producción.
   - [✔️] Estandarizar imports runtime ESM en handlers de API con rutas explícitas y coherentes para despliegue serverless.
   - [✔️] Añadir playbook operativo en `agents/vercel.md` con límite Hobby, reglas de boundary ESM y checklist post-refactor con smoke checks de endpoints.
+  - [✔️] Corregir en página de sección el flujo de filtros al desmarcar todas las fuentes para evitar bloqueo visual y eliminar parpadeo transitorio de mensajes vacíos.
 
 
 <a id="fpn-011"></a>
