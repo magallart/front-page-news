@@ -340,39 +340,17 @@ Brief continuity notes to recover context between terminal sessions.
   - Removed runtime imports from `/api` into `src/lib`:
     - `api/news.ts` and `api/sources.ts` now consume server modules from `api/lib` directly.
     - Removed dynamic `getModuleExport` workaround in API handlers.
-  - Added dedicated API constants under `api/constants`:
-    - `news.constants.ts`, `sources.constants.ts`, `image.constants.ts`, `warning-code.constants.ts`.
-  - Added dedicated API interfaces under `api/interfaces`:
-    - `api-request.interface.ts`, `feed-success-like.interface.ts`, `feed-fetch-result-like.interface.ts`,
-      `news-handler-dependencies.interface.ts`, `parsed-feeds-result.interface.ts`.
-  - Added server-side processing modules in `api/lib` (mirroring shared feed/query/catalog behavior for Functions runtime isolation):
-    - `feed-fetcher.ts`, `news-query.ts`, `rss-normalization.ts`, `rss-parser.ts`, `rss-sources-catalog.ts`.
-  - Cleaned import ordering and grouping in API files to satisfy linting conventions.
-  - Fixed a TypeScript BodyInit compatibility issue in `src/lib/feed-fetcher.spec.ts` by returning `ArrayBuffer` in test fixture helper.
-- Verification performed:
-  - `pnpm run lint` (pass).
-  - `pnpm test -- --watch=false` (pass).
-
-## 2026-02-26 (hobby deployment fix)
-
-- What changed:
-  - Fixed Vercel Hobby function-count issue by reducing files under `/api` back to route entrypoints + essential shared helpers.
-  - Moved non-route API support code out of `/api` into root `server/`:
+  - Added dedicated API constants and interfaces, then moved non-route API support code out of `/api` into root `server/` to satisfy Vercel Hobby function-count constraints:
     - `server/constants/*`
     - `server/interfaces/*`
     - `server/lib/*`
-  - Updated `api/news.ts`, `api/sources.ts`, and `api/image.ts` imports to consume the new `server/*` paths.
-  - Preserved existing API behavior while ensuring helper files are no longer treated as individual Serverless Functions.
-- Verification performed:
-  - `pnpm run lint` (pass).
-  - `pnpm test -- --watch=false` (pass).
-
-## 2026-02-26 (hobby deployment fix - esm boundary)
-
-- What changed:
-  - Fixed Vercel runtime export error after moving support modules to `server/*`.
-  - Added `server/package.json` with `"type": "module"` so Node serverless runtime treats `server/*.js` as ESM and resolves named exports correctly.
-  - This aligns with the Vercel agent guidance for module boundary consistency when API runtime imports execute outside `/api`.
+  - Updated `api/news.ts`, `api/sources.ts`, and `api/image.ts` imports to consume `server/*` paths while keeping API behavior stable.
+  - Fixed Vercel runtime named-export failure by adding `server/package.json` with `"type": "module"` so `server/*.js` is treated as ESM.
+  - Fixed a TypeScript BodyInit compatibility issue in `src/lib/feed-fetcher.spec.ts` by returning `ArrayBuffer` in the test fixture helper.
+  - Hardened `agents/vercel.md` with incident-driven rules:
+    - Vercel Hobby `/api` function-count limit awareness.
+    - mandatory ESM boundary (`package.json` with `"type": "module"`) for runtime folders imported by `api/*`.
+    - post-refactor runtime checklist (file-count validation + deployed endpoint smoke tests).
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).
