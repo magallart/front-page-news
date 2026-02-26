@@ -287,6 +287,12 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Simplificar el footer para dejar un layout limpio con logo y redes en una sola fila, eliminando las columnas editoriales y el texto central.
   - [✔️] Implementar skeleton estructurado de la home en estado de carga y extraerlo a `home-page-skeleton` como componente dedicado para mejorar UX y mantenimiento.
   - [✔️] Crear sistema de skeletons reutilizables (`home`, `sección`, `detalle` y bloques compartidos), aplicarlo en estados de carga reales.
+  - [✔️] Desacoplar runtime de Vercel Functions de `src/lib` y eliminar interop dinámico (`getModuleExport`) en handlers de API.
+  - [✔️] Extraer soporte de runtime API a módulos dedicados (`constants`, `interfaces`, `lib`) para mejorar mantenibilidad y coherencia arquitectónica.
+  - [✔️] Adaptar arquitectura al límite de Vercel Hobby moviendo soporte no-route fuera de `/api` para no exceder el máximo de Functions por deployment.
+  - [✔️] Definir boundary ESM explícito para runtime server compartido (`server/package.json` con `"type": "module"`) y corregir errores de named exports en producción.
+  - [✔️] Estandarizar imports runtime ESM en handlers de API con rutas explícitas y coherentes para despliegue serverless.
+  - [✔️] Añadir playbook operativo en `agents/vercel.md` con límite Hobby, reglas de boundary ESM y checklist post-refactor con smoke checks de endpoints.
 
 
 <a id="fpn-011"></a>
