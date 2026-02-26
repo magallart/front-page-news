@@ -32,6 +32,10 @@ Specialized in Vercel deployments, serverless runtime issues, and production dia
 - `api/*` executes in Node serverless runtime.
 - Runtime imports that execute in Node must be ESM-compatible.
 - TypeScript passing locally does not guarantee Vercel runtime compatibility.
+- On Vercel Hobby, each file under `/api` counts as one Serverless Function.
+  - Keep `/api` limited to route entrypoints and essential shared API helpers only.
+  - Move non-route support modules (constants/interfaces/server libs) outside `/api` (e.g. `server/*`).
+- If API runtime imports modules outside `/api`, that runtime folder must define its ESM boundary with a local `package.json` containing `"type": "module"`.
 
 ## Common Failure Patterns
 
@@ -107,11 +111,21 @@ Most common root causes:
 - Error reproduced in production and log signature captured.
 - Fix maps directly to a known signature.
 - `api/package.json` and `src/package.json` boundaries are correct.
+- If `api/*` imports from `server/*` (or any external runtime folder), that folder includes `package.json` with `"type": "module"`.
 - Runtime imports in touched `api/*` files use `.js`.
 - Local file dependencies required in runtime use `config.includeFiles`.
 - `pnpm run lint` passes.
 - `pnpm test -- --watch=false` passes.
 - Production endpoints return `200` after deploy.
+
+## Post-Refactor Runtime Checklist
+
+- Count files under `/api` and confirm plan compatibility (Hobby limit: max 12 functions/files in `/api`).
+- Verify ESM boundaries for any runtime folder imported by `api/*` (`package.json` with `"type": "module"`).
+- Smoke-test deployed endpoints with raw responses:
+  - `curl -i https://<app>/api/sources`
+  - `curl -i "https://<app>/api/news?page=1&limit=20"`
+- If failures appear, inspect Vercel logs before applying additional changes.
 
 ## Production Checklist
 
