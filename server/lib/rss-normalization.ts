@@ -38,8 +38,14 @@ export function extractSafeSummary(value: string | null): string {
 
   const withoutScripts = value.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ' ');
   const withoutStyles = withoutScripts.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, ' ');
-  const withoutTags = withoutStyles.replace(/<[^>]*>/g, ' ');
-  return normalizeFeedText(withoutTags.replace(/\s+/g, ' ').trim());
+  const withParagraphBreaks = withoutStyles
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p\s*>/gi, '\n\n')
+    .replace(/<\/div\s*>/gi, '\n\n')
+    .replace(/<\/h[1-6]\s*>/gi, '\n\n')
+    .replace(/<\/li\s*>/gi, '\n');
+  const withoutTags = withParagraphBreaks.replace(/<[^>]*>/g, ' ');
+  return normalizeSummaryText(withoutTags);
 }
 
 export function canonicalizeUrl(value: string | null): string | null {
@@ -130,7 +136,7 @@ function mergeDedupedArticles(current: Article, candidate: Article): Article {
     imageUrl: preferred.imageUrl ?? fallback.imageUrl,
     thumbnailUrl: preferred.thumbnailUrl ?? fallback.thumbnailUrl ?? preferred.imageUrl ?? fallback.imageUrl,
     author: preferred.author ?? fallback.author,
-    summary: preferred.summary || fallback.summary,
+    summary: pickLongerText(preferred.summary, fallback.summary),
   };
 }
 
@@ -233,4 +239,24 @@ function normalizeNullableFeedText(value: string | null): string | null {
 function normalizeFeedText(value: string): string {
   const decodedEntities = decodeHtmlEntities(value);
   return decodedEntities.trim();
+}
+
+function normalizeSummaryText(value: string): string {
+  const normalizedLineBreaks = value.replace(/\r\n?/g, '\n');
+  const normalizedLines = normalizedLineBreaks
+    .split('\n')
+    .map((line) => line.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim())
+    .join('\n');
+  const decoded = normalizeFeedText(normalizedLines);
+
+  const paragraphs = decoded
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\n+/g, ' ').trim())
+    .filter((paragraph) => paragraph.length > 0);
+
+  return paragraphs.join('\n\n');
+}
+
+function pickLongerText(primary: string, secondary: string): string {
+  return secondary.length > primary.length ? secondary : primary;
 }

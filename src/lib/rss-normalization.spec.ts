@@ -28,6 +28,12 @@ describe('rss-normalization', () => {
     expect(extractSafeSummary(raw)).toBe('Ultima hora & analisis');
   });
 
+  it('preserves paragraph boundaries when html structure provides them', () => {
+    const raw = '<p>Primer párrafo con <strong>detalle</strong>.</p><p>Segundo párrafo.</p>';
+
+    expect(extractSafeSummary(raw)).toBe('Primer párrafo con detalle.\n\nSegundo párrafo.');
+  });
+
   it('keeps invalid numeric entities without throwing', () => {
     const raw = '<p>Texto &#9999999999; y &#xD800; y &#x110000;</p>';
 
@@ -145,6 +151,28 @@ describe('rss-normalization', () => {
     expect(deduped[0]?.id).toBe('newer-without-image');
     expect(deduped[0]?.sectionSlug).toBe('economia');
     expect(deduped[0]?.imageUrl).toBe('https://cdn.example.com/image.jpg');
+  });
+
+  it('keeps the longest summary when deduping duplicate articles', () => {
+    const sameUrl = 'https://example.com/news/shared-summary';
+    const items: readonly Article[] = [
+      makeArticle({
+        id: 'short',
+        canonicalUrl: sameUrl,
+        summary: 'Resumen corto.',
+        publishedAt: '2026-02-20T11:00:00.000Z',
+      }),
+      makeArticle({
+        id: 'long',
+        canonicalUrl: sameUrl,
+        summary: 'Resumen largo con más información y contexto editorial.',
+        publishedAt: '2026-02-20T11:05:00.000Z',
+      }),
+    ];
+
+    const deduped = dedupeAndSortArticles(items);
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0]?.summary).toBe('Resumen largo con más información y contexto editorial.');
   });
 
   it('decodes numeric html entities in feed item text fields', () => {

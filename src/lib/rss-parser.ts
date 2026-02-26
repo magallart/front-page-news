@@ -39,7 +39,7 @@ function parseRssItems(xml: string, source: Source, sectionSlug: string): readon
     return {
       externalId: extractTagText(block, ['guid']),
       title: extractTagText(block, ['title']),
-      summary: extractTagText(block, ['description', 'content:encoded']),
+      summary: extractLongestTagText(block, ['description', 'content:encoded']),
       url: extractTagText(block, ['link']),
       sourceId: source.id,
       sourceName: source.name,
@@ -60,7 +60,7 @@ function parseAtomEntries(xml: string, source: Source, sectionSlug: string): rea
     return {
       externalId: extractTagText(block, ['id']),
       title: extractTagText(block, ['title']),
-      summary: extractTagText(block, ['summary', 'content']),
+      summary: extractLongestTagText(block, ['summary', 'content']),
       url: extractAtomEntryLink(block),
       sourceId: source.id,
       sourceName: source.name,
@@ -75,19 +75,48 @@ function parseAtomEntries(xml: string, source: Source, sectionSlug: string): rea
 
 function extractTagText(block: string, tagNames: readonly string[]): string | null {
   for (const tagName of tagNames) {
-    const escaped = escapeRegExp(tagName);
-    const match = block.match(new RegExp(`<${escaped}\\b[^>]*>([\\s\\S]*?)<\\/${escaped}>`, 'i'));
-    if (!match?.[1]) {
-      continue;
-    }
-
-    const value = decodeXmlEntities(stripCdata(match[1]).trim());
+    const value = extractTagValue(block, tagName);
     if (value) {
       return value;
     }
   }
 
   return null;
+}
+
+function extractLongestTagText(block: string, tagNames: readonly string[]): string | null {
+  let selectedValue: string | null = null;
+  let selectedTextLength = 0;
+
+  for (const tagName of tagNames) {
+    const value = extractTagValue(block, tagName);
+    if (!value) {
+      continue;
+    }
+
+    const textLength = getTextLength(value);
+    if (!selectedValue || textLength > selectedTextLength) {
+      selectedValue = value;
+      selectedTextLength = textLength;
+    }
+  }
+
+  return selectedValue;
+}
+
+function extractTagValue(block: string, tagName: string): string | null {
+  const escaped = escapeRegExp(tagName);
+  const match = block.match(new RegExp(`<${escaped}\\b[^>]*>([\\s\\S]*?)<\\/${escaped}>`, 'i'));
+  if (!match?.[1]) {
+    return null;
+  }
+
+  const value = decodeXmlEntities(stripCdata(match[1]).trim());
+  return value || null;
+}
+
+function getTextLength(value: string): number {
+  return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length;
 }
 
 interface ImageSelection {

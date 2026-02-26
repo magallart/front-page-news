@@ -358,6 +358,11 @@ Brief continuity notes to recover context between terminal sessions.
   - Adjusted locked article preview density:
     - reduced synthetic preview skeleton text from 2 paragraphs to 1 paragraph in news detail.
     - updated related unit tests to match the new locked-preview structure.
+  - Improved feed summary selection and article paragraph rendering:
+    - parser now picks the longest summary candidate when both short and extended feed fields are present (`description/summary` vs `content:encoded/content`).
+    - dedupe now preserves the longest summary variant for duplicated articles.
+    - normalization keeps paragraph boundaries when source HTML provides block structure.
+    - article detail now renders normalized summary as multiple paragraphs when paragraph breaks exist.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).
