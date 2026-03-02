@@ -25,10 +25,9 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
-| [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
+| [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [✔️] |
 | [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
-| [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
 ## Ticket Details
 
@@ -313,19 +312,3 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
   - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
-
-<a id="fpn-012"></a>
-
-### [FPN-012] Roadmap post-1.0
-
-- Description: Definir y priorizar mejoras para una segunda fase del producto tras el release 1.0.
-- DoD:
-  - Lista de iniciativas post-1.0 priorizada por impacto/esfuerzo.
-  - Dependencias y riesgos principales identificados.
-  - Alcance recomendado para la siguiente iteracion documentado.
-- Tasks:
-  - [ ] Consolidar mejoras candidatas detectadas durante el cierre MVP.
-  - [ ] Clasificar iniciativas por tipo (producto, UX, performance, plataforma).
-  - [ ] Priorizar backlog post-1.0 con criterios de impacto y coste.
-  - [ ] Identificar prerequisitos tecnicos para las 3 prioridades principales.
-  - [ ] Definir propuesta de alcance para la siguiente iteracion.
