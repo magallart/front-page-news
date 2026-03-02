@@ -296,6 +296,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Reducir en detalle de noticia el contenido sintético de `article-locked-preview` de 2 párrafos a 1 para un teaser más limpio.
   - [✔️] Priorizar en parseo/normalización el resumen más largo disponible del feed (`description/summary` vs `content:encoded/content`) y respetar párrafos en detalle cuando el origen los proporciona.
   - [✔️] Optimizar carga inicial de noticias: limitar concurrencia de fetch RSS, añadir caché + dedupe en vuelo en `/api/news`, e instrumentar tiempos con `NEWS_PERF_LOGS`.
+  - [✔️] Ajustar límites de carga por contexto (`home=250`, `sección=300`, `detalle=250`, `ticker=120`) para reducir carga inicial manteniendo diversidad editorial y revelado progresivo en secciones.
 
 
 <a id="fpn-011"></a>

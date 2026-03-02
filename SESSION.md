@@ -374,6 +374,9 @@ Brief continuity notes to recover context between terminal sessions.
   - Added in-memory cache + in-flight dedupe in `api/news.ts` (TTL `60s`) and optional perf logs via `NEWS_PERF_LOGS=1`.
   - Added bounded RSS fetch concurrency (`MAX_FEED_FETCH_CONCURRENCY = 10`) in `server/lib/feed-fetcher.ts` and `src/lib/feed-fetcher.ts`.
   - Added regression tests for concurrency limit and `/api/news` cache/dedupe behavior.
+  - Added per-page news limits to reduce first render load:
+    - home `250`, section `300`, article `250`, navbar ticker `120`.
+  - Local measurements with `NEWS_PERF_LOGS=1` confirmed better average response times but still showed duplicate `/api/news` loads (`limit=120` + `limit=250`) on homepage.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test` (pass, 44 files / 190 tests).

@@ -6,7 +6,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { Observable, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { ARTICLE_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 
@@ -28,7 +28,7 @@ describe('ArticlePageComponent', () => {
 
     fixture.detectChanges();
 
-    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=1000');
+    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=250');
     aggregateRequest.flush({
       articles: [
         createArticle('news-1', 'actualidad'),
@@ -36,7 +36,7 @@ describe('ArticlePageComponent', () => {
       ],
       total: 2,
       page: 1,
-      limit: 1000,
+      limit: 250,
       warnings: [],
     });
     httpController.expectNone('/api/news?id=news-1&page=1&limit=1');
@@ -98,12 +98,12 @@ describe('ArticlePageComponent', () => {
 
     fixture.detectChanges();
 
-    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=1000');
+    const aggregateRequest = httpController.expectOne('/api/news?page=1&limit=250');
     aggregateRequest.flush({
       articles: [createArticle('news-1', 'actualidad')],
       total: 1,
       page: 1,
-      limit: 1000,
+      limit: 250,
       warnings: [],
     });
     fixture.detectChanges();
@@ -213,7 +213,7 @@ describe('ArticlePageComponent', () => {
     const fixture = TestBed.createComponent(ArticlePageComponent);
     fixture.detectChanges();
 
-    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
+    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: ARTICLE_PAGE_NEWS_LIMIT });
     expect(newsServiceMock.getNews).not.toHaveBeenCalled();
 
     const text = (fixture.nativeElement.textContent as string).replace(/\s+/g, ' ').trim();

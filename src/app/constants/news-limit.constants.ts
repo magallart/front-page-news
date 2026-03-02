@@ -1,1 +1,4 @@
-export const MAX_FEED_NEWS_LIMIT = 1000;
+export const HOME_PAGE_NEWS_LIMIT = 250;
+export const SECTION_PAGE_NEWS_LIMIT = 300;
+export const ARTICLE_PAGE_NEWS_LIMIT = 250;
+export const NAVBAR_TICKER_NEWS_LIMIT = 120;

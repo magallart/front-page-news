@@ -31,7 +31,7 @@ describe('SectionPageComponent', () => {
 
     fixture.detectChanges();
 
-    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=1000');
+    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=300');
     expect(request.request.method).toBe('GET');
     request.flush({
       articles: [
@@ -40,7 +40,7 @@ describe('SectionPageComponent', () => {
       ],
       total: 2,
       page: 1,
-      limit: 1000,
+      limit: 300,
       warnings: [],
     });
 

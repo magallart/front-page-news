@@ -10,7 +10,7 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { SECTION_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -125,7 +125,7 @@ export class SectionPageComponent {
         sourceIds: parseSourceIds(params.get('source')),
         searchQuery: normalizeQueryValue(params.get('q')),
         page: parsePositiveNumber(params.get('page'), 1),
-        limit: parsePositiveNumber(params.get('limit'), MAX_FEED_NEWS_LIMIT),
+        limit: parsePositiveNumber(params.get('limit'), SECTION_PAGE_NEWS_LIMIT),
       })),
     ),
     {
@@ -133,7 +133,7 @@ export class SectionPageComponent {
         sourceIds: [] as readonly string[],
         searchQuery: null as string | null,
         page: 1,
-        limit: MAX_FEED_NEWS_LIMIT,
+        limit: SECTION_PAGE_NEWS_LIMIT,
       },
     },
   );
