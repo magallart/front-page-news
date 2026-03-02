@@ -298,6 +298,8 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Optimizar carga inicial de noticias: limitar concurrencia de fetch RSS, añadir caché + dedupe en vuelo en `/api/news`, e instrumentar tiempos con `NEWS_PERF_LOGS`.
   - [✔️] Ajustar límites de carga por contexto (`home=250`, `sección=300`, `detalle=250`, `ticker=120`) para reducir carga inicial manteniendo diversidad editorial y revelado progresivo en secciones.
   - [✔️] Eliminar carga redundante del ticker en navbar para evitar doble request de portada (`limit=120` + `limit=250`) y dejar fallback visual de titulares mientras llega el dataset principal.
+  - [✔️] Reducir latencia de primera carga de portada aplicando modo home optimizado en `/api/news` (subset de feeds + timeout más corto), manteniendo el fan-out completo en consultas no-home.
+  - [✔️] Corregir sesgo editorial en portada tras optimización de home: balancear selección de feeds por sección+fuente en `/api/news`, reforzar variedad en bloques (`breaking`, mixto de 15) y normalizar claves de fuente para respetar topes con variantes de nombre.
 
 
 <a id="fpn-011"></a>

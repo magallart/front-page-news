@@ -378,6 +378,17 @@ Brief continuity notes to recover context between terminal sessions.
     - home `250`, section `300`, article `250`, navbar ticker `120`.
   - Local measurements with `NEWS_PERF_LOGS=1` confirmed better average response times but still showed duplicate `/api/news` loads (`limit=120` + `limit=250`) on homepage.
   - Removed news loading from navbar ticker to stop duplicate homepage requests and kept a visual fallback headline when no data is available yet.
+  - Added a homepage-optimized path in `/api/news` for first paint:
+    - capped fetched feeds in home-mode and limited per-source fan-out.
+    - reduced home fetch timeout to cut cold-start waiting time.
+    - kept default full behavior for non-home queries (section/search/detail paths).
+  - New local perf samples for homepage (`limit=250`) dropped to ~`381-470ms` total (`fetchMs ~245-295ms`).
+  - Balanced homepage editorial diversity after perf optimizations:
+    - backend home-mode feed subset now balances by section and source (with round-robin fallback), reducing `actualidad` over-concentration.
+    - homepage mixed block (15 cards) now prioritizes key section coverage and keeps strict caps (`max 2` per section/source).
+    - breaking block now uses balanced selection with per-source cap.
+    - source keys are normalized across selection/ranking utils to avoid bypassing caps with naming variants (`ABC`, ` abc `, `Abc`).
+  - User manually validated the final behavior in local: portada now keeps section/source variety as expected.
 - Verification performed:
   - `pnpm run lint` (pass).
-  - `pnpm test` (pass, 44 files / 190 tests).
+  - `pnpm test` (pass, 45 files / 202 tests).
