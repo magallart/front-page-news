@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
-import { NAVBAR_TICKER_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
@@ -52,6 +51,7 @@ export class AppNavbarComponent {
   private readonly newsStore = inject(NewsStore);
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = 12;
+  private readonly fallbackTickerHeadlines: readonly TickerHeadline[] = [{ id: 'loading-headlines', title: 'Actualizando titulares...' }];
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
@@ -89,14 +89,15 @@ export class AppNavbarComponent {
   });
 
   protected readonly tickerHeadlines = computed<readonly TickerHeadline[]>(() =>
-    this.newsStore
-      .data()
-      .slice(0, this.tickerLimit)
-      .map((item) => ({ id: item.id, title: item.title })),
+    this.newsStore.data().length > 0
+      ? this.newsStore
+          .data()
+          .slice(0, this.tickerLimit)
+          .map((item) => ({ id: item.id, title: item.title }))
+      : this.fallbackTickerHeadlines,
   );
 
   constructor() {
-    this.newsStore.load({ page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT });
     this.initResponsiveMode();
     this.initStickyOnScroll();
   }

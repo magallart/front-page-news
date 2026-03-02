@@ -83,6 +83,38 @@ describe('AppNavbarComponent', () => {
     const label = component.stickyTopbarMeta();
     expect(label).toMatch(/^\d{2}-\d{2}-\d{2}$/);
   });
+
+  it('does not trigger ticker fallback load when news data already exists', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
+
+  it('shows fallback ticker headline when store has no news', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [] });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Actualizando titulares...');
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
 });
 
 function asNavbarTestInstance(component: AppNavbarComponent): NavbarTestInstance {
@@ -121,13 +153,16 @@ function setWindowScrollY(value: number): void {
   });
 }
 
-function createNewsStoreMock() {
+function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType<typeof createArticle>[] }>) {
   return {
-    data: vi.fn(() => [
-      createArticle('news-1', 'Titular 1'),
-      createArticle('news-2', 'Titular 2'),
-      createArticle('news-3', 'Titular 3'),
-    ]),
+    data: vi.fn(
+      () =>
+        overrides?.articles ?? [
+          createArticle('news-1', 'Titular 1'),
+          createArticle('news-2', 'Titular 2'),
+          createArticle('news-3', 'Titular 3'),
+        ]
+    ),
     load: vi.fn(),
   };
 }
