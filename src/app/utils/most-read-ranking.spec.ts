@@ -33,6 +33,24 @@ describe('rankMostReadNews', () => {
 
     expect(ranked[0]?.source).toBe('Fuente A');
   });
+
+  it('applies source cap with normalized source names', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('abc-1', 'ABC', toIso(now, 1)),
+      createNewsItem('abc-2', ' abc ', toIso(now, 2)),
+      createNewsItem('abc-3', 'Abc', toIso(now, 3)),
+      createNewsItem('abc-4', 'ABC', toIso(now, 4)),
+      createNewsItem('p-1', 'El Pais', toIso(now, 5)),
+      createNewsItem('m-1', 'El Mundo', toIso(now, 6)),
+      createNewsItem('v-1', 'La Vanguardia', toIso(now, 7)),
+    ] as const;
+
+    const ranked = rankMostReadNews(items, now);
+    const normalizedAbcCount = ranked.filter((item) => item.source.toLowerCase().trim() === 'abc').length;
+
+    expect(normalizedAbcCount).toBe(3);
+  });
 });
 
 function createNewsItem(id: string, source: string, publishedAt: string) {
