@@ -14,6 +14,7 @@ import type { FeedSuccessLike } from '../server/interfaces/feed-success-like.int
 import type { NewsHandlerDependencies } from '../server/interfaces/news-handler-dependencies.interface';
 import type { ParsedFeedsResult } from '../server/interfaces/parsed-feeds-result.interface';
 import type { Article } from '../src/interfaces/article.interface';
+import type { NewsQuery } from '../src/interfaces/news-query.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
@@ -29,11 +30,40 @@ const defaultDependencies: NewsHandlerDependencies = {
   fetchFeeds: fetchFeedsConcurrently,
 };
 
-export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = {}) {
+const NEWS_HANDLER_CACHE_TTL_MS = 60_000;
+const PERF_LOGS_ENV_FLAG = 'NEWS_PERF_LOGS';
+
+interface CachedNewsPayload {
+  readonly expiresAt: number;
+  readonly payloadPromise: Promise<{ payload: NewsResponse; timings: NewsPayloadTimings }>;
+}
+
+interface NewsHandlerRuntimeOptions {
+  readonly cacheTtlMs?: number;
+  readonly now?: () => number;
+  readonly enablePerfLogs?: boolean;
+}
+
+interface NewsPayloadTimings {
+  readonly catalogMs: number;
+  readonly fetchMs: number;
+  readonly parseAndFilterMs: number;
+}
+
+class SourcesCatalogLoadError extends Error {}
+
+export function createNewsHandler(
+  overrides: Partial<NewsHandlerDependencies> = {},
+  runtimeOptions: NewsHandlerRuntimeOptions = {}
+) {
   const dependencies: NewsHandlerDependencies = {
     ...defaultDependencies,
     ...overrides,
   };
+  const cacheTtlMs = runtimeOptions.cacheTtlMs ?? NEWS_HANDLER_CACHE_TTL_MS;
+  const now = runtimeOptions.now ?? (() => Date.now());
+  const enablePerfLogs = runtimeOptions.enablePerfLogs ?? process.env[PERF_LOGS_ENV_FLAG] === '1';
+  const responseCache = new Map<string, CachedNewsPayload>();
 
   return async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
     if (request.method !== 'GET') {
@@ -41,36 +71,113 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
       return;
     }
 
-    let availableSources: readonly SourceFeedTarget[];
+    const startedAt = now();
+    const query = parseNewsQuery(request.url);
+    const cacheKey = toNewsQueryCacheKey(query);
+    const cached = responseCache.get(cacheKey);
+    if (cached && !isExpired(cached.expiresAt, now())) {
+      try {
+        const { payload } = await cached.payloadPromise;
+        if (enablePerfLogs) {
+          logPerf('cache-hit', {
+            cacheKey,
+            totalMs: now() - startedAt,
+          });
+        }
+
+        sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+        return;
+      } catch {
+        responseCache.delete(cacheKey);
+      }
+    }
+
+    if (cached) {
+      responseCache.delete(cacheKey);
+    }
+
+    const payloadPromise = buildNewsPayload(dependencies, query, now);
+    responseCache.set(cacheKey, {
+      payloadPromise,
+      expiresAt: now() + cacheTtlMs,
+    });
+
     try {
-      availableSources = await dependencies.loadSourcesCatalog();
-    } catch {
+      const { payload, timings } = await payloadPromise;
+      sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+
+      if (enablePerfLogs) {
+        logPerf('cache-miss', {
+          cacheKey,
+          catalogMs: timings.catalogMs,
+          fetchMs: timings.fetchMs,
+          parseAndFilterMs: timings.parseAndFilterMs,
+          totalMs: now() - startedAt,
+          warningsCount: payload.warnings.length,
+          articlesReturned: payload.articles.length,
+        });
+      }
+      return;
+    } catch (error) {
+      responseCache.delete(cacheKey);
+      if (error instanceof SourcesCatalogLoadError) {
+        sendJson(response, 500, { error: 'Unable to load RSS sources catalog' }, CACHE_CONTROL_HEADER_VALUE);
+        return;
+      }
+
       sendJson(response, 500, { error: 'Unable to load RSS sources catalog' }, CACHE_CONTROL_HEADER_VALUE);
       return;
     }
-
-    const query = parseNewsQuery(request.url);
-    const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
-    const fetchSources = buildUniqueFetchSources(selectedFeedTargets);
-    const fetchResult = await dependencies.fetchFeeds(fetchSources, FEED_FETCH_TIMEOUT_MS);
-    const targetsByKey = buildTargetsLookup(selectedFeedTargets);
-    const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
-    const deduped = dedupeAndSortArticles(parseResult.articles);
-    const filtered = applyNewsFilters(deduped, query);
-
-    const payload: NewsResponse = {
-      articles: filtered.articles,
-      total: filtered.total,
-      page: filtered.page,
-      limit: filtered.limit,
-      warnings: [...fetchResult.warnings, ...parseResult.warnings],
-    };
-
-    sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
   };
 }
 
 export default createNewsHandler();
+
+async function buildNewsPayload(
+  dependencies: NewsHandlerDependencies,
+  query: NewsQuery,
+  now: () => number
+): Promise<{ payload: NewsResponse; timings: NewsPayloadTimings }> {
+  const catalogStartedAt = now();
+  let availableSources: readonly SourceFeedTarget[];
+  try {
+    availableSources = await dependencies.loadSourcesCatalog();
+  } catch {
+    throw new SourcesCatalogLoadError('Unable to load RSS sources catalog');
+  }
+  const catalogMs = now() - catalogStartedAt;
+
+  const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
+  const fetchSources = buildUniqueFetchSources(selectedFeedTargets);
+
+  const fetchStartedAt = now();
+  const fetchResult = await dependencies.fetchFeeds(fetchSources, FEED_FETCH_TIMEOUT_MS);
+  const fetchMs = now() - fetchStartedAt;
+
+  const parseAndFilterStartedAt = now();
+  const targetsByKey = buildTargetsLookup(selectedFeedTargets);
+  const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
+  const deduped = dedupeAndSortArticles(parseResult.articles);
+  const filtered = applyNewsFilters(deduped, query);
+  const parseAndFilterMs = now() - parseAndFilterStartedAt;
+
+  const payload: NewsResponse = {
+    articles: filtered.articles,
+    total: filtered.total,
+    page: filtered.page,
+    limit: filtered.limit,
+    warnings: [...fetchResult.warnings, ...parseResult.warnings],
+  };
+
+  return {
+    payload,
+    timings: {
+      catalogMs,
+      fetchMs,
+      parseAndFilterMs,
+    },
+  };
+}
 
 function parseFetchedFeeds(
   feeds: readonly FeedSuccessLike[],
@@ -204,5 +311,26 @@ function buildUniqueFetchSources(targets: readonly SourceFeedTarget[]): readonly
 
 function toFeedTargetKey(sourceId: string, feedUrl: string): string {
   return `${sourceId}|${feedUrl}`;
+}
+
+function toNewsQueryCacheKey(query: NewsQuery): string {
+  const sourceValue = query.sourceIds.length > 0 ? query.sourceIds.join(',') : '';
+
+  return [
+    `id=${query.id ?? ''}`,
+    `section=${query.section ?? ''}`,
+    `source=${sourceValue}`,
+    `q=${query.searchQuery ?? ''}`,
+    `page=${query.page}`,
+    `limit=${query.limit}`,
+  ].join('&');
+}
+
+function isExpired(expiresAt: number, timestamp: number): boolean {
+  return timestamp >= expiresAt;
+}
+
+function logPerf(event: 'cache-hit' | 'cache-miss', details: Record<string, unknown>): void {
+  console.info(`[api/news][${event}]`, details);
 }
 

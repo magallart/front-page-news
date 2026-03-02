@@ -178,6 +178,98 @@ describe('api/news handler contract', () => {
     expect(response.headers.get('cache-control')).toBe('no-store, max-age=0');
     expect(readJson<HandlerErrorPayload>(response).error).toBe('Method Not Allowed');
   });
+
+  it('dedupes in-flight requests for the same query', async () => {
+    const catalog = makeCatalogTargets();
+    let fetchFeedsCallCount = 0;
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources) => {
+        fetchFeedsCallCount += 1;
+        await delay(20);
+
+        return {
+          successes: sources.map((source) => ({
+            sourceId: source.id,
+            feedUrl: source.feedUrl,
+            body: buildRssXml({
+              title: 'In Flight Deduped',
+              url: 'https://elpais.com/deduped',
+            }),
+          })),
+          warnings: [],
+        };
+      },
+    });
+
+    const firstResponse = createMockResponse();
+    const secondResponse = createMockResponse();
+
+    await Promise.all([
+      handler(createRequest('GET', '/api/news?section=actualidad') as IncomingMessage, firstResponse as unknown as ServerResponse),
+      handler(createRequest('GET', '/api/news?section=actualidad') as IncomingMessage, secondResponse as unknown as ServerResponse),
+    ]);
+
+    expect(firstResponse.statusCode).toBe(200);
+    expect(secondResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(1);
+  });
+
+  it('uses cached payload within ttl and refetches after ttl expiry', async () => {
+    const catalog = makeCatalogTargets();
+    let fetchFeedsCallCount = 0;
+    let nowTimestamp = 1000;
+    const handler = createNewsHandler(
+      {
+        loadSourcesCatalog: async () => catalog,
+        fetchFeeds: async (sources) => {
+          fetchFeedsCallCount += 1;
+
+          return {
+            successes: sources.map((source) => ({
+              sourceId: source.id,
+              feedUrl: source.feedUrl,
+              body: buildRssXml({
+                title: `Cache Call ${fetchFeedsCallCount}`,
+                url: `https://elpais.com/cache-${fetchFeedsCallCount}`,
+              }),
+            })),
+            warnings: [],
+          };
+        },
+      },
+      {
+        cacheTtlMs: 60_000,
+        now: () => nowTimestamp,
+      },
+    );
+
+    const firstResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      firstResponse as unknown as ServerResponse,
+    );
+    expect(firstResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(1);
+
+    nowTimestamp += 59_000;
+    const secondResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      secondResponse as unknown as ServerResponse,
+    );
+    expect(secondResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(1);
+
+    nowTimestamp += 2_000;
+    const thirdResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      thirdResponse as unknown as ServerResponse,
+    );
+    expect(thirdResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(2);
+  });
 });
 
 interface MockResponse {
@@ -247,4 +339,10 @@ function buildRssXml(input: { title: string; url: string }): string {
         </item>
       </channel>
     </rss>`;
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }

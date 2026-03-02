@@ -6,6 +6,7 @@ import type { Warning } from '../interfaces/warning.interface';
 const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 const FEED_SNIPPET_BYTES = 2048;
 const FALLBACK_CHARSETS = ['utf-8', 'windows-1252'] as const;
+const MAX_FEED_FETCH_CONCURRENCY = 10;
 
 interface FeedFetchSuccess {
   readonly sourceId: string;
@@ -26,8 +27,10 @@ export async function fetchFeedsConcurrently(
   timeoutMs = DEFAULT_FETCH_TIMEOUT_MS,
   fetchFn: FetchFunction = fetch
 ): Promise<FeedFetchResult> {
-  const settled = await Promise.allSettled(
-    sources.map((source) => fetchSingleFeed(source, timeoutMs, fetchFn))
+  const settled = await runWithConcurrencyLimit(
+    sources,
+    MAX_FEED_FETCH_CONCURRENCY,
+    (source) => fetchSingleFeed(source, timeoutMs, fetchFn)
   );
 
   const successes: FeedFetchSuccess[] = [];
@@ -55,6 +58,42 @@ export async function fetchFeedsConcurrently(
     successes,
     warnings,
   };
+}
+
+async function runWithConcurrencyLimit<TItem, TResult>(
+  items: readonly TItem[],
+  maxConcurrency: number,
+  worker: (item: TItem) => Promise<TResult>
+): Promise<readonly PromiseSettledResult<TResult>[]> {
+  if (items.length === 0) {
+    return [];
+  }
+
+  const settled: PromiseSettledResult<TResult>[] = new Array(items.length);
+  const concurrency = Math.min(maxConcurrency, items.length);
+  let nextIndex = 0;
+
+  async function consume(): Promise<void> {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+
+      try {
+        settled[currentIndex] = {
+          status: 'fulfilled',
+          value: await worker(items[currentIndex] as TItem),
+        };
+      } catch (reason) {
+        settled[currentIndex] = {
+          status: 'rejected',
+          reason,
+        };
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, () => consume()));
+  return settled;
 }
 
 interface FetchSingleFeedSuccess {
