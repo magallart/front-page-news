@@ -270,6 +270,119 @@ describe('api/news handler contract', () => {
     expect(thirdResponse.statusCode).toBe(200);
     expect(fetchFeedsCallCount).toBe(2);
   });
+
+  it('limits homepage feed fan-out and uses shorter timeout for cold home requests', async () => {
+    const catalog = makeLargeCatalogTargets(40);
+    let fetchedSourceCount = 0;
+    let timeoutMsUsed = 0;
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources, timeoutMs) => {
+        fetchedSourceCount = sources.length;
+        timeoutMsUsed = timeoutMs;
+
+        return {
+          successes: [],
+          warnings: [],
+        };
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(createRequest('GET', '/api/news?page=1&limit=250') as IncomingMessage, response as unknown as ServerResponse);
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchedSourceCount).toBe(24);
+    expect(timeoutMsUsed).toBe(3500);
+  });
+
+  it('fills homepage feed subset with round-robin distribution across sources', async () => {
+    const catalog = makeGroupedCatalogTargets(3, 10);
+    const fetchedBySource = new Map<string, number>();
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources) => {
+        for (const source of sources) {
+          fetchedBySource.set(source.id, (fetchedBySource.get(source.id) ?? 0) + 1);
+        }
+
+        return {
+          successes: [],
+          warnings: [],
+        };
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(createRequest('GET', '/api/news?page=1&limit=250') as IncomingMessage, response as unknown as ServerResponse);
+
+    const counts = Array.from(fetchedBySource.values());
+    const min = Math.min(...counts);
+    const max = Math.max(...counts);
+
+    expect(response.statusCode).toBe(200);
+    expect(counts.reduce((total, current) => total + current, 0)).toBe(24);
+    expect(min).toBeGreaterThanOrEqual(7);
+    expect(max).toBeLessThanOrEqual(9);
+  });
+
+  it('prioritizes section coverage for homepage optimized selection', async () => {
+    const catalog = makeSkewedSectionCatalogTargets();
+    const fetchedSections = new Set<string>();
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources) => {
+        for (const source of sources) {
+          const section = source.sectionSlugs[0] ?? '';
+          if (section.length > 0) {
+            fetchedSections.add(section);
+          }
+        }
+
+        return {
+          successes: [],
+          warnings: [],
+        };
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(createRequest('GET', '/api/news?page=1&limit=250') as IncomingMessage, response as unknown as ServerResponse);
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchedSections.has('actualidad')).toBe(true);
+    expect(fetchedSections.has('economia')).toBe(true);
+    expect(fetchedSections.has('espana')).toBe(true);
+    expect(fetchedSections.has('internacional')).toBe(true);
+  });
+
+  it('keeps full fan-out and default timeout for non-home queries', async () => {
+    const catalog = makeLargeCatalogTargets(30);
+    let fetchedSourceCount = 0;
+    let timeoutMsUsed = 0;
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources, timeoutMs) => {
+        fetchedSourceCount = sources.length;
+        timeoutMsUsed = timeoutMs;
+
+        return {
+          successes: [],
+          warnings: [],
+        };
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=300') as IncomingMessage,
+      response as unknown as ServerResponse,
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchedSourceCount).toBe(30);
+    expect(timeoutMsUsed).toBe(8000);
+  });
 });
 
 interface MockResponse {
@@ -323,6 +436,67 @@ function makeCatalogTargets(): readonly SourceFeedTarget[] {
       feedUrl: 'https://feeds.elpais.com/cultura',
       sectionSlug: 'cultura',
     },
+  ];
+}
+
+function makeLargeCatalogTargets(total: number): readonly SourceFeedTarget[] {
+  return Array.from({ length: total }, (_, index) => ({
+    sourceId: `source-${index}`,
+    sourceName: `Source ${index}`,
+    sourceBaseUrl: `https://source-${index}.test`,
+    feedUrl: `https://source-${index}.test/rss/actualidad.xml`,
+    sectionSlug: 'actualidad',
+  }));
+}
+
+function makeGroupedCatalogTargets(sourceCount: number, feedsPerSource: number): readonly SourceFeedTarget[] {
+  const targets: SourceFeedTarget[] = [];
+
+  for (let sourceIndex = 0; sourceIndex < sourceCount; sourceIndex += 1) {
+    for (let feedIndex = 0; feedIndex < feedsPerSource; feedIndex += 1) {
+      targets.push({
+        sourceId: `source-${sourceIndex}`,
+        sourceName: `Source ${sourceIndex}`,
+        sourceBaseUrl: `https://source-${sourceIndex}.test`,
+        feedUrl: `https://source-${sourceIndex}.test/rss/feed-${feedIndex}.xml`,
+        sectionSlug: 'actualidad',
+      });
+    }
+  }
+
+  return targets;
+}
+
+function makeSkewedSectionCatalogTargets(): readonly SourceFeedTarget[] {
+  return [
+    ...Array.from({ length: 16 }, (_, index) => ({
+      sourceId: `source-a-${index}`,
+      sourceName: `Source A ${index}`,
+      sourceBaseUrl: `https://source-a-${index}.test`,
+      feedUrl: `https://source-a-${index}.test/rss/actualidad.xml`,
+      sectionSlug: 'actualidad',
+    })),
+    ...Array.from({ length: 6 }, (_, index) => ({
+      sourceId: `source-e-${index}`,
+      sourceName: `Source E ${index}`,
+      sourceBaseUrl: `https://source-e-${index}.test`,
+      feedUrl: `https://source-e-${index}.test/rss/economia.xml`,
+      sectionSlug: 'economia',
+    })),
+    ...Array.from({ length: 6 }, (_, index) => ({
+      sourceId: `source-es-${index}`,
+      sourceName: `Source ES ${index}`,
+      sourceBaseUrl: `https://source-es-${index}.test`,
+      feedUrl: `https://source-es-${index}.test/rss/espana.xml`,
+      sectionSlug: 'espana',
+    })),
+    ...Array.from({ length: 6 }, (_, index) => ({
+      sourceId: `source-i-${index}`,
+      sourceName: `Source I ${index}`,
+      sourceBaseUrl: `https://source-i-${index}.test`,
+      feedUrl: `https://source-i-${index}.test/rss/internacional.xml`,
+      sectionSlug: 'internacional',
+    })),
   ];
 }
 
