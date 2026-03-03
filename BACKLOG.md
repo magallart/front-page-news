@@ -314,12 +314,13 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - La experiencia funciona en desktop y mobile con foco en accesibilidad y navegacion por teclado.
   - Se ajustan tests unitarios/e2e afectados por el cambio de patron de navegacion.
 - Tasks:
-  - [ ] Definir patron UX final para lectura contextual (modal, drawer o panel inline) y estados asociados.
-  - [ ] Adaptar acciones de apertura en portada y seccion para mostrar detalle contextual en lugar de navegar a `/noticia/:id`.
-  - [ ] Reutilizar o refactorizar componentes de detalle actuales para soportar el nuevo contenedor contextual.
-  - [ ] Mantener CTA "Leer en el medio original" y metadatos clave (`author`, `source`, `publishedAt`) en la vista contextual.
-  - [ ] Revisar estrategia de routing para despriorizar/eliminar la ruta de detalle dedicada segun impacto real.
+  - [✔️] Definir patron UX final para lectura contextual (modal, drawer o panel inline) y estados asociados.
+  - [✔️] Adaptar acciones de apertura en portada y seccion para mostrar detalle contextual en lugar de navegar a `/noticia/:id`.
+  - [✔️] Reutilizar o refactorizar componentes de detalle actuales para soportar el nuevo contenedor contextual.
+  - [✔️] Mantener CTA "Leer en el medio original" y metadatos clave (`author`, `source`, `publishedAt`) en la vista contextual.
+  - [✔️] Revisar estrategia de routing para despriorizar/eliminar la ruta de detalle dedicada segun impacto real.
   - [ ] Actualizar tests unitarios, de integracion y e2e ligados al flujo de apertura de noticia.
+  - [✔️] Consolidar modal central como patron definitivo de lectura contextual y retirar las rutas/componentes de previsualizacion de alternativas.
 
 <a id="fpn-012"></a>
 
