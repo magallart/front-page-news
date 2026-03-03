@@ -27,7 +27,8 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [✔️] |
 | [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
-| [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
+| [FPN-011](#fpn-011) | Lectura en contexto (sin pagina de detalle) | Evitar dedicar una pagina completa al detalle corto de feeds y priorizar lectura inline con CTA al medio. | [ ] |
+| [FPN-012](#fpn-012) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
 
 ## Ticket Details
 
@@ -304,7 +305,25 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 <a id="fpn-011"></a>
 
-### [FPN-011] Documentacion y cierre MVP
+### [FPN-011] Lectura en contexto (sin pagina de detalle)
+
+- Description: Replantear la lectura de noticias para no abrir una pagina dedicada cuando el feed aporta poco texto.
+- DoD:
+  - El clic en titulares abre una vista inline/contextual con metadatos y resumen.
+  - La vista contextual mantiene CTA visible para abrir el articulo original en el medio.
+  - La experiencia funciona en desktop y mobile con foco en accesibilidad y navegacion por teclado.
+  - Se ajustan tests unitarios/e2e afectados por el cambio de patron de navegacion.
+- Tasks:
+  - [ ] Definir patron UX final para lectura contextual (modal, drawer o panel inline) y estados asociados.
+  - [ ] Adaptar acciones de apertura en portada y seccion para mostrar detalle contextual en lugar de navegar a `/noticia/:id`.
+  - [ ] Reutilizar o refactorizar componentes de detalle actuales para soportar el nuevo contenedor contextual.
+  - [ ] Mantener CTA "Leer en el medio original" y metadatos clave (`author`, `source`, `publishedAt`) en la vista contextual.
+  - [ ] Revisar estrategia de routing para despriorizar/eliminar la ruta de detalle dedicada segun impacto real.
+  - [ ] Actualizar tests unitarios, de integracion y e2e ligados al flujo de apertura de noticia.
+
+<a id="fpn-012"></a>
+
+### [FPN-012] Documentacion y cierre MVP
 
 - Description: Cerrar primera entrega con documentacion clara y siguiente paso definido.
 - DoD:
