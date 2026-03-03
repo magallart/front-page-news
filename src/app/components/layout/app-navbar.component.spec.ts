@@ -68,7 +68,7 @@ describe('AppNavbarComponent', () => {
     expect(component.shouldShowSticky()).toBe(false);
   });
 
-  it('formats compact sticky meta label in mobile viewport without city or temperature', async () => {
+  it('hides sticky meta label in mobile viewport', async () => {
     mockMatchMedia(true);
 
     await TestBed.configureTestingModule({
@@ -81,7 +81,7 @@ describe('AppNavbarComponent', () => {
 
     const component = asNavbarTestInstance(fixture.componentInstance);
     const label = component.stickyTopbarMeta();
-    expect(label).toMatch(/^\d{2}-\d{2}-\d{2}$/);
+    expect(label).toBe('');
   });
 
   it('does not trigger ticker fallback load when news data already exists', async () => {

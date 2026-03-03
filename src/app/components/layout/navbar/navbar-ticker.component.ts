@@ -76,23 +76,17 @@ import type { TickerHeadline } from '../../../../interfaces/ticker-headline.inte
             <div class="ticker-marquee">
               <div class="ticker-sequence">
                 @for (headline of headlines(); track headline.id) {
-                  <a
-                    class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
-                    [routerLink]="['/noticia', headline.id]"
-                  >
+                  <span class="transition hover:text-primary">
                     {{ headline.title }}
-                  </a>
+                  </span>
                   <span class="text-primary/70" aria-hidden="true">{{ separator }}</span>
                 }
               </div>
               <div class="ticker-sequence" aria-hidden="true">
                 @for (headline of headlines(); track headline.id) {
-                  <a
-                    class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
-                    [routerLink]="['/noticia', headline.id]"
-                  >
+                  <span class="transition hover:text-primary">
                     {{ headline.title }}
-                  </a>
+                  </span>
                   <span class="text-primary/70" aria-hidden="true">{{ separator }}</span>
                 }
               </div>
