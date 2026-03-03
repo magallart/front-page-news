@@ -12,11 +12,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/section/section-page.component').then((m) => m.SectionPageComponent),
   },
   {
-    path: 'noticia/:id',
-    title: 'Front Page News | Noticia',
-    loadComponent: () => import('./pages/article/article-page.component').then((m) => m.ArticlePageComponent),
-  },
-  {
     path: 'aviso-legal',
     title: 'Front Page News | Aviso legal',
     loadComponent: () => import('./pages/legal/legal-notice-page.component').then((m) => m.LegalNoticePageComponent),

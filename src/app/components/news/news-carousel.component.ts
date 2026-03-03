@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { IconChevronLeftComponent } from '../icons/icon-chevron-left.component';
@@ -28,6 +28,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           <a
             [routerLink]="['/noticia', article.id]"
             class="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            (click)="onPreviewRequest($event, article)"
           >
             <img
               [src]="article.imageUrl"
@@ -97,6 +98,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 export class NewsCarouselComponent {
   readonly title = input('Portada');
   readonly articles = input<readonly NewsItem[]>([]);
+  readonly previewRequested = output<NewsItem>();
 
   private readonly activeSlideIndex = signal(0);
   private readonly rotationTimer = createRotationTimer(() => {
@@ -120,6 +122,11 @@ export class NewsCarouselComponent {
 
   protected goToNext(): void {
     this.rotateBy(1);
+  }
+
+  protected onPreviewRequest(event: Event, article: NewsItem): void {
+    event.preventDefault();
+    this.previewRequested.emit(article);
   }
 
   private rotateBy(step: number): void {

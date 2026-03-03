@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -45,6 +45,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         <a
           [routerLink]="['/noticia', article().id]"
           class="block overflow-hidden rounded-lg bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          (click)="onPreviewRequest($event)"
         >
           @if (previewImageUrl()) {
             <img
@@ -63,6 +64,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           <a
             class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             [routerLink]="['/noticia', article().id]"
+            (click)="onPreviewRequest($event)"
           >
             {{ article().title }}
           </a>
@@ -79,8 +81,15 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 })
 export class NewsCardComponent {
   readonly article = input.required<NewsItem>();
+  readonly previewRequested = output<NewsItem>();
+
   private readonly fallbackImageUrl = '/images/no-image.jpg';
   protected readonly previewImageUrl = computed(() => this.article().thumbnailUrl ?? this.article().imageUrl);
+
+  protected onPreviewRequest(event: Event): void {
+    event.preventDefault();
+    this.previewRequested.emit(this.article());
+  }
 
   protected onImageError(event: Event): void {
     const imageElement = event.target as HTMLImageElement | null;

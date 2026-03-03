@@ -7,7 +7,7 @@ import { ArticleContentComponent } from './article-content.component';
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 describe('ArticleContentComponent', () => {
-  it('renders title, metadata, locked preview and cta', async () => {
+  it('renders title, metadata and cta', async () => {
     await TestBed.configureTestingModule({
       imports: [ArticleContentComponent],
       providers: [provideRouter([])],
@@ -23,7 +23,7 @@ describe('ArticleContentComponent', () => {
     expect(text).toContain('Diario Prueba');
 
     expect(fixture.nativeElement.querySelector('app-article-metadata')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-article-locked-preview')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-article-locked-preview')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-article-preview-cta')).toBeTruthy();
   });
 

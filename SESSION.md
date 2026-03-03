@@ -392,3 +392,15 @@ Brief continuity notes to recover context between terminal sessions.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test` (pass, 45 files / 202 tests).
+
+## 2026-03-03
+
+- What changed:
+  - Finalized news reading UX with central modal as the default contextual reading pattern.
+  - Removed dedicated news detail route/page (`/noticia/:id`) and related unused files.
+  - Implemented reusable `app-news-quick-view-modal` and integrated it in home and section pages.
+  - Updated news click flows (`carousel`, `breaking`, `section cards`, `most-read`) to open the modal instead of navigating.
+  - Updated ticker behavior to keep headlines as non-navigating text and preserve `Última hora` section link.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass, 43 files / 196 tests).
