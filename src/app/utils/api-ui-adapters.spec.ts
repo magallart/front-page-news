@@ -81,6 +81,44 @@ describe('api-ui-adapters', () => {
     expect(result.url).toBe('#');
   });
 
+  it('uses canonicalUrl when url is relative and canonical is absolute', () => {
+    const result = adaptArticleToNewsItem({
+      id: 'news-3',
+      externalId: null,
+      title: 'Con canonical',
+      summary: 'Resumen',
+      url: '/deportes/noticia',
+      canonicalUrl: 'https://example.com/deportes/noticia',
+      imageUrl: null,
+      sourceId: 'source-3',
+      sourceName: 'Fuente Tres',
+      sectionSlug: 'deportes',
+      author: 'Autor',
+      publishedAt: '2026-03-03T10:00:00.000Z',
+    });
+
+    expect(result.url).toBe('https://example.com/deportes/noticia');
+  });
+
+  it('falls back to # when both url and canonicalUrl are non-http(s)', () => {
+    const result = adaptArticleToNewsItem({
+      id: 'news-4',
+      externalId: null,
+      title: 'Sin enlace valido',
+      summary: 'Resumen',
+      url: '/cultura/sin-host',
+      canonicalUrl: 'mailto:editor@example.com',
+      imageUrl: null,
+      sourceId: 'source-4',
+      sourceName: 'Fuente Cuatro',
+      sectionSlug: 'cultura',
+      author: 'Autor',
+      publishedAt: '2026-03-03T11:00:00.000Z',
+    });
+
+    expect(result.url).toBe('#');
+  });
+
   it('adapts source with fallback id and normalized section slugs', () => {
     const result = adaptSourceToFilterItem({
       id: ' ',

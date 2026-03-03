@@ -1,12 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
   selector: 'app-news-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
   styles: `
     .title-clamp {
       display: -webkit-box;
@@ -42,8 +40,8 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           </p>
         </div>
 
-        <a
-          [routerLink]="['/noticia', article().id]"
+        <button
+          type="button"
           class="block overflow-hidden rounded-lg bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           (click)="onPreviewRequest($event)"
         >
@@ -58,16 +56,16 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           } @else {
             <div class="flex aspect-[16/9] items-center justify-center text-sm text-muted-foreground">Imagen no disponible</div>
           }
-        </a>
+        </button>
 
         <h3 class="font-editorial-title title-clamp text-xl font-semibold leading-[1.5rem] tracking-[0.01em]">
-          <a
-            class="transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            [routerLink]="['/noticia', article().id]"
+          <button
+            type="button"
+            class="text-left transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="onPreviewRequest($event)"
           >
             {{ article().title }}
-          </a>
+          </button>
         </h3>
 
         <p class="font-editorial-body summary-clamp text-sm leading-[1.2rem] text-muted-foreground">{{ article().summary }}</p>

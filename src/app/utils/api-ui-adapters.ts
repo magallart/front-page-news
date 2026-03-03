@@ -28,7 +28,7 @@ export function adaptArticleToNewsItem(article: Article): NewsItem {
     section: normalizedSection,
     publishedAt: normalizeNullableString(article.publishedAt, ''),
     author: normalizeNullableString(article.author, DEFAULT_NEWS_AUTHOR),
-    url: normalizeString(article.url, '#'),
+    url: resolveArticleUrl(article.url, article.canonicalUrl),
   };
 }
 
@@ -90,6 +90,31 @@ function normalizeSourceId(id: string, sourceName: string): string {
   }
 
   return `source-${slugify(sourceName) || 'unknown'}`;
+}
+
+function resolveArticleUrl(url: string, canonicalUrl: string | null): string {
+  const candidates = [url, canonicalUrl];
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    const normalized = candidate.trim();
+    if (isHttpUrl(normalized)) {
+      return normalized;
+    }
+  }
+
+  return '#';
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 function slugify(value: string): string {

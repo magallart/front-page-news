@@ -30,7 +30,7 @@ describe('MostReadNewsComponent', () => {
     );
     expect(numbers).toEqual(['1', '2', '3']);
 
-    const firstTitle = fixture.nativeElement.querySelector('ol li a') as HTMLElement;
+    const firstTitle = fixture.nativeElement.querySelector('ol li button') as HTMLElement;
     expect(firstTitle.className).toContain('font-editorial-title');
 
     const firstMeta = fixture.nativeElement.querySelector('ol li p') as HTMLElement;

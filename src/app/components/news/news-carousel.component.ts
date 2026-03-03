@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { IconChevronLeftComponent } from '../icons/icon-chevron-left.component';
 import { IconChevronRightComponent } from '../icons/icon-chevron-right.component';
@@ -9,7 +8,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 @Component({
   selector: 'app-news-carousel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconChevronLeftComponent, IconChevronRightComponent],
+  imports: [IconChevronLeftComponent, IconChevronRightComponent],
   styles: `
     .hero-title-clamp {
       display: -webkit-box;
@@ -25,8 +24,8 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           class="group relative overflow-hidden rounded-xl border border-border bg-card shadow-subtle lg:h-[30rem]"
           data-testid="carousel-hero"
         >
-          <a
-            [routerLink]="['/noticia', article.id]"
+          <button
+            type="button"
             class="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="onPreviewRequest($event, article)"
           >
@@ -63,7 +62,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                 <span class="min-w-0 truncate text-right sm:shrink-0">{{ formatArticlePublishedAt(article.publishedAt) }}</span>
               </p>
             </div>
-          </a>
+          </button>
 
           @if (hasSlides()) {
             <div class="pointer-events-none absolute inset-0 flex items-center justify-between px-3 sm:px-4">
