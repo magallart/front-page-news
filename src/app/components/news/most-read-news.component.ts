@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { IconTrendingUpComponent } from '../icons/icon-trending-up.component';
@@ -27,6 +27,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
               <a
                 class="font-editorial-title line-clamp-2 text-lg font-medium leading-6 text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
                 [routerLink]="['/noticia', item.id]"
+                (click)="onPreviewRequest($event, item)"
               >
                 {{ item.title }}
               </a>
@@ -41,8 +42,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   `,
 })
 export class MostReadNewsComponent {
-  readonly title = input('Lo más leído');
+  readonly title = input('Lo m\u00E1s le\u00EDdo');
   readonly items = input<readonly NewsItem[]>([]);
+  readonly previewRequested = output<NewsItem>();
 
   protected getPublishedTime(publishedAt: string): string {
     const date = new Date(publishedAt);
@@ -55,5 +57,10 @@ export class MostReadNewsComponent {
       minute: '2-digit',
       hour12: false,
     }).format(date);
+  }
+
+  protected onPreviewRequest(event: Event, item: NewsItem): void {
+    event.preventDefault();
+    this.previewRequested.emit(item);
   }
 }

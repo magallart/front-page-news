@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { BreakingNewsComponent } from '../../components/news/breaking-news.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
+import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
@@ -20,6 +21,7 @@ import { rankMostReadNews } from '../../utils/most-read-ranking';
 import { resolveSourceHomepage } from '../../utils/source-homepage';
 import { resolveHomeUiState } from '../../utils/ui-state-matrix';
 
+import type { NewsItem } from '../../interfaces/news-item.interface';
 import type { OnInit } from '@angular/core';
 
 @Component({
@@ -32,6 +34,7 @@ import type { OnInit } from '@angular/core';
     NewsCarouselComponent,
     BreakingNewsComponent,
     MostReadNewsComponent,
+    NewsQuickViewModalComponent,
     SectionBlockComponent,
     SourceDirectoryComponent,
   ],
@@ -60,21 +63,21 @@ import type { OnInit } from '@angular/core';
         @default {
           <section class="space-y-6 py-4 sm:space-y-8">
             <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-stretch">
-              <app-news-carousel title="Destacadas" [articles]="featuredNews()" />
+              <app-news-carousel title="Destacadas" [articles]="featuredNews()" (previewRequested)="openQuickView($event)" />
               <div class="lg:pl-5">
-                <app-breaking-news [items]="breakingNews()" />
+                <app-breaking-news [items]="breakingNews()" (previewRequested)="openQuickView($event)" />
               </div>
             </div>
 
             <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-start" id="current-news">
               <div class="space-y-6">
                 @for (row of mixedNewsRows(); track $index) {
-                  <app-section-block [articles]="row" />
+                  <app-section-block [articles]="row" (previewRequested)="openQuickView($event)" />
                 }
               </div>
 
               <div class="space-y-10 lg:pl-5" id="most-read">
-                <app-most-read-news [items]="mostReadNews()" />
+                <app-most-read-news [items]="mostReadNews()" (previewRequested)="openQuickView($event)" />
                 <app-source-directory [items]="sourceDirectoryItems()" />
               </div>
             </div>
@@ -82,6 +85,7 @@ import type { OnInit } from '@angular/core';
         }
       }
     </app-page-container>
+    <app-news-quick-view-modal [article]="quickViewArticle()" (closed)="closeQuickView()" />
   `,
 })
 export class HomePageComponent implements OnInit {
@@ -90,6 +94,7 @@ export class HomePageComponent implements OnInit {
   protected readonly uiViewState = UI_VIEW_STATE;
 
   private readonly newsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data()));
+  protected readonly quickViewArticle = signal<NewsItem | null>(null);
 
   protected readonly uiState = computed(() =>
     resolveHomeUiState({
@@ -116,6 +121,14 @@ export class HomePageComponent implements OnInit {
   ngOnInit(): void {
     this.newsStore.load({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
     this.sourcesStore.loadInitial();
+  }
+
+  protected openQuickView(item: NewsItem): void {
+    this.quickViewArticle.set(item);
+  }
+
+  protected closeQuickView(): void {
+    this.quickViewArticle.set(null);
   }
 
   private getNewsBySection(sectionSlug: string) {

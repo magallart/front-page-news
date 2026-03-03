@@ -8,6 +8,7 @@ import { IconFilterComponent } from '../../components/icons/icon-filter.componen
 import { PageContainerComponent } from '../../components/layout/page-container.component';
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
+import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
 import { SECTION_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
@@ -15,6 +16,8 @@ import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { resolveSectionUiState } from '../../utils/ui-state-matrix';
+
+import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
   selector: 'app-section-page',
@@ -25,6 +28,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
     ErrorStateComponent,
     SectionFiltersComponent,
     SectionPageSkeletonComponent,
+    NewsQuickViewModalComponent,
     IconFilterComponent,
     IconEyeComponent,
   ],
@@ -74,7 +78,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
           } @else {
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               @for (item of visibleSectionNews(); track item.id) {
-                <app-news-card [article]="item" />
+                <app-news-card [article]="item" (previewRequested)="openQuickView($event)" />
               }
             </div>
 
@@ -94,6 +98,7 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
         }
       </section>
     </app-page-container>
+    <app-news-quick-view-modal [article]="quickViewArticle()" (closed)="closeQuickView()" />
   `,
 })
 export class SectionPageComponent {
@@ -110,6 +115,7 @@ export class SectionPageComponent {
     selectedSources: [],
   });
   private readonly visibleNewsCount = signal(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
+  protected readonly quickViewArticle = signal<NewsItem | null>(null);
   protected readonly uiViewState = UI_VIEW_STATE;
   protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
@@ -231,6 +237,14 @@ export class SectionPageComponent {
 
   protected loadMoreNews(): void {
     this.visibleNewsCount.update((count) => count + SectionPageComponent.LOAD_MORE_NEWS_STEP);
+  }
+
+  protected openQuickView(item: NewsItem): void {
+    this.quickViewArticle.set(item);
+  }
+
+  protected closeQuickView(): void {
+    this.quickViewArticle.set(null);
   }
 }
 

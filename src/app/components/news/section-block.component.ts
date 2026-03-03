@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { NewsCardComponent } from './news-card.component';
 
@@ -15,7 +15,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     <section>
       <div class="grid gap-4 md:grid-cols-3">
         @for (article of articles(); track article.id) {
-          <app-news-card [article]="article" />
+          <app-news-card [article]="article" (previewRequested)="onPreviewRequest($event)" />
         }
       </div>
     </section>
@@ -23,4 +23,9 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 })
 export class SectionBlockComponent {
   readonly articles = input<readonly NewsItem[]>([]);
+  readonly previewRequested = output<NewsItem>();
+
+  protected onPreviewRequest(item: NewsItem): void {
+    this.previewRequested.emit(item);
+  }
 }

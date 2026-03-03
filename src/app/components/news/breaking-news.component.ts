@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { IconNewsComponent } from '../icons/icon-news.component';
@@ -54,6 +54,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
               <a
                 class="font-editorial-title breaking-title-clamp mt-1 block text-[1.2rem] font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 [routerLink]="['/noticia', item.id]"
+                (click)="onPreviewRequest($event, item)"
               >
                 {{ item.title }}
               </a>
@@ -78,6 +79,7 @@ export class BreakingNewsComponent {
   readonly title = input('En directo');
   readonly items = input<readonly NewsItem[]>([]);
   readonly coverageLink = input('/seccion/actualidad');
+  readonly previewRequested = output<NewsItem>();
 
   private readonly minuteMarks = [5, 12, 19, 31] as const;
 
@@ -86,5 +88,10 @@ export class BreakingNewsComponent {
   protected getTimestamp(index: number): string {
     const minutes = this.minuteMarks[index] ?? this.minuteMarks[this.minuteMarks.length - 1];
     return `Hace ${minutes} min`;
+  }
+
+  protected onPreviewRequest(event: Event, item: NewsItem): void {
+    event.preventDefault();
+    this.previewRequested.emit(item);
   }
 }
