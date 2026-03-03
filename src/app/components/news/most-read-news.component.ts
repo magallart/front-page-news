@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { IconTrendingUpComponent } from '../icons/icon-trending-up.component';
 
@@ -8,7 +7,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 @Component({
   selector: 'app-most-read-news',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconTrendingUpComponent],
+  imports: [IconTrendingUpComponent],
   template: `
     <section class="rounded-xl bg-secondary px-4 py-5 text-secondary-foreground shadow-subtle sm:px-5" id="most-read-news">
       <header class="mb-4 border-b border-primary/35 pb-3">
@@ -24,13 +23,13 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
             <span class="mt-0.5 w-6 shrink-0 text-sm font-semibold text-primary">{{ index + 1 }}</span>
 
             <div class="min-w-0 space-y-1">
-              <a
-                class="font-editorial-title line-clamp-2 text-lg font-medium leading-6 text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
-                [routerLink]="['/noticia', item.id]"
+              <button
+                type="button"
+                class="font-editorial-title line-clamp-2 block text-left text-lg font-medium leading-6 text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
                 (click)="onPreviewRequest($event, item)"
               >
                 {{ item.title }}
-              </a>
+              </button>
               <p class="font-editorial-body text-xs uppercase tracking-[0.08em] text-secondary-foreground/70">
                 {{ item.source }} - {{ getPublishedTime(item.publishedAt) }}
               </p>

@@ -7,6 +7,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { NewsCardComponent } from '../../components/news/news-card.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { NewsStore } from '../../stores/news.store';
 
@@ -246,6 +247,43 @@ describe('SectionPageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-error-state')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(1);
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
+  });
+
+  it('opens quick-view modal when a section card requests preview', async () => {
+    const routeMock = createRouteMock({ slug: 'economia' });
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'economia', 'Fuente A')],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    const cardDebug = fixture.debugElement.query(By.directive(NewsCardComponent));
+    const card = cardDebug.componentInstance as NewsCardComponent;
+    card.previewRequested.emit({
+      id: 'news-1',
+      title: 'Titulo news-1',
+      summary: 'Resumen news-1',
+      imageUrl: '/images/no-image.jpg',
+      source: 'Fuente A',
+      section: 'economia',
+      publishedAt: '2026-03-03T10:00:00.000Z',
+      author: 'Autor',
+      url: 'https://example.com/news-1',
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-news-quick-view-modal')).toBeTruthy();
+    expect((fixture.nativeElement.textContent as string)).toContain('Abrir noticia completa en Fuente A');
   });
 });
 

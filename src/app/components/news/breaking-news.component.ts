@@ -51,13 +51,13 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                   {{ getTimestamp(index) }}
                 </p>
               </div>
-              <a
-                class="font-editorial-title breaking-title-clamp mt-1 block text-[1.2rem] font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                [routerLink]="['/noticia', item.id]"
+              <button
+                type="button"
+                class="font-editorial-title breaking-title-clamp mt-1 block text-left text-[1.2rem] font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 (click)="onPreviewRequest($event, item)"
               >
                 {{ item.title }}
-              </a>
+              </button>
             </li>
           }
         </ul>
