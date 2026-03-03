@@ -1,7 +1,6 @@
 ﻿import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { ArticleLockedPreviewComponent } from './article-locked-preview.component';
 import { ArticleMetadataComponent } from './article-metadata.component';
 import { ArticlePreviewCtaComponent } from './article-preview-cta.component';
 
@@ -10,18 +9,18 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 @Component({
   selector: 'app-article-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ArticleMetadataComponent, ArticleLockedPreviewComponent, ArticlePreviewCtaComponent],
+  imports: [RouterLink, ArticleMetadataComponent, ArticlePreviewCtaComponent],
   template: `
     <article class="space-y-6 sm:space-y-7">
       <header class="space-y-4">
         <a
-          class="inline-flex rounded-sm bg-secondary px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-secondary-foreground transition hover:bg-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          class="inline-flex rounded-sm bg-primary px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-secondary transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           [routerLink]="['/seccion', safeArticle().section]"
         >
           {{ formattedSection() }}
         </a>
 
-        <h1 class="font-editorial-title text-3xl font-semibold leading-[1.2] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+        <h1 class="font-editorial-title text-2xl font-semibold leading-[1.2] tracking-tight text-foreground sm:text-3xl lg:text-4xl">
           {{ safeArticle().title }}
         </h1>
 
@@ -36,7 +35,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
       @if (imageUrl(); as imageUrl) {
         <div class="overflow-hidden rounded-xl border border-border bg-muted">
-          <img [src]="imageUrl" [alt]="safeArticle().title" class="aspect-[16/9] w-full object-cover" loading="eager" (error)="onImageError()" />
+          <img [src]="imageUrl" [alt]="safeArticle().title" class="h-56 w-full object-cover sm:h-64" loading="eager" (error)="onImageError()" />
         </div>
       }
 
@@ -46,10 +45,6 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
             <p>{{ paragraph }}</p>
           }
         }
-      </div>
-
-      <div class="mt-3 sm:mt-4">
-        <app-article-locked-preview />
       </div>
 
       <div class="pt-2 sm:pt-4">
