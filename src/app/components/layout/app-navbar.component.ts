@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 
+import { NAVBAR_TICKER_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
@@ -49,6 +51,7 @@ import type { TopLink } from '../../../interfaces/top-link.interface';
 export class AppNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly newsStore = inject(NewsStore);
+  private readonly router = inject(Router);
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = 12;
   private readonly fallbackTickerHeadlines: readonly TickerHeadline[] = [{ id: 'loading-headlines', title: 'Actualizando titulares...' }];
@@ -98,6 +101,7 @@ export class AppNavbarComponent {
   );
 
   constructor() {
+    this.initTickerFallbackLoad();
     this.initResponsiveMode();
     this.initStickyOnScroll();
   }
@@ -167,7 +171,54 @@ export class AppNavbarComponent {
     });
   }
 
+  private initTickerFallbackLoad(): void {
+    this.loadTickerNewsIfNeeded(this.router.url);
+
+    const subscription = this.router.events.subscribe((event) => {
+      if (!(event instanceof NavigationEnd)) {
+        return;
+      }
+
+      this.loadTickerNewsIfNeeded(event.urlAfterRedirects);
+    });
+
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
+    });
+  }
+
+  private loadTickerNewsIfNeeded(url: string): void {
+    if (!isRouteWithoutDedicatedNewsLoad(url)) {
+      return;
+    }
+
+    if (this.newsStore.loading() || this.newsStore.data().length > 0) {
+      return;
+    }
+
+    this.newsStore.load({ page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT });
+  }
 }
+
+const ROUTES_WITHOUT_DEDICATED_NEWS_LOAD = new Set(['/aviso-legal', '/privacidad', '/cookies']);
+
+function isRouteWithoutDedicatedNewsLoad(url: string): boolean {
+  const normalized = normalizeRoutePath(url);
+  return ROUTES_WITHOUT_DEDICATED_NEWS_LOAD.has(normalized);
+}
+
+function normalizeRoutePath(url: string): string {
+  const pathOnly = url.split('?')[0]?.split('#')[0] ?? '';
+  if (pathOnly.length === 0) {
+    return '/';
+  }
+
+  const withLeadingSlash = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+  return withLeadingSlash.endsWith('/') && withLeadingSlash.length > 1
+    ? withLeadingSlash.slice(0, -1)
+    : withLeadingSlash;
+}
+
 function formatDateLabel(date: Date): string {
   return new Intl.DateTimeFormat('es-ES', {
     weekday: 'long',

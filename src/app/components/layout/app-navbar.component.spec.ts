@@ -115,6 +115,43 @@ describe('AppNavbarComponent', () => {
     expect(text).toContain('Actualizando titulares...');
     expect(storeMock.load).not.toHaveBeenCalled();
   });
+
+  it('loads ticker news fallback on legal routes when store is empty', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [] });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
+    component.loadTickerNewsIfNeeded('/aviso-legal');
+
+    expect(storeMock.load).toHaveBeenCalledTimes(1);
+    expect(storeMock.load).toHaveBeenCalledWith({ page: 1, limit: 120 });
+  });
+
+  it('does not load ticker fallback on legal routes while store is already loading', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [], loading: true });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
+    component.loadTickerNewsIfNeeded('/privacidad');
+
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
 });
 
 function asNavbarTestInstance(component: AppNavbarComponent): NavbarTestInstance {
@@ -153,7 +190,7 @@ function setWindowScrollY(value: number): void {
   });
 }
 
-function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType<typeof createArticle>[] }>) {
+function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType<typeof createArticle>[]; loading: boolean }>) {
   return {
     data: vi.fn(
       () =>
@@ -163,6 +200,7 @@ function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType
           createArticle('news-3', 'Titular 3'),
         ]
     ),
+    loading: vi.fn(() => overrides?.loading ?? false),
     load: vi.fn(),
   };
 }
