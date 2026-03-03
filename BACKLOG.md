@@ -25,10 +25,9 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-006](#fpn-006) | Modelo RSS unificado | Definir tipos y normalizacion RSS/Atom para frontend y API. | [ ] |
 | [FPN-007](#fpn-007) | Vercel Functions RSS | Implementar `/api/sources` y `/api/news` con agregacion y resiliencia. | [ ] |
 | [FPN-008](#fpn-008) | Integracion Angular + API | Sustituir mocks por datos reales y manejar estados de carga/error/parcial. | [✔️] |
-| [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [ ] |
+| [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [✔️] |
 | [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
 | [FPN-011](#fpn-011) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
-| [FPN-012](#fpn-012) | Roadmap post-1.0 | Definir y priorizar mejoras para una segunda fase del producto. | [ ] |
 
 ## Ticket Details
 
@@ -287,6 +286,20 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [✔️] Simplificar el footer para dejar un layout limpio con logo y redes en una sola fila, eliminando las columnas editoriales y el texto central.
   - [✔️] Implementar skeleton estructurado de la home en estado de carga y extraerlo a `home-page-skeleton` como componente dedicado para mejorar UX y mantenimiento.
   - [✔️] Crear sistema de skeletons reutilizables (`home`, `sección`, `detalle` y bloques compartidos), aplicarlo en estados de carga reales.
+  - [✔️] Desacoplar runtime de Vercel Functions de `src/lib` y eliminar interop dinámico (`getModuleExport`) en handlers de API.
+  - [✔️] Extraer soporte de runtime API a módulos dedicados (`constants`, `interfaces`, `lib`) para mejorar mantenibilidad y coherencia arquitectónica.
+  - [✔️] Adaptar arquitectura al límite de Vercel Hobby moviendo soporte no-route fuera de `/api` para no exceder el máximo de Functions por deployment.
+  - [✔️] Definir boundary ESM explícito para runtime server compartido (`server/package.json` con `"type": "module"`) y corregir errores de named exports en producción.
+  - [✔️] Estandarizar imports runtime ESM en handlers de API con rutas explícitas y coherentes para despliegue serverless.
+  - [✔️] Añadir playbook operativo en `agents/vercel.md` con límite Hobby, reglas de boundary ESM y checklist post-refactor con smoke checks de endpoints.
+  - [✔️] Corregir en página de sección el flujo de filtros al desmarcar todas las fuentes para evitar bloqueo visual y eliminar parpadeo transitorio de mensajes vacíos.
+  - [✔️] Reducir en detalle de noticia el contenido sintético de `article-locked-preview` de 2 párrafos a 1 para un teaser más limpio.
+  - [✔️] Priorizar en parseo/normalización el resumen más largo disponible del feed (`description/summary` vs `content:encoded/content`) y respetar párrafos en detalle cuando el origen los proporciona.
+  - [✔️] Optimizar carga inicial de noticias: limitar concurrencia de fetch RSS, añadir caché + dedupe en vuelo en `/api/news`, e instrumentar tiempos con `NEWS_PERF_LOGS`.
+  - [✔️] Ajustar límites de carga por contexto (`home=250`, `sección=300`, `detalle=250`, `ticker=120`) para reducir carga inicial manteniendo diversidad editorial y revelado progresivo en secciones.
+  - [✔️] Eliminar carga redundante del ticker en navbar para evitar doble request de portada (`limit=120` + `limit=250`) y dejar fallback visual de titulares mientras llega el dataset principal.
+  - [✔️] Reducir latencia de primera carga de portada aplicando modo home optimizado en `/api/news` (subset de feeds + timeout más corto), manteniendo el fan-out completo en consultas no-home.
+  - [✔️] Corregir sesgo editorial en portada tras optimización de home: balancear selección de feeds por sección+fuente en `/api/news`, reforzar variedad en bloques (`breaking`, mixto de 15) y normalizar claves de fuente para respetar topes con variantes de nombre.
 
 
 <a id="fpn-011"></a>
@@ -304,19 +317,3 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - [ ] Documentar limitaciones del RSS agregador y campos no garantizados.
   - [ ] Registrar pendientes post-MVP en una seccion roadmap.
   - [ ] Actualizar `SESSION.md`.
-
-<a id="fpn-012"></a>
-
-### [FPN-012] Roadmap post-1.0
-
-- Description: Definir y priorizar mejoras para una segunda fase del producto tras el release 1.0.
-- DoD:
-  - Lista de iniciativas post-1.0 priorizada por impacto/esfuerzo.
-  - Dependencias y riesgos principales identificados.
-  - Alcance recomendado para la siguiente iteracion documentado.
-- Tasks:
-  - [ ] Consolidar mejoras candidatas detectadas durante el cierre MVP.
-  - [ ] Clasificar iniciativas por tipo (producto, UX, performance, plataforma).
-  - [ ] Priorizar backlog post-1.0 con criterios de impacto y coste.
-  - [ ] Identificar prerequisitos tecnicos para las 3 prioridades principales.
-  - [ ] Definir propuesta de alcance para la siguiente iteracion.

@@ -93,6 +93,27 @@ describe('ArticleContentComponent', () => {
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement | null;
     expect(image).toBeNull();
   });
+
+  it('renders one paragraph per summary block separated by blank lines', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ArticleContentComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ArticleContentComponent);
+    fixture.componentRef.setInput('article', {
+      ...MOCK_ARTICLE,
+      summary: 'Primer párrafo.\n\nSegundo párrafo más largo.',
+    });
+    fixture.detectChanges();
+
+    const paragraphs = Array.from(
+      fixture.nativeElement.querySelectorAll('article > div.font-editorial-body p')
+    ) as HTMLParagraphElement[];
+    expect(paragraphs).toHaveLength(2);
+    expect(paragraphs[0]?.textContent?.trim()).toBe('Primer párrafo.');
+    expect(paragraphs[1]?.textContent?.trim()).toBe('Segundo párrafo más largo.');
+  });
 });
 
 const MOCK_ARTICLE: NewsItem = {

@@ -83,6 +83,75 @@ describe('AppNavbarComponent', () => {
     const label = component.stickyTopbarMeta();
     expect(label).toMatch(/^\d{2}-\d{2}-\d{2}$/);
   });
+
+  it('does not trigger ticker fallback load when news data already exists', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
+
+  it('shows fallback ticker headline when store has no news', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [] });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Actualizando titulares...');
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
+
+  it('loads ticker news fallback on legal routes when store is empty', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [] });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
+    component.loadTickerNewsIfNeeded('/aviso-legal');
+
+    expect(storeMock.load).toHaveBeenCalledTimes(1);
+    expect(storeMock.load).toHaveBeenCalledWith({ page: 1, limit: 120 });
+  });
+
+  it('does not load ticker fallback on legal routes while store is already loading', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({ articles: [], loading: true });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
+    component.loadTickerNewsIfNeeded('/privacidad');
+
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
 });
 
 function asNavbarTestInstance(component: AppNavbarComponent): NavbarTestInstance {
@@ -121,13 +190,17 @@ function setWindowScrollY(value: number): void {
   });
 }
 
-function createNewsStoreMock() {
+function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType<typeof createArticle>[]; loading: boolean }>) {
   return {
-    data: vi.fn(() => [
-      createArticle('news-1', 'Titular 1'),
-      createArticle('news-2', 'Titular 2'),
-      createArticle('news-3', 'Titular 3'),
-    ]),
+    data: vi.fn(
+      () =>
+        overrides?.articles ?? [
+          createArticle('news-1', 'Titular 1'),
+          createArticle('news-2', 'Titular 2'),
+          createArticle('news-3', 'Titular 3'),
+        ]
+    ),
+    loading: vi.fn(() => overrides?.loading ?? false),
     load: vi.fn(),
   };
 }

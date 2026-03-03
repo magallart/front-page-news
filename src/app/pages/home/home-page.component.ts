@@ -8,11 +8,12 @@ import { NewsCarouselComponent } from '../../components/news/news-carousel.compo
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { selectBreakingNews } from '../../utils/breaking-news-selection';
 import { selectFeaturedNews } from '../../utils/featured-news-selection';
 import { chunkNewsItems, selectHomeMixedNews } from '../../utils/home-mixed-selection';
 import { rankMostReadNews } from '../../utils/most-read-ranking';
@@ -100,7 +101,7 @@ export class HomePageComponent implements OnInit {
   );
 
   protected readonly featuredNews = computed(() => selectFeaturedNews(this.newsItems()));
-  protected readonly breakingNews = computed(() => this.getNewsBySection('actualidad').slice(0, 6));
+  protected readonly breakingNews = computed(() => selectBreakingNews(this.getNewsBySection('actualidad'), 6));
   protected readonly mixedNewsRows = computed(() => chunkNewsItems(selectHomeMixedNews(this.newsItems(), 15), 3).slice(0, 5));
   protected readonly mostReadNews = computed(() => rankMostReadNews(this.newsItems()).slice(0, 10));
   protected readonly sourceDirectoryItems = computed(() =>
@@ -113,7 +114,7 @@ export class HomePageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
+    this.newsStore.load({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
     this.sourcesStore.loadInitial();
   }
 

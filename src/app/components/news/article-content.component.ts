@@ -41,8 +41,10 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
       }
 
       <div class="font-editorial-body space-y-5 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-        @if (safeArticle().summary) {
-          <p>{{ safeArticle().summary }}</p>
+        @if (summaryParagraphs().length > 0) {
+          @for (paragraph of summaryParagraphs(); track $index) {
+            <p>{{ paragraph }}</p>
+          }
         }
       </div>
 
@@ -92,6 +94,7 @@ export class ArticleContentComponent {
   });
 
   protected readonly formattedSection = computed(() => formatSectionLabel(this.safeArticle().section));
+  protected readonly summaryParagraphs = computed(() => splitSummaryIntoParagraphs(this.safeArticle().summary));
 
   protected onImageError(): void {
     this.hiddenImageUrl.set(this.safeArticle().imageUrl);
@@ -118,4 +121,11 @@ function normalizeImageUrl(value: string): string | null {
   }
 
   return normalized;
+}
+
+function splitSummaryIntoParagraphs(summary: string): readonly string[] {
+  return summary
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0);
 }

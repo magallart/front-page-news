@@ -31,7 +31,7 @@ describe('SectionPageComponent', () => {
 
     fixture.detectChanges();
 
-    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=1000');
+    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=300');
     expect(request.request.method).toBe('GET');
     request.flush({
       articles: [
@@ -40,7 +40,7 @@ describe('SectionPageComponent', () => {
       ],
       total: 2,
       page: 1,
-      limit: 1000,
+      limit: 300,
       warnings: [],
     });
 
@@ -205,6 +205,47 @@ describe('SectionPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(24);
+  });
+
+  it('keeps filters available after clearing all sources and allows recovery without reload', async () => {
+    const routeMock = createRouteMock({ slug: 'actualidad' });
+    const newsStoreMock = createNewsStoreMock({
+      data: [
+        createArticle('news-1', 'actualidad', 'Mundo Diario'),
+        createArticle('news-2', 'actualidad', 'Planeta News'),
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    openFiltersPanel(fixture);
+    let filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
+    let filters = filtersDebug.componentInstance as SectionFiltersComponent;
+
+    filters.selectedSourcesChange.emit([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-error-state')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-section-filters')).toBeTruthy();
+
+    filtersDebug = fixture.debugElement.query(By.directive(SectionFiltersComponent));
+    filters = filtersDebug.componentInstance as SectionFiltersComponent;
+    filters.selectedSourcesChange.emit(['Mundo Diario']);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-error-state')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('app-news-card').length).toBe(1);
+    expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
   });
 });
 

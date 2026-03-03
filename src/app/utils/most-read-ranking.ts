@@ -1,3 +1,5 @@
+import { normalizeSourceKey } from './source-key';
+
 import type { NewsItem } from '../interfaces/news-item.interface';
 
 const MOST_READ_RECENCY_WEIGHT = 0.7;
@@ -17,8 +19,9 @@ export function rankMostReadNews(items: readonly NewsItem[], nowMs = Date.now())
 
   const sourceFrequency = new Map<string, number>();
   for (const item of items) {
-    const current = sourceFrequency.get(item.source) ?? 0;
-    sourceFrequency.set(item.source, current + 1);
+    const sourceKey = normalizeSourceKey(item.source);
+    const current = sourceFrequency.get(sourceKey) ?? 0;
+    sourceFrequency.set(sourceKey, current + 1);
   }
 
   const maxSourceFrequency = Math.max(...sourceFrequency.values());
@@ -26,7 +29,8 @@ export function rankMostReadNews(items: readonly NewsItem[], nowMs = Date.now())
   const scored = items.map((item) => {
     const timestamp = Date.parse(item.publishedAt);
     const recencyScore = toRecencyScore(timestamp, nowMs);
-    const sourceRepeatScore = toSourceRepeatScore(sourceFrequency.get(item.source) ?? 0, maxSourceFrequency);
+    const sourceKey = normalizeSourceKey(item.source);
+    const sourceRepeatScore = toSourceRepeatScore(sourceFrequency.get(sourceKey) ?? 0, maxSourceFrequency);
     const score = recencyScore * MOST_READ_RECENCY_WEIGHT + sourceRepeatScore * MOST_READ_SOURCE_REPEAT_WEIGHT;
 
     return {
@@ -50,13 +54,14 @@ export function rankMostReadNews(items: readonly NewsItem[], nowMs = Date.now())
   const selectedPerSource = new Map<string, number>();
 
   for (const candidate of scored) {
-    const selectedCount = selectedPerSource.get(candidate.item.source) ?? 0;
+    const sourceKey = normalizeSourceKey(candidate.item.source);
+    const selectedCount = selectedPerSource.get(sourceKey) ?? 0;
     if (selectedCount >= MOST_READ_MAX_PER_SOURCE) {
       continue;
     }
 
     result.push(candidate.item);
-    selectedPerSource.set(candidate.item.source, selectedCount + 1);
+    selectedPerSource.set(sourceKey, selectedCount + 1);
   }
 
   return result;

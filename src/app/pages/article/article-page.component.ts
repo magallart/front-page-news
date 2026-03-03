@@ -10,7 +10,7 @@ import { BreakingNewsComponent } from '../../components/news/breaking-news.compo
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { ArticlePageSkeletonComponent } from '../../components/news/skeletons/article-page-skeleton.component';
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { ARTICLE_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
@@ -109,7 +109,7 @@ export class ArticlePageComponent {
   );
 
   constructor() {
-    this.newsStore.load({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
+    this.newsStore.load({ page: 1, limit: ARTICLE_PAGE_NEWS_LIMIT });
 
     effect(() => {
       const currentArticleId = this.articleId();

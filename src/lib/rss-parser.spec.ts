@@ -210,6 +210,25 @@ describe('rss-parser', () => {
     expect(first?.summary).toBe('<p>Resumen CDATA</p>');
   });
 
+  it('chooses the longest summary candidate between short and extended content', () => {
+    const source = makeSource();
+    const xml = `<?xml version="1.0"?>
+      <rss version="2.0">
+        <channel>
+          <item>
+            <guid>guid-long-summary</guid>
+            <title>Titular con doble resumen</title>
+            <link>https://example.com/rss-long-summary</link>
+            <description>Resumen corto.</description>
+            <content:encoded><![CDATA[<p>Resumen largo con más detalle y contexto.</p><p>Segundo párrafo.</p>]]></content:encoded>
+          </item>
+        </channel>
+      </rss>`;
+
+    const result = parseFeedItems({ xml, source, sectionSlug: 'actualidad' });
+    expect(result.items[0]?.summary).toBe('<p>Resumen largo con más detalle y contexto.</p><p>Segundo párrafo.</p>');
+  });
+
   it('throws for unsupported format', () => {
     const source = makeSource();
     expect(() => parseFeedItems({ xml: '<html>invalid</html>', source, sectionSlug: 'actualidad' })).toThrow(

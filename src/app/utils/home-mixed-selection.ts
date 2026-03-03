@@ -1,8 +1,22 @@
+import { normalizeSourceKey } from './source-key';
+
 import type { NewsItem } from '../interfaces/news-item.interface';
 
 const MAX_PER_SECTION = 2;
 const MAX_PER_SOURCE = 2;
 const ROW_SIZE = 3;
+const HOME_SECTION_PRIORITY_ORDER = [
+  'actualidad',
+  'economia',
+  'espana',
+  'internacional',
+  'cultura',
+  'deportes',
+  'ciencia',
+  'tecnologia',
+  'sociedad',
+  'opinion',
+];
 
 export function selectHomeMixedNews(items: readonly NewsItem[], total = 15): readonly NewsItem[] {
   if (items.length <= 1) {
@@ -14,22 +28,20 @@ export function selectHomeMixedNews(items: readonly NewsItem[], total = 15): rea
   const selectedIds = new Set<string>();
   const sectionCounts = new Map<string, number>();
   const sourceCounts = new Map<string, number>();
+  const sectionOrder = buildSectionOrder(sortedByRecency);
 
-  // Pass 1: maximize section coverage (at least one per section when possible).
-  for (const item of sortedByRecency) {
+  // Pass 1: guarantee section coverage following homepage section priority.
+  for (const section of sectionOrder) {
     if (selected.length >= total) {
       break;
     }
 
-    if ((sectionCounts.get(item.section) ?? 0) > 0) {
+    const candidate = pickSectionCandidate(sortedByRecency, section, selectedIds, sourceCounts);
+    if (!candidate) {
       continue;
     }
 
-    if ((sourceCounts.get(item.source) ?? 0) >= MAX_PER_SOURCE) {
-      continue;
-    }
-
-    selectItem(item, selected, selectedIds, sectionCounts, sourceCounts);
+    selectItem(candidate, selected, selectedIds, sectionCounts, sourceCounts);
   }
 
   // Pass 2: fill while preserving section/source balance.
@@ -46,7 +58,8 @@ export function selectHomeMixedNews(items: readonly NewsItem[], total = 15): rea
       continue;
     }
 
-    if ((sourceCounts.get(item.source) ?? 0) >= MAX_PER_SOURCE) {
+    const sourceKey = normalizeSourceKey(item.source);
+    if ((sourceCounts.get(sourceKey) ?? 0) >= MAX_PER_SOURCE) {
       continue;
     }
 
@@ -108,7 +121,8 @@ function selectItem(
   selected.push(item);
   selectedIds.add(item.id);
   sectionCounts.set(item.section, (sectionCounts.get(item.section) ?? 0) + 1);
-  sourceCounts.set(item.source, (sourceCounts.get(item.source) ?? 0) + 1);
+  const sourceKey = normalizeSourceKey(item.source);
+  sourceCounts.set(sourceKey, (sourceCounts.get(sourceKey) ?? 0) + 1);
 }
 
 function compareByRecencyDesc(first: NewsItem, second: NewsItem): number {
@@ -178,4 +192,32 @@ function scoreCandidate(candidate: NewsItem, row: readonly NewsItem[], previous:
 function toTimestamp(value: string): number {
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+}
+
+function buildSectionOrder(items: readonly NewsItem[]): readonly string[] {
+  const availableSections = new Set(items.map((item) => item.section));
+  const prioritized = HOME_SECTION_PRIORITY_ORDER.filter((section) => availableSections.has(section));
+  const remaining = Array.from(availableSections).filter((section) => !prioritized.includes(section));
+
+  return [...prioritized, ...remaining];
+}
+
+function pickSectionCandidate(
+  items: readonly NewsItem[],
+  section: string,
+  selectedIds: ReadonlySet<string>,
+  sourceCounts: ReadonlyMap<string, number>,
+): NewsItem | null {
+  for (const item of items) {
+    if (item.section !== section || selectedIds.has(item.id)) {
+      continue;
+    }
+
+    const sourceKey = normalizeSourceKey(item.source);
+    if ((sourceCounts.get(sourceKey) ?? 0) < MAX_PER_SOURCE) {
+      return item;
+    }
+  }
+
+  return null;
 }

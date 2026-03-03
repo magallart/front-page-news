@@ -351,6 +351,44 @@ Brief continuity notes to recover context between terminal sessions.
     - Vercel Hobby `/api` function-count limit awareness.
     - mandatory ESM boundary (`package.json` with `"type": "module"`) for runtime folders imported by `api/*`.
     - post-refactor runtime checklist (file-count validation + deployed endpoint smoke tests).
+  - Fixed section-page filters recovery and transient empty-state flicker:
+    - when all sources are cleared (`Quitar todo` / uncheck all), filters remain available and news can be recovered without reloading.
+    - replaced split source-selection signals with one atomic signal to avoid intermediate UI states that briefly showed inconsistent empty-state copy.
+    - added regression coverage for clear-all + recovery flow.
+  - Adjusted locked article preview density:
+    - reduced synthetic preview skeleton text from 2 paragraphs to 1 paragraph in news detail.
+    - updated related unit tests to match the new locked-preview structure.
+  - Improved feed summary selection and article paragraph rendering:
+    - parser now picks the longest summary candidate when both short and extended feed fields are present (`description/summary` vs `content:encoded/content`).
+    - dedupe now preserves the longest summary variant for duplicated articles.
+    - normalization keeps paragraph boundaries when source HTML provides block structure.
+    - article detail now renders normalized summary as multiple paragraphs when paragraph breaks exist.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass).
+
+## 2026-03-02
+
+- What changed:
+  - Optimized first-load backend workload for news aggregation.
+  - Added in-memory cache + in-flight dedupe in `api/news.ts` (TTL `60s`) and optional perf logs via `NEWS_PERF_LOGS=1`.
+  - Added bounded RSS fetch concurrency (`MAX_FEED_FETCH_CONCURRENCY = 10`) in `server/lib/feed-fetcher.ts` and `src/lib/feed-fetcher.ts`.
+  - Added regression tests for concurrency limit and `/api/news` cache/dedupe behavior.
+  - Added per-page news limits to reduce first render load:
+    - home `250`, section `300`, article `250`, navbar ticker `120`.
+  - Local measurements with `NEWS_PERF_LOGS=1` confirmed better average response times but still showed duplicate `/api/news` loads (`limit=120` + `limit=250`) on homepage.
+  - Removed news loading from navbar ticker to stop duplicate homepage requests and kept a visual fallback headline when no data is available yet.
+  - Added a homepage-optimized path in `/api/news` for first paint:
+    - capped fetched feeds in home-mode and limited per-source fan-out.
+    - reduced home fetch timeout to cut cold-start waiting time.
+    - kept default full behavior for non-home queries (section/search/detail paths).
+  - New local perf samples for homepage (`limit=250`) dropped to ~`381-470ms` total (`fetchMs ~245-295ms`).
+  - Balanced homepage editorial diversity after perf optimizations:
+    - backend home-mode feed subset now balances by section and source (with round-robin fallback), reducing `actualidad` over-concentration.
+    - homepage mixed block (15 cards) now prioritizes key section coverage and keeps strict caps (`max 2` per section/source).
+    - breaking block now uses balanced selection with per-source cap.
+    - source keys are normalized across selection/ranking utils to avoid bypassing caps with naming variants (`ABC`, ` abc `, `Abc`).
+  - User manually validated the final behavior in local: portada now keeps section/source variety as expected.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test` (pass, 45 files / 202 tests).

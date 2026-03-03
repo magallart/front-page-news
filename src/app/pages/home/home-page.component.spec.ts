@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 
@@ -34,7 +34,7 @@ describe('HomePageComponent', () => {
 
     fixture.detectChanges();
 
-    const request = httpController.expectOne('/api/news?page=1&limit=1000');
+    const request = httpController.expectOne('/api/news?page=1&limit=250');
     expect(request.request.method).toBe('GET');
     request.flush({
       articles: [
@@ -45,7 +45,7 @@ describe('HomePageComponent', () => {
       ],
       total: 4,
       page: 1,
-      limit: 1000,
+      limit: 250,
       warnings: [],
     });
 
@@ -76,7 +76,7 @@ describe('HomePageComponent', () => {
     const fixture = TestBed.createComponent(HomePageComponent);
     fixture.detectChanges();
 
-    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: MAX_FEED_NEWS_LIMIT });
+    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();

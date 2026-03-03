@@ -38,6 +38,45 @@ describe('selectHomeMixedNews', () => {
       expect(sources.size).toBe(3);
     }
   });
+
+  it('enforces source cap with normalized source names', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('abc-1', 'actualidad', 'ABC', toIso(now, 1)),
+      createNewsItem('abc-2', 'economia', ' abc ', toIso(now, 2)),
+      createNewsItem('abc-3', 'cultura', 'Abc', toIso(now, 3)),
+      createNewsItem('p-1', 'deportes', 'El Pais', toIso(now, 4)),
+      createNewsItem('m-1', 'tecnologia', 'El Mundo', toIso(now, 5)),
+      createNewsItem('v-1', 'opinion', 'La Vanguardia', toIso(now, 6)),
+      createNewsItem('x-1', 'salud', 'Expansion', toIso(now, 7)),
+    ] as const;
+
+    const selected = selectHomeMixedNews(items, 6);
+    const abcCount = selected.filter((item) => item.source.toLowerCase().trim() === 'abc').length;
+
+    expect(abcCount).toBeLessThanOrEqual(2);
+  });
+
+  it('prioritizes key sections coverage when enough slots are available', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('a-1', 'actualidad', 'Fuente A', toIso(now, 1)),
+      createNewsItem('s-1', 'sociedad', 'Fuente B', toIso(now, 2)),
+      createNewsItem('o-1', 'opinion', 'Fuente C', toIso(now, 3)),
+      createNewsItem('d-1', 'deportes', 'Fuente D', toIso(now, 4)),
+      createNewsItem('c-1', 'cultura', 'Fuente E', toIso(now, 5)),
+      createNewsItem('e-1', 'economia', 'Fuente F', toIso(now, 200)),
+      createNewsItem('i-1', 'internacional', 'Fuente G', toIso(now, 220)),
+      createNewsItem('es-1', 'espana', 'Fuente H', toIso(now, 240)),
+    ] as const;
+
+    const selected = selectHomeMixedNews(items, 8);
+    const sections = new Set(selected.map((item) => item.section));
+
+    expect(sections.has('economia')).toBe(true);
+    expect(sections.has('internacional')).toBe(true);
+    expect(sections.has('espana')).toBe(true);
+  });
 });
 
 function buildDataset(now: number) {

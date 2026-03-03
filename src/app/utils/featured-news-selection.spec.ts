@@ -58,6 +58,23 @@ describe('selectFeaturedNews', () => {
     expect(selected.every((item) => item.imageUrl !== '/images/no-image.jpg')).toBe(true);
     expect(selected.map((item) => item.id)).toEqual(['with-image-1', 'with-image-2']);
   });
+
+  it('applies source cap with normalized source names', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('abc-1', 'actualidad', 'ABC', toIso(now, 1)),
+      createNewsItem('abc-2', 'economia', ' abc ', toIso(now, 2)),
+      createNewsItem('abc-3', 'cultura', 'Abc', toIso(now, 3)),
+      createNewsItem('p-1', 'deportes', 'El Pais', toIso(now, 4)),
+      createNewsItem('m-1', 'internacional', 'El Mundo', toIso(now, 5)),
+      createNewsItem('v-1', 'salud', 'La Vanguardia', toIso(now, 6)),
+    ] as const;
+
+    const selected = selectFeaturedNews(items);
+    const abcCount = selected.filter((item) => item.source.toLowerCase().trim() === 'abc').length;
+
+    expect(abcCount).toBeLessThanOrEqual(2);
+  });
 });
 
 function createNewsItem(id: string, section: string, source: string, publishedAt: string, imageUrl = 'https://example.com/image.jpg') {

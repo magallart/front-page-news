@@ -10,7 +10,7 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
-import { MAX_FEED_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { SECTION_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -40,52 +40,56 @@ import { resolveSectionUiState } from '../../utils/ui-state-matrix';
             headline="No se han podido cargar noticias"
             message="Estamos teniendo problemas para cargar esta sección. Inténtalo de nuevo en unos minutos."
           />
-        } @else if (sectionUiState() === uiViewState.EMPTY) {
-          <app-error-state
-            headline="No hay noticias en esta sección"
-            message="No encontramos resultados para los filtros actuales. Prueba con otra combinación."
-          />
         } @else {
-          <div class="mb-4 flex justify-start">
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              (click)="toggleFilters()"
-            >
-              <app-icon-filter />
-              {{ filtersOpen() ? 'Ocultar filtros' : 'Mostrar filtros' }}
-            </button>
-          </div>
-
-          @if (filtersOpen()) {
-            <div class="mb-5">
-              <app-section-filters
-                [sources]="availableSources()"
-                [selectedSources]="activeSelectedSources()"
-                [sortDirection]="sortDirection()"
-                (selectedSourcesChange)="onSelectedSourcesChange($event)"
-                (sortDirectionChange)="sortDirection.set($event)"
-              />
-            </div>
-          }
-
-          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            @for (item of visibleSectionNews(); track item.id) {
-              <app-news-card [article]="item" />
-            }
-          </div>
-
-          @if (hasMoreNews()) {
-            <div class="mt-10 flex justify-center">
+          @if (hasSectionNews()) {
+            <div class="mb-4 flex justify-start">
               <button
                 type="button"
-                class="inline-flex items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-500 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                (click)="loadMoreNews()"
+                class="inline-flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                (click)="toggleFilters()"
               >
-                <app-icon-eye />
-                Ver más noticias
+                <app-icon-filter />
+                {{ filtersOpen() ? 'Ocultar filtros' : 'Mostrar filtros' }}
               </button>
             </div>
+
+            @if (filtersOpen()) {
+              <div class="mb-5">
+                <app-section-filters
+                  [sources]="availableSources()"
+                  [selectedSources]="activeSelectedSources()"
+                  [sortDirection]="sortDirection()"
+                  (selectedSourcesChange)="onSelectedSourcesChange($event)"
+                  (sortDirectionChange)="sortDirection.set($event)"
+                />
+              </div>
+            }
+          }
+
+          @if (sectionUiState() === uiViewState.EMPTY) {
+            <app-error-state
+              headline="No hay noticias en esta sección"
+              message="No encontramos resultados para los filtros actuales. Prueba con otra combinación."
+            />
+          } @else {
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              @for (item of visibleSectionNews(); track item.id) {
+                <app-news-card [article]="item" />
+              }
+            </div>
+
+            @if (hasMoreNews()) {
+              <div class="mt-10 flex justify-center">
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors duration-500 ease-out hover:border-secondary hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  (click)="loadMoreNews()"
+                >
+                  <app-icon-eye />
+                  Ver más noticias
+                </button>
+              </div>
+            }
           }
         }
       </section>
@@ -98,12 +102,17 @@ export class SectionPageComponent {
 
   private readonly route = inject(ActivatedRoute);
   private readonly newsStore = inject(NewsStore);
-  private readonly selectedSources = signal<readonly string[]>([]);
+  private readonly sourceSelection = signal<{
+    readonly hasCustomSelection: boolean;
+    readonly selectedSources: readonly string[];
+  }>({
+    hasCustomSelection: false,
+    selectedSources: [],
+  });
   private readonly visibleNewsCount = signal(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
   protected readonly uiViewState = UI_VIEW_STATE;
   protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
-  private readonly hasCustomSourceSelection = signal(false);
 
   protected readonly sectionSlug = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('slug') ?? 'actualidad')),
@@ -116,7 +125,7 @@ export class SectionPageComponent {
         sourceIds: parseSourceIds(params.get('source')),
         searchQuery: normalizeQueryValue(params.get('q')),
         page: parsePositiveNumber(params.get('page'), 1),
-        limit: parsePositiveNumber(params.get('limit'), MAX_FEED_NEWS_LIMIT),
+        limit: parsePositiveNumber(params.get('limit'), SECTION_PAGE_NEWS_LIMIT),
       })),
     ),
     {
@@ -124,7 +133,7 @@ export class SectionPageComponent {
         sourceIds: [] as readonly string[],
         searchQuery: null as string | null,
         page: 1,
-        limit: MAX_FEED_NEWS_LIMIT,
+        limit: SECTION_PAGE_NEWS_LIMIT,
       },
     },
   );
@@ -134,6 +143,7 @@ export class SectionPageComponent {
     this.newsStore.data().filter((article) => article.sectionSlug === this.sectionSlug()),
   );
   protected readonly sectionNews = computed(() => adaptArticlesToNewsItems(this.sectionArticles()));
+  protected readonly hasSectionNews = computed(() => this.sectionNews().length > 0);
 
   protected readonly availableSources = computed(() => {
     const uniqueSources = new Set(this.sectionNews().map((item) => item.source));
@@ -141,11 +151,12 @@ export class SectionPageComponent {
   });
 
   protected readonly activeSelectedSources = computed(() => {
-    if (!this.hasCustomSourceSelection()) {
+    const currentSelection = this.sourceSelection();
+    if (!currentSelection.hasCustomSelection) {
       return this.availableSources();
     }
 
-    return this.selectedSources();
+    return currentSelection.selectedSources;
   });
 
   protected readonly filteredSectionNews = computed(() => {
@@ -177,9 +188,11 @@ export class SectionPageComponent {
   constructor() {
     effect(() => {
       this.sectionSlug();
-      this.selectedSources.set([]);
+      this.sourceSelection.set({
+        hasCustomSelection: false,
+        selectedSources: [],
+      });
       this.filtersOpen.set(false);
-      this.hasCustomSourceSelection.set(false);
       this.sortDirection.set('desc');
     });
 
@@ -210,8 +223,10 @@ export class SectionPageComponent {
   }
 
   protected onSelectedSourcesChange(nextSources: readonly string[]): void {
-    this.hasCustomSourceSelection.set(true);
-    this.selectedSources.set(nextSources);
+    this.sourceSelection.set({
+      hasCustomSelection: true,
+      selectedSources: nextSources,
+    });
   }
 
   protected loadMoreNews(): void {

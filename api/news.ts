@@ -14,6 +14,7 @@ import type { FeedSuccessLike } from '../server/interfaces/feed-success-like.int
 import type { NewsHandlerDependencies } from '../server/interfaces/news-handler-dependencies.interface';
 import type { ParsedFeedsResult } from '../server/interfaces/parsed-feeds-result.interface';
 import type { Article } from '../src/interfaces/article.interface';
+import type { NewsQuery } from '../src/interfaces/news-query.interface';
 import type { NewsResponse } from '../src/interfaces/news-response.interface';
 import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
 import type { Source } from '../src/interfaces/source.interface';
@@ -29,11 +30,58 @@ const defaultDependencies: NewsHandlerDependencies = {
   fetchFeeds: fetchFeedsConcurrently,
 };
 
-export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = {}) {
+const NEWS_HANDLER_CACHE_TTL_MS = 60_000;
+const PERF_LOGS_ENV_FLAG = 'NEWS_PERF_LOGS';
+const HOME_MAX_FEEDS = 24;
+const HOME_MAX_FEEDS_PER_SOURCE = 2;
+const HOME_MAX_FEEDS_PER_SECTION = 3;
+const HOME_FETCH_TIMEOUT_MS = 3500;
+const HOME_QUERY_MIN_LIMIT = 200;
+const HOME_SECTION_PRIORITY_ORDER = [
+  'actualidad',
+  'economia',
+  'espana',
+  'internacional',
+  'cultura',
+  'deportes',
+  'ciencia',
+  'tecnologia',
+  'sociedad',
+  'opinion',
+  'ultima-hora',
+];
+
+interface CachedNewsPayload {
+  readonly expiresAt: number;
+  readonly payloadPromise: Promise<{ payload: NewsResponse; timings: NewsPayloadTimings }>;
+}
+
+interface NewsHandlerRuntimeOptions {
+  readonly cacheTtlMs?: number;
+  readonly now?: () => number;
+  readonly enablePerfLogs?: boolean;
+}
+
+interface NewsPayloadTimings {
+  readonly catalogMs: number;
+  readonly fetchMs: number;
+  readonly parseAndFilterMs: number;
+}
+
+class SourcesCatalogLoadError extends Error {}
+
+export function createNewsHandler(
+  overrides: Partial<NewsHandlerDependencies> = {},
+  runtimeOptions: NewsHandlerRuntimeOptions = {}
+) {
   const dependencies: NewsHandlerDependencies = {
     ...defaultDependencies,
     ...overrides,
   };
+  const cacheTtlMs = runtimeOptions.cacheTtlMs ?? NEWS_HANDLER_CACHE_TTL_MS;
+  const now = runtimeOptions.now ?? (() => Date.now());
+  const enablePerfLogs = runtimeOptions.enablePerfLogs ?? process.env[PERF_LOGS_ENV_FLAG] === '1';
+  const responseCache = new Map<string, CachedNewsPayload>();
 
   return async function handler(request: ApiRequest, response: ServerResponse): Promise<void> {
     if (request.method !== 'GET') {
@@ -41,36 +89,115 @@ export function createNewsHandler(overrides: Partial<NewsHandlerDependencies> = 
       return;
     }
 
-    let availableSources: readonly SourceFeedTarget[];
+    const startedAt = now();
+    const query = parseNewsQuery(request.url);
+    const cacheKey = toNewsQueryCacheKey(query);
+    const cached = responseCache.get(cacheKey);
+    if (cached && !isExpired(cached.expiresAt, now())) {
+      try {
+        const { payload } = await cached.payloadPromise;
+        if (enablePerfLogs) {
+          logPerf('cache-hit', {
+            cacheKey,
+            totalMs: now() - startedAt,
+          });
+        }
+
+        sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+        return;
+      } catch {
+        responseCache.delete(cacheKey);
+      }
+    }
+
+    if (cached) {
+      responseCache.delete(cacheKey);
+    }
+
+    const payloadPromise = buildNewsPayload(dependencies, query, now);
+    responseCache.set(cacheKey, {
+      payloadPromise,
+      expiresAt: now() + cacheTtlMs,
+    });
+
     try {
-      availableSources = await dependencies.loadSourcesCatalog();
-    } catch {
+      const { payload, timings } = await payloadPromise;
+      sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+
+      if (enablePerfLogs) {
+        logPerf('cache-miss', {
+          cacheKey,
+          catalogMs: timings.catalogMs,
+          fetchMs: timings.fetchMs,
+          parseAndFilterMs: timings.parseAndFilterMs,
+          totalMs: now() - startedAt,
+          warningsCount: payload.warnings.length,
+          articlesReturned: payload.articles.length,
+        });
+      }
+      return;
+    } catch (error) {
+      responseCache.delete(cacheKey);
+      if (error instanceof SourcesCatalogLoadError) {
+        sendJson(response, 500, { error: 'Unable to load RSS sources catalog' }, CACHE_CONTROL_HEADER_VALUE);
+        return;
+      }
+
       sendJson(response, 500, { error: 'Unable to load RSS sources catalog' }, CACHE_CONTROL_HEADER_VALUE);
       return;
     }
-
-    const query = parseNewsQuery(request.url);
-    const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
-    const fetchSources = buildUniqueFetchSources(selectedFeedTargets);
-    const fetchResult = await dependencies.fetchFeeds(fetchSources, FEED_FETCH_TIMEOUT_MS);
-    const targetsByKey = buildTargetsLookup(selectedFeedTargets);
-    const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
-    const deduped = dedupeAndSortArticles(parseResult.articles);
-    const filtered = applyNewsFilters(deduped, query);
-
-    const payload: NewsResponse = {
-      articles: filtered.articles,
-      total: filtered.total,
-      page: filtered.page,
-      limit: filtered.limit,
-      warnings: [...fetchResult.warnings, ...parseResult.warnings],
-    };
-
-    sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
   };
 }
 
 export default createNewsHandler();
+
+async function buildNewsPayload(
+  dependencies: NewsHandlerDependencies,
+  query: NewsQuery,
+  now: () => number
+): Promise<{ payload: NewsResponse; timings: NewsPayloadTimings }> {
+  const catalogStartedAt = now();
+  let availableSources: readonly SourceFeedTarget[];
+  try {
+    availableSources = await dependencies.loadSourcesCatalog();
+  } catch {
+    throw new SourcesCatalogLoadError('Unable to load RSS sources catalog');
+  }
+  const catalogMs = now() - catalogStartedAt;
+
+  const selectedFeedTargets = selectFeedTargetsForFetch(availableSources, query.section, query.sourceIds);
+  const optimizedFeedTargets = optimizeFeedTargetsForQuery(selectedFeedTargets, query);
+  const fetchSources = buildUniqueFetchSources(optimizedFeedTargets);
+  const fetchTimeoutMs = resolveFetchTimeoutMs(query);
+
+  const fetchStartedAt = now();
+  const fetchResult = await dependencies.fetchFeeds(fetchSources, fetchTimeoutMs);
+  const fetchMs = now() - fetchStartedAt;
+
+  const parseAndFilterStartedAt = now();
+  const targetsByKey = buildTargetsLookup(optimizedFeedTargets);
+  const parseResult = parseFetchedFeeds(fetchResult.successes, targetsByKey);
+  const deduped = dedupeAndSortArticles(parseResult.articles);
+  const filtered = applyNewsFilters(deduped, query);
+  const parseAndFilterMs = now() - parseAndFilterStartedAt;
+
+  const payload: NewsResponse = {
+    articles: filtered.articles,
+    total: filtered.total,
+    page: filtered.page,
+    limit: filtered.limit,
+    warnings: [...fetchResult.warnings, ...parseResult.warnings],
+  };
+
+  return {
+    payload,
+    timings: {
+      catalogMs,
+      fetchMs,
+      parseAndFilterMs,
+    },
+  };
+}
 
 function parseFetchedFeeds(
   feeds: readonly FeedSuccessLike[],
@@ -164,6 +291,273 @@ function selectFeedTargetsForFetch(
   });
 }
 
+function optimizeFeedTargetsForQuery(
+  targets: readonly SourceFeedTarget[],
+  query: NewsQuery,
+): readonly SourceFeedTarget[] {
+  if (!isHomepageQuery(query)) {
+    return targets;
+  }
+
+  return selectHomepageFeedTargets(targets);
+}
+
+function selectHomepageFeedTargets(targets: readonly SourceFeedTarget[]): readonly SourceFeedTarget[] {
+  if (targets.length <= HOME_MAX_FEEDS) {
+    return targets;
+  }
+
+  const sectionOrder = buildHomepageSectionOrder(targets);
+  const groupedBySection = groupTargetsBySection(targets);
+  const groupedBySource = groupTargetsBySource(targets);
+  const selected: SourceFeedTarget[] = [];
+  const selectedKeys = new Set<string>();
+  const selectedBySource = new Map<string, number>();
+  const selectedBySection = new Map<string, number>();
+
+  // Pass 1: guarantee section coverage on home when available.
+  for (const sectionSlug of sectionOrder) {
+    if (selected.length >= HOME_MAX_FEEDS) {
+      break;
+    }
+
+    const sectionQueue = groupedBySection.get(sectionSlug);
+    if (!sectionQueue || sectionQueue.length === 0) {
+      continue;
+    }
+
+    const nextTarget = takeNextSelectableTarget(sectionQueue, selectedBySource, selectedBySection, selectedKeys);
+    if (!nextTarget) {
+      continue;
+    }
+
+    selectFeedTarget(nextTarget, selected, selectedKeys, selectedBySource, selectedBySection);
+  }
+
+  if (selected.length >= HOME_MAX_FEEDS) {
+    return selected;
+  }
+
+  // Pass 2: per-source seed (up to cap) to avoid one outlet dominating.
+  const sourceOrder = Array.from(groupedBySource.keys());
+  for (const sourceId of sourceOrder) {
+    if (selected.length >= HOME_MAX_FEEDS) {
+      break;
+    }
+
+    const sourceQueue = groupedBySource.get(sourceId);
+    if (!sourceQueue || sourceQueue.length === 0) {
+      continue;
+    }
+
+    while (sourceQueue.length > 0 && selected.length < HOME_MAX_FEEDS) {
+      const nextTarget = sourceQueue[0];
+      if (!nextTarget) {
+        break;
+      }
+
+      if (isAlreadySelected(nextTarget, selectedKeys)) {
+        sourceQueue.shift();
+        continue;
+      }
+
+      if (!canSelectFeedTarget(nextTarget, selectedBySource, selectedBySection)) {
+        break;
+      }
+
+      sourceQueue.shift();
+      selectFeedTarget(nextTarget, selected, selectedKeys, selectedBySource, selectedBySection);
+      break;
+    }
+  }
+
+  if (selected.length >= HOME_MAX_FEEDS) {
+    return selected;
+  }
+
+  // Pass 3: round-robin by section to keep a balanced mix across home sections.
+  const sectionQueues = sectionOrder
+    .map((sectionSlug) => groupedBySection.get(sectionSlug))
+    .filter((queue): queue is SourceFeedTarget[] => Array.isArray(queue));
+  let hasRemainingTargets = true;
+  while (selected.length < HOME_MAX_FEEDS && hasRemainingTargets) {
+    hasRemainingTargets = false;
+
+    for (const queue of sectionQueues) {
+      if (selected.length >= HOME_MAX_FEEDS) {
+        break;
+      }
+
+      if (queue.length === 0) {
+        continue;
+      }
+
+      const nextTarget = takeNextSelectableTarget(queue, selectedBySource, selectedBySection, selectedKeys);
+      if (!nextTarget) {
+        continue;
+      }
+
+      selectFeedTarget(nextTarget, selected, selectedKeys, selectedBySource, selectedBySection);
+      hasRemainingTargets = true;
+    }
+  }
+
+  if (selected.length >= HOME_MAX_FEEDS) {
+    return selected;
+  }
+
+  // Pass 4: fallback without caps, still round-robin by source to avoid order bias.
+  let hasRemainingBySource = true;
+  while (selected.length < HOME_MAX_FEEDS && hasRemainingBySource) {
+    hasRemainingBySource = false;
+
+    for (const sourceId of sourceOrder) {
+      if (selected.length >= HOME_MAX_FEEDS) {
+        break;
+      }
+
+      const sourceQueue = groupedBySource.get(sourceId);
+      if (!sourceQueue || sourceQueue.length === 0) {
+        continue;
+      }
+
+      const nextTarget = sourceQueue.shift();
+      if (!nextTarget) {
+        continue;
+      }
+
+      const key = toFeedTargetKey(nextTarget.sourceId, nextTarget.feedUrl);
+      if (selectedKeys.has(key)) {
+        hasRemainingBySource = true;
+        continue;
+      }
+
+      selectFeedTarget(nextTarget, selected, selectedKeys, selectedBySource, selectedBySection);
+      hasRemainingBySource = true;
+    }
+  }
+
+  return selected;
+}
+
+function groupTargetsBySource(targets: readonly SourceFeedTarget[]): ReadonlyMap<string, SourceFeedTarget[]> {
+  const grouped = new Map<string, SourceFeedTarget[]>();
+
+  for (const target of targets) {
+    const current = grouped.get(target.sourceId);
+    if (current) {
+      current.push(target);
+      continue;
+    }
+
+    grouped.set(target.sourceId, [target]);
+  }
+
+  return grouped;
+}
+
+function groupTargetsBySection(targets: readonly SourceFeedTarget[]): ReadonlyMap<string, SourceFeedTarget[]> {
+  const grouped = new Map<string, SourceFeedTarget[]>();
+
+  for (const target of targets) {
+    const current = grouped.get(target.sectionSlug);
+    if (current) {
+      current.push(target);
+      continue;
+    }
+
+    grouped.set(target.sectionSlug, [target]);
+  }
+
+  return grouped;
+}
+
+function buildHomepageSectionOrder(targets: readonly SourceFeedTarget[]): readonly string[] {
+  const availableSections = new Set(targets.map((target) => target.sectionSlug));
+  const ordered = HOME_SECTION_PRIORITY_ORDER.filter((sectionSlug) => availableSections.has(sectionSlug));
+  const remaining = Array.from(availableSections).filter((sectionSlug) => !ordered.includes(sectionSlug));
+
+  return [...ordered, ...remaining];
+}
+
+function takeNextSelectableTarget(
+  queue: SourceFeedTarget[],
+  selectedBySource: Map<string, number>,
+  selectedBySection: Map<string, number>,
+  selectedKeys: ReadonlySet<string> = new Set<string>(),
+): SourceFeedTarget | null {
+  while (queue.length > 0) {
+    const candidate = queue[0];
+    if (!candidate) {
+      return null;
+    }
+
+    if (isAlreadySelected(candidate, selectedKeys)) {
+      queue.shift();
+      continue;
+    }
+
+    if (!canSelectFeedTarget(candidate, selectedBySource, selectedBySection)) {
+      return null;
+    }
+
+    queue.shift();
+    return candidate;
+  }
+
+  return null;
+}
+
+function canSelectFeedTarget(
+  target: SourceFeedTarget,
+  selectedBySource: ReadonlyMap<string, number>,
+  selectedBySection: ReadonlyMap<string, number>,
+): boolean {
+  if ((selectedBySource.get(target.sourceId) ?? 0) >= HOME_MAX_FEEDS_PER_SOURCE) {
+    return false;
+  }
+
+  if ((selectedBySection.get(target.sectionSlug) ?? 0) >= HOME_MAX_FEEDS_PER_SECTION) {
+    return false;
+  }
+
+  return true;
+}
+
+function isAlreadySelected(target: SourceFeedTarget, selectedKeys: ReadonlySet<string>): boolean {
+  const key = toFeedTargetKey(target.sourceId, target.feedUrl);
+  return selectedKeys.has(key);
+}
+
+function selectFeedTarget(
+  target: SourceFeedTarget,
+  selected: SourceFeedTarget[],
+  selectedKeys: Set<string>,
+  selectedBySource: Map<string, number>,
+  selectedBySection: Map<string, number>,
+): void {
+  const key = toFeedTargetKey(target.sourceId, target.feedUrl);
+  selected.push(target);
+  selectedKeys.add(key);
+  selectedBySource.set(target.sourceId, (selectedBySource.get(target.sourceId) ?? 0) + 1);
+  selectedBySection.set(target.sectionSlug, (selectedBySection.get(target.sectionSlug) ?? 0) + 1);
+}
+
+function resolveFetchTimeoutMs(query: NewsQuery): number {
+  return isHomepageQuery(query) ? HOME_FETCH_TIMEOUT_MS : FEED_FETCH_TIMEOUT_MS;
+}
+
+function isHomepageQuery(query: NewsQuery): boolean {
+  return (
+    query.id === null &&
+    query.section === null &&
+    query.sourceIds.length === 0 &&
+    query.searchQuery === null &&
+    query.page === 1 &&
+    query.limit >= HOME_QUERY_MIN_LIMIT
+  );
+}
+
 function toSource(target: SourceFeedTarget): Source {
   return {
     id: target.sourceId,
@@ -204,5 +598,26 @@ function buildUniqueFetchSources(targets: readonly SourceFeedTarget[]): readonly
 
 function toFeedTargetKey(sourceId: string, feedUrl: string): string {
   return `${sourceId}|${feedUrl}`;
+}
+
+function toNewsQueryCacheKey(query: NewsQuery): string {
+  const sourceValue = query.sourceIds.length > 0 ? query.sourceIds.join(',') : '';
+
+  return [
+    `id=${query.id ?? ''}`,
+    `section=${query.section ?? ''}`,
+    `source=${sourceValue}`,
+    `q=${query.searchQuery ?? ''}`,
+    `page=${query.page}`,
+    `limit=${query.limit}`,
+  ].join('&');
+}
+
+function isExpired(expiresAt: number, timestamp: number): boolean {
+  return timestamp >= expiresAt;
+}
+
+function logPerf(event: 'cache-hit' | 'cache-miss', details: Record<string, unknown>): void {
+  console.info(`[api/news][${event}]`, details);
 }
 

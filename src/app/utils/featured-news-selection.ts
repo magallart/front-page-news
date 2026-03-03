@@ -1,3 +1,5 @@
+import { normalizeSourceKey } from './source-key';
+
 import type { NewsItem } from '../interfaces/news-item.interface';
 
 const FEATURED_NEWS_LIMIT = 5;
@@ -64,7 +66,8 @@ function canSelectFromSource(
   source: string,
   selectedPerSource: ReadonlyMap<string, number>,
 ): boolean {
-  return (selectedPerSource.get(source) ?? 0) < FEATURED_MAX_PER_SOURCE;
+  const sourceKey = normalizeSourceKey(source);
+  return (selectedPerSource.get(sourceKey) ?? 0) < FEATURED_MAX_PER_SOURCE;
 }
 
 function selectItem(
@@ -75,7 +78,8 @@ function selectItem(
 ): void {
   selected.push(item);
   selectedIds.add(item.id);
-  selectedPerSource.set(item.source, (selectedPerSource.get(item.source) ?? 0) + 1);
+  const sourceKey = normalizeSourceKey(item.source);
+  selectedPerSource.set(sourceKey, (selectedPerSource.get(sourceKey) ?? 0) + 1);
 }
 
 function compareByRecencyDesc(first: NewsItem, second: NewsItem): number {

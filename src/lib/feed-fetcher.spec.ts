@@ -64,7 +64,7 @@ describe('feed-fetcher', () => {
 
     expect(result.warnings).toHaveLength(0);
     expect(result.successes).toHaveLength(1);
-    expect(result.successes[0]?.body).toContain('<title>España</title>');
+    expect(result.successes[0]?.body).toContain('<title>Espa\u00f1a</title>');
   });
 
   it('falls back to xml declaration encoding when content-type has no charset', async () => {
@@ -80,7 +80,30 @@ describe('feed-fetcher', () => {
 
     expect(result.warnings).toHaveLength(0);
     expect(result.successes).toHaveLength(1);
-    expect(result.successes[0]?.body).toContain('<title>España</title>');
+    expect(result.successes[0]?.body).toContain('<title>Espa\u00f1a</title>');
+  });
+
+  it('limits concurrent feed fetches to avoid load spikes', async () => {
+    const sources = Array.from({ length: 25 }, (_, index) => makeSource(`source-${index}`, `https://test/${index}.xml`));
+    let activeRequests = 0;
+    let maxActiveRequests = 0;
+    const fetchFn = async () => {
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      await delay(15);
+      activeRequests -= 1;
+
+      return new Response('<rss><channel><item/></channel></rss>', {
+        status: 200,
+        headers: { 'content-type': 'application/xml' },
+      });
+    };
+
+    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
+
+    expect(result.warnings).toHaveLength(0);
+    expect(result.successes).toHaveLength(25);
+    expect(maxActiveRequests).toBeLessThanOrEqual(10);
   });
 });
 
@@ -102,7 +125,13 @@ function buildXmlBytesWithSingleByteChar(encoding: string): ArrayBuffer {
   const suffix = encoder.encode('a</title></item></channel></rss>');
   const bytes = new Uint8Array(prefix.length + 1 + suffix.length);
   bytes.set(prefix, 0);
-  bytes[prefix.length] = 0xf1; // "ñ" in ISO-8859-1/Windows-1252
+  bytes[prefix.length] = 0xf1;
   bytes.set(suffix, prefix.length + 1);
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }
