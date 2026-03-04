@@ -24,6 +24,13 @@ describe('NewsCarouselComponent', () => {
     const beforeTitle = getHeroTitle(fixture.nativeElement);
     expect(beforeTitle).toBeTruthy();
 
+    const heroImage = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] img') as HTMLImageElement;
+    expect(heroImage.className).toContain('absolute');
+    expect(heroImage.className).toContain('inset-0');
+    expect(heroImage.className).toContain('h-full');
+    expect(heroImage.className).toContain('w-full');
+    expect(heroImage.className).toContain('object-cover');
+
     const nextButton = fixture.nativeElement.querySelector(
       'button[aria-label="Siguiente noticia"]',
     ) as HTMLButtonElement;

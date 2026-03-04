@@ -23,18 +23,18 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
     @if (activeArticle(); as article) {
       <section [attr.aria-label]="title()">
         <article
-          class="group relative overflow-hidden rounded-xl border border-border bg-card shadow-subtle lg:h-[30rem]"
+          class="group relative h-[16rem] overflow-hidden rounded-xl border border-border bg-card shadow-subtle sm:h-[19rem] lg:h-[30rem]"
           data-testid="carousel-hero"
         >
           <button
             type="button"
-            class="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            class="relative block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="onPreviewRequest($event, article)"
           >
             <img
               [src]="article.imageUrl"
               [alt]="article.title"
-              class="h-[16rem] w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[19rem] lg:h-full"
+              class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
               loading="lazy"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-secondary/95 via-secondary/65 to-transparent"></div>
