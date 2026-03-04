@@ -2,8 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import handler from '../../api/image';
 
+const isPublicHttpUrlMock = vi.fn(async () => true);
+
 vi.mock('../../api/lib/ssrf-guard', () => ({
-  isPublicHttpUrl: vi.fn(async () => true),
+  isPublicHttpUrl: isPublicHttpUrlMock,
 }));
 
 interface MockResponse {
@@ -30,6 +32,41 @@ describe('image proxy handler', () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
+    isPublicHttpUrlMock.mockResolvedValue(true);
+  });
+
+  it('returns 405 for non-GET methods', async () => {
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=https%3A%2F%2Fexample.com%2Fimage.jpg', 'POST') as never, response as never);
+
+    expect(response.statusCode).toBe(405);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Method Not Allowed' });
+  });
+
+  it('returns 400 when query param url is missing', async () => {
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image') as never, response as never);
+
+    expect(response.statusCode).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Missing \"url\" query param' });
+  });
+
+  it('returns 400 for invalid image url values', async () => {
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=not-a-valid-url') as never, response as never);
+
+    expect(response.statusCode).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Invalid image url' });
+  });
+
+  it('returns 400 when ssrf guard rejects target host', async () => {
+    isPublicHttpUrlMock.mockResolvedValue(false);
+
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=https%3A%2F%2Fprivate.internal%2Fimage.jpg') as never, response as never);
+
+    expect(response.statusCode).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Invalid image url' });
   });
 
   it('returns 413 when upstream content-length exceeds max size before sending 200 headers', async () => {
@@ -106,6 +143,55 @@ describe('image proxy handler', () => {
     expect(fetchMock.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(clearTimeoutSpy).toHaveBeenCalled();
   });
+
+  it('returns 502 when upstream responds with non-ok status', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response('missing', {
+        status: 404,
+        headers: {
+          'content-type': 'image/jpeg',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=https%3A%2F%2Fexample.com%2Fmissing.jpg') as never, response as never);
+
+    expect(response.statusCode).toBe(502);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Remote image responded with status 404' });
+  });
+
+  it('returns 415 when upstream resource is not an image', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response('<html>not image</html>', {
+        status: 200,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=https%3A%2F%2Fexample.com%2Fpage.html') as never, response as never);
+
+    expect(response.statusCode).toBe(415);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Remote resource is not an image' });
+  });
+
+  it('returns 502 when upstream fetch fails for non-abort errors', async () => {
+    const fetchMock = vi.fn(async () => {
+      throw new Error('network unreachable');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = createMockResponse();
+    await handler(createMockRequest('/api/image?url=https%3A%2F%2Fexample.com%2Fimage.jpg') as never, response as never);
+
+    expect(response.statusCode).toBe(502);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Unable to fetch remote image' });
+  });
 });
 
 function createMockResponse(): MockResponse {
@@ -155,9 +241,9 @@ function createMockResponse(): MockResponse {
   };
 }
 
-function createMockRequest(url: string): MockRequest {
+function createMockRequest(url: string, method = 'GET'): MockRequest {
   return {
-    method: 'GET',
+    method,
     url,
     once() {
       return;

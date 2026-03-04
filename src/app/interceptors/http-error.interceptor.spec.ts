@@ -1,84 +1,153 @@
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+﻿import { HttpErrorResponse, HttpHeaders, HttpRequest } from '@angular/common/http';
+import { firstValueFrom, throwError } from 'rxjs';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { APP_HTTP_ERROR_KIND } from '../interfaces/app-http-error-kind.interface';
 
 import { httpErrorInterceptor } from './http-error.interceptor';
 
+interface AppHttpErrorLike {
+  readonly name: string;
+  readonly kind: string;
+  readonly status: number | null;
+  readonly method: string;
+  readonly url: string;
+  readonly traceId: string | null;
+  readonly userMessage: string;
+}
+
 describe('http-error.interceptor', () => {
-  it('maps http 503 errors to AppHttpError with trace context', () => {
-    TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([httpErrorInterceptor])), provideHttpClientTesting()],
-    });
-
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
-    const received: unknown[] = [];
-
-    http.get('/api/news').subscribe({
-      next: () => {
-        throw new Error('Expected request to fail');
-      },
-      error: (error: unknown) => received.push(error),
-    });
-
-    const request = httpMock.expectOne('/api/news');
-    request.flush(
-      { error: 'down' },
-      {
-        status: 503,
-        statusText: 'Service Unavailable',
-        headers: { 'x-request-id': 'req-123' },
-      },
-    );
-
-    httpMock.verify();
-
-    expect(received.length).toBe(1);
-    const appError = received[0] as {
-      name: string;
-      status: number | null;
-      method: string;
-      url: string;
-      traceId: string | null;
-      userMessage: string;
-    };
-
-    expect(appError.name).toBe('AppHttpError');
-    expect(appError.status).toBe(503);
-    expect(appError.method).toBe('GET');
-    expect(appError.url).toBe('/api/news');
-    expect(appError.traceId).toBe('req-123');
-    expect(appError.userMessage).toContain('no está disponible temporalmente');
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it('maps status 0 errors to network/offline style user message', () => {
-    TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([httpErrorInterceptor])), provideHttpClientTesting()],
+  it('maps http 503 errors to AppHttpError with trace id from headers', async () => {
+    const error = new HttpErrorResponse({
+      status: 503,
+      statusText: 'Service Unavailable',
+      url: '/api/news',
+      headers: new HttpHeaders({ 'x-request-id': 'req-123' }),
+      error: { reason: 'down' },
     });
 
-    const http = TestBed.inject(HttpClient);
-    const httpMock = TestBed.inject(HttpTestingController);
-    const received: unknown[] = [];
+    const appError = (await intercept(error, new HttpRequest('POST', '/api/news?page=2', null))) as AppHttpErrorLike;
 
-    http.get('/api/sources').subscribe({
-      next: () => {
-        throw new Error('Expected request to fail');
-      },
-      error: (error: unknown) => received.push(error),
-    });
+    expect(appError.name).toBe('AppHttpError');
+    expect(appError.kind).toBe(APP_HTTP_ERROR_KIND.SERVER);
+    expect(appError.status).toBe(503);
+    expect(appError.method).toBe('POST');
+    expect(appError.url).toBe('/api/news?page=2');
+    expect(appError.traceId).toBe('req-123');
+    expect(appError.userMessage).toContain('disponible temporalmente');
+  });
 
-    const request = httpMock.expectOne('/api/sources');
-    request.error(new ProgressEvent('error'), {
+  it('maps status 0 errors to offline kind when navigator reports offline', async () => {
+    vi.stubGlobal('navigator', { onLine: false });
+
+    const error = new HttpErrorResponse({
       status: 0,
       statusText: 'Unknown Error',
+      url: '/api/news',
+      error: new Error('socket hang up'),
     });
 
-    httpMock.verify();
+    const appError = (await intercept(error)) as AppHttpErrorLike;
 
-    expect(received.length).toBe(1);
-    const appError = received[0] as { name: string; userMessage: string };
-    expect(appError.name).toBe('AppHttpError');
-    expect(appError.userMessage.length).toBeGreaterThan(0);
+    expect(appError.kind).toBe(APP_HTTP_ERROR_KIND.OFFLINE);
+    expect(appError.userMessage).toContain('internet');
+  });
+
+  it('maps status 0 timeout errors to timeout kind', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+
+    const error = new HttpErrorResponse({
+      status: 0,
+      statusText: 'Unknown Error',
+      url: '/api/news',
+      error: { name: 'TimeoutError' },
+    });
+
+    const appError = (await intercept(error)) as AppHttpErrorLike;
+
+    expect(appError.kind).toBe(APP_HTTP_ERROR_KIND.TIMEOUT);
+    expect(appError.userMessage).toContain('demasiado');
+  });
+
+  it('maps generic status 0 errors to network kind', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+
+    const error = new HttpErrorResponse({
+      status: 0,
+      statusText: 'Unknown Error',
+      url: '/api/news',
+      error: { name: 'TypeError' },
+    });
+
+    const appError = (await intercept(error)) as AppHttpErrorLike;
+
+    expect(appError.kind).toBe(APP_HTTP_ERROR_KIND.NETWORK);
+    expect(appError.userMessage).toContain('No se pudo contactar');
+  });
+
+  it('maps client errors and resolves traceId from response body fallback fields', async () => {
+    const withRequestId = new HttpErrorResponse({
+      status: 404,
+      statusText: 'Not Found',
+      url: '/api/news',
+      error: { requestId: ' req-404 ' },
+    });
+    const withTraceId = new HttpErrorResponse({
+      status: 400,
+      statusText: 'Bad Request',
+      url: '/api/news',
+      error: { traceId: ' trace-400 ' },
+    });
+
+    const notFoundError = (await intercept(withRequestId)) as AppHttpErrorLike;
+    const badRequestError = (await intercept(withTraceId)) as AppHttpErrorLike;
+
+    expect(notFoundError.kind).toBe(APP_HTTP_ERROR_KIND.CLIENT);
+    expect(notFoundError.traceId).toBe('req-404');
+    expect(notFoundError.userMessage).toContain('no existe');
+
+    expect(badRequestError.kind).toBe(APP_HTTP_ERROR_KIND.CLIENT);
+    expect(badRequestError.traceId).toBe('trace-400');
+    expect(badRequestError.userMessage).toContain('solicitud contiene');
+  });
+
+  it('maps non HttpErrorResponse values to unknown kind', async () => {
+    const appError = (await intercept(new Error('boom'))) as AppHttpErrorLike;
+
+    expect(appError.kind).toBe(APP_HTTP_ERROR_KIND.UNKNOWN);
+    expect(appError.status).toBeNull();
+    expect(appError.userMessage).toContain('error inesperado');
+  });
+
+  it('passes through AppHttpError values without remapping', async () => {
+    const existingAppError = Object.assign(new Error('custom-message'), {
+      name: 'AppHttpError',
+      kind: APP_HTTP_ERROR_KIND.CLIENT,
+      status: 422,
+      method: 'GET',
+      url: '/api/custom',
+      traceId: 'trace-custom',
+      timestamp: '2026-03-04T00:00:00.000Z',
+      userMessage: 'Custom app error',
+    });
+
+    const received = await intercept(existingAppError);
+
+    expect(received).toBe(existingAppError);
   });
 });
+
+async function intercept(error: unknown, request = new HttpRequest('GET', '/api/news')): Promise<unknown> {
+  const response$ = httpErrorInterceptor(request, () => throwError(() => error));
+
+  try {
+    await firstValueFrom(response$);
+    throw new Error('Expected request to fail');
+  } catch (caught) {
+    return caught;
+  }
+}

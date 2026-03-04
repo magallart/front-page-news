@@ -3,6 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { rankMostReadNews } from './most-read-ranking';
 
 describe('rankMostReadNews', () => {
+  it('returns empty list when input is empty', () => {
+    const ranked = rankMostReadNews([]);
+
+    expect(ranked).toEqual([]);
+  });
+
   it('caps results to 3 items per source', () => {
     const now = Date.now();
     const items = [
@@ -50,6 +56,32 @@ describe('rankMostReadNews', () => {
     const normalizedAbcCount = ranked.filter((item) => item.source.toLowerCase().trim() === 'abc').length;
 
     expect(normalizedAbcCount).toBe(3);
+  });
+
+  it('uses recency ordering when all sources are unique', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('n-1', 'Fuente A', toIso(now, 30)),
+      createNewsItem('n-2', 'Fuente B', toIso(now, 10)),
+      createNewsItem('n-3', 'Fuente C', toIso(now, 5)),
+    ] as const;
+
+    const ranked = rankMostReadNews(items, now);
+
+    expect(ranked.map((item) => item.id)).toEqual(['n-3', 'n-2', 'n-1']);
+  });
+
+  it('sends items with invalid publishedAt to the end as least recent', () => {
+    const now = Date.now();
+    const items = [
+      createNewsItem('valid', 'Fuente A', toIso(now, 2)),
+      createNewsItem('invalid', 'Fuente B', 'not-a-date'),
+    ] as const;
+
+    const ranked = rankMostReadNews(items, now);
+
+    expect(ranked[0]?.id).toBe('valid');
+    expect(ranked[1]?.id).toBe('invalid');
   });
 });
 

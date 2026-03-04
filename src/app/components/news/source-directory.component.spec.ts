@@ -1,29 +1,54 @@
-import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+﻿import { TestBed } from '@angular/core/testing';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SourceDirectoryComponent } from './source-directory.component';
 
+const BASE_ITEMS = [
+  {
+    id: 'source-a',
+    name: 'Periodico A',
+    url: 'https://periodico-a.test',
+    logoUrl: '/images/sources/source-a.png',
+  },
+  {
+    id: 'source-b',
+    name: 'Periodico B',
+    url: 'https://periodico-b.test',
+    logoUrl: '/images/sources/source-b.png',
+  },
+  {
+    id: 'source-c',
+    name: 'Periodico C',
+    url: 'https://periodico-c.test',
+    logoUrl: '/images/sources/source-c.png',
+  },
+  {
+    id: 'source-d',
+    name: 'Periodico D',
+    url: 'https://periodico-d.test',
+    logoUrl: '/images/sources/source-d.png',
+  },
+] as const;
+
 describe('SourceDirectoryComponent', () => {
+  const originalMatchMedia = window.matchMedia;
+
+  afterEach(() => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: originalMatchMedia,
+    });
+    vi.restoreAllMocks();
+  });
+
   it('renders source links with icon-only layout and tooltip labels', async () => {
     await TestBed.configureTestingModule({
       imports: [SourceDirectoryComponent],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SourceDirectoryComponent);
-    fixture.componentRef.setInput('items', [
-      {
-        id: 'source-a',
-        name: 'Periodico A',
-        url: 'https://periodico-a.test',
-        logoUrl: '/images/sources/source-a.png',
-      },
-      {
-        id: 'source-b',
-        name: 'Periodico B',
-        url: 'https://periodico-b.test',
-        logoUrl: '/images/sources/source-b.png',
-      },
-    ]);
+    fixture.componentRef.setInput('items', BASE_ITEMS.slice(0, 2));
     fixture.detectChanges();
 
     const links = fixture.nativeElement.querySelectorAll('a');
@@ -58,14 +83,7 @@ describe('SourceDirectoryComponent', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SourceDirectoryComponent);
-    fixture.componentRef.setInput('items', [
-      {
-        id: 'source-a',
-        name: 'Periodico A',
-        url: 'https://periodico-a.test',
-        logoUrl: '/images/sources/source-a.png',
-      },
-    ]);
+    fixture.componentRef.setInput('items', [BASE_ITEMS[0]]);
     fixture.detectChanges();
 
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
@@ -73,5 +91,90 @@ describe('SourceDirectoryComponent', () => {
     fixture.detectChanges();
 
     expect(image.src).toContain('/images/sources/source-placeholder.svg');
+  });
+
+  it('ignores logo error events with no image target', async () => {
+    await TestBed.configureTestingModule({
+      imports: [SourceDirectoryComponent],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourceDirectoryComponent);
+
+    expect(() => {
+      (fixture.componentInstance as unknown as { handleLogoError: (event: Event) => void }).handleLogoError(
+        new Event('error'),
+      );
+    }).not.toThrow();
+  });
+
+  it('uses tablet fixed rows when matchMedia supports addEventListener', async () => {
+    const addEventListener = vi.fn();
+    const removeEventListener = vi.fn();
+    const mediaQueryList = {
+      matches: true,
+      media: '(min-width: 768px) and (max-width: 1023px)',
+      onchange: null,
+      addEventListener,
+      removeEventListener,
+      dispatchEvent: vi.fn(),
+    } as unknown as MediaQueryList;
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => mediaQueryList),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SourceDirectoryComponent],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourceDirectoryComponent);
+    fixture.componentRef.setInput('items', BASE_ITEMS);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('ul');
+    expect(rows.length).toBe(2);
+    expect(rows[0]?.querySelectorAll('li').length).toBe(2);
+    expect(rows[1]?.querySelectorAll('li').length).toBe(2);
+    expect(addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+
+    fixture.destroy();
+    expect(removeEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+  });
+
+  it('supports legacy addListener/removeListener matchMedia API', async () => {
+    const addListener = vi.fn();
+    const removeListener = vi.fn();
+    const mediaQueryList = {
+      matches: false,
+      media: '(min-width: 768px) and (max-width: 1023px)',
+      onchange: null,
+      addListener,
+      removeListener,
+      dispatchEvent: vi.fn(),
+    } as unknown as MediaQueryList;
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => mediaQueryList),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SourceDirectoryComponent],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourceDirectoryComponent);
+    fixture.componentRef.setInput('items', BASE_ITEMS);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('ul');
+    expect(rows[0]?.querySelectorAll('li').length).toBe(3);
+    expect(rows[1]?.querySelectorAll('li').length).toBe(1);
+    expect(addListener).toHaveBeenCalledOnce();
+
+    fixture.destroy();
+    expect(removeListener).toHaveBeenCalledWith(expect.any(Function));
   });
 });

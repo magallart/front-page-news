@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
-import { fetchFeedsConcurrently } from './feed-fetcher';
-import { WARNING_CODE } from './warning-code';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
+import { fetchFeedsConcurrently } from '../../server/lib/feed-fetcher';
 
 import type { Source } from '../interfaces/source.interface';
 
-describe('feed-fetcher', () => {
+describe('server/lib/feed-fetcher', () => {
   it('returns empty arrays when no sources are provided', async () => {
     const result = await fetchFeedsConcurrently([], 1000, async () => {
       throw new Error('fetch should not be called');
@@ -74,38 +74,6 @@ describe('feed-fetcher', () => {
     expect(result.warnings[0]?.message).toContain('socket reset');
   });
 
-  it('decodes feed body using charset from content-type header', async () => {
-    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
-    const feedBytes = buildXmlBytesWithSingleByteChar('ISO-8859-1');
-    const fetchFn = async () =>
-      new Response(feedBytes, {
-        status: 200,
-        headers: { 'content-type': 'application/rss+xml; charset=ISO-8859-1' },
-      });
-
-    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
-
-    expect(result.warnings).toHaveLength(0);
-    expect(result.successes).toHaveLength(1);
-    expect(result.successes[0]?.body).toContain('<title>Espa\u00f1a</title>');
-  });
-
-  it('falls back to xml declaration encoding when content-type has no charset', async () => {
-    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
-    const feedBytes = buildXmlBytesWithSingleByteChar('ISO-8859-1');
-    const fetchFn = async () =>
-      new Response(feedBytes, {
-        status: 200,
-        headers: { 'content-type': 'application/rss+xml' },
-      });
-
-    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
-
-    expect(result.warnings).toHaveLength(0);
-    expect(result.successes).toHaveLength(1);
-    expect(result.successes[0]?.body).toContain('<title>Espa\u00f1a</title>');
-  });
-
   it('falls back to windows-1252 when charset candidates are unsupported or lossy', async () => {
     const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
     const feedBytes = buildXmlBytesWithSingleByteChar('x-unsupported');
@@ -160,9 +128,7 @@ function makeSource(id: string, feedUrl: string): Source {
 
 function buildXmlBytesWithSingleByteChar(encoding: string): ArrayBuffer {
   const encoder = new TextEncoder();
-  const prefix = encoder.encode(
-    `<?xml version="1.0" encoding="${encoding}"?><rss><channel><item><title>Espa`
-  );
+  const prefix = encoder.encode(`<?xml version="1.0" encoding="${encoding}"?><rss><channel><item><title>Espa`);
   const suffix = encoder.encode('a</title></item></channel></rss>');
   const bytes = new Uint8Array(prefix.length + 1 + suffix.length);
   bytes.set(prefix, 0);

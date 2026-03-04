@@ -30,6 +30,42 @@ describe('CurrentNewsBlockComponent', () => {
     const cards = fixture.nativeElement.querySelectorAll('app-news-card');
     expect(cards.length).toBe(4);
   });
+
+  it('renders custom title and section slug in CTA link', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CurrentNewsBlockComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(CurrentNewsBlockComponent);
+    fixture.componentRef.setInput('title', 'Cultura');
+    fixture.componentRef.setInput('sectionSlug', 'cultura');
+    fixture.componentRef.setInput('articles', MOCK_ARTICLES.slice(0, 2));
+    fixture.detectChanges();
+
+    const heading = fixture.nativeElement.querySelector('h2') as HTMLElement;
+    expect(heading.textContent?.trim()).toBe('Cultura');
+
+    const link = fixture.nativeElement.querySelector('a[href="/seccion/cultura"]') as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+
+    const cards = fixture.nativeElement.querySelectorAll('app-news-card');
+    expect(cards.length).toBe(2);
+  });
+
+  it('renders no cards when there are no articles', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CurrentNewsBlockComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(CurrentNewsBlockComponent);
+    fixture.componentRef.setInput('articles', []);
+    fixture.detectChanges();
+
+    const cards = fixture.nativeElement.querySelectorAll('app-news-card');
+    expect(cards.length).toBe(0);
+  });
 });
 
 const MOCK_ARTICLES: readonly NewsItem[] = [
