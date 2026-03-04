@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 
+import { registerMediaQueryListener } from '../../utils/media-query-listener';
+import { buildAlternatingRows, buildFixedRows } from '../../utils/source-directory-rows';
+
 import type { SourceDirectoryItem } from '../../interfaces/source-directory-item.interface';
 
 @Component({
@@ -110,62 +113,12 @@ export class SourceDirectoryComponent {
   }
 
   private initTabletMode(): void {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
-    const onChange = (): void => {
-      this.isTabletViewport.set(mediaQuery.matches);
-    };
-
-    onChange();
-
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', onChange);
-      this.destroyRef.onDestroy(() => {
-        mediaQuery.removeEventListener('change', onChange);
-      });
-      return;
-    }
-
-    mediaQuery.addListener(onChange);
-    this.destroyRef.onDestroy(() => {
-      mediaQuery.removeListener(onChange);
+    registerMediaQueryListener({
+      query: '(min-width: 768px) and (max-width: 1023px)',
+      destroyRef: this.destroyRef,
+      onChange: (matches) => {
+        this.isTabletViewport.set(matches);
+      },
     });
   }
-}
-
-function buildFixedRows(
-  items: readonly SourceDirectoryItem[],
-  rowCount: number
-): readonly (readonly SourceDirectoryItem[])[] {
-  if (items.length === 0 || rowCount <= 0) {
-    return [];
-  }
-
-  const rows: SourceDirectoryItem[][] = Array.from({ length: rowCount }, () => []);
-  const perRow = Math.ceil(items.length / rowCount);
-
-  for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
-    const start = rowIndex * perRow;
-    const end = start + perRow;
-    rows[rowIndex] = items.slice(start, end);
-  }
-
-  return rows.filter((row) => row.length > 0);
-}
-
-function buildAlternatingRows(items: readonly SourceDirectoryItem[]): readonly (readonly SourceDirectoryItem[])[] {
-  const rows: SourceDirectoryItem[][] = [];
-  let index = 0;
-  let take = 3;
-
-  while (index < items.length) {
-    rows.push(items.slice(index, index + take));
-    index += take;
-    take = take === 3 ? 2 : 3;
-  }
-
-  return rows;
 }
