@@ -56,6 +56,11 @@ describe('BreakingNewsComponent', () => {
 
     expect(emitSpy).toHaveBeenCalledTimes(1);
     expect(emitSpy).toHaveBeenCalledWith(items[0]);
+    expect(firstHeadlineButton.className).toContain('leading-[1.65rem]');
+    expect(firstHeadlineButton.className).toContain('underline');
+    expect(firstHeadlineButton.className).toContain('decoration-transparent');
+    expect(firstHeadlineButton.className).toContain('hover:decoration-primary');
+    expect(firstHeadlineButton.className).not.toContain('hover:text-primary');
   });
 
   it('shows empty fallback and keeps coverage link when there are no items', async () => {

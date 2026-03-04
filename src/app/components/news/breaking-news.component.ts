@@ -54,7 +54,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
               </div>
               <button
                 type="button"
-                class="font-editorial-title breaking-title-clamp mt-1 block text-left text-[1.2rem] font-medium leading-6 text-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                class="font-editorial-title breaking-title-clamp mt-1 block text-left text-[1.2rem] font-medium leading-[1.65rem] text-foreground underline decoration-2 decoration-transparent underline-offset-4 hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 (click)="onPreviewRequest($event, item)"
               >
                 {{ item.title }}
