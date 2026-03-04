@@ -408,22 +408,11 @@ Brief continuity notes to recover context between terminal sessions.
 ## 2026-03-04
 
 - What changed:
-  - Expanded test coverage across the app to harden the baseline before refactors.
-  - Added unit tests for previously uncovered UI components and helpers:
-    - quick-view modal, breaking-news, article preview CTA.
-    - navbar main header, page container.
-    - icon components (including social icon variants).
-    - skeleton components (`skeleton-block`, `news-card`, `news-carousel`, `breaking-news`, `most-read`, `source-directory`, `section-page`).
-    - legal pages (`aviso legal`, `privacidad`, `cookies`).
-    - app routes contract (including removal guard for `/noticia/:id`).
-    - app state service and utility helpers (`app-http-error.utils`, `source-key`).
-  - Strengthened integration tests in pages:
-    - home page quick-view open/close cycle.
-    - section page quick-view open/close cycle.
-  - Reworked e2e suite to match current product behavior and remove stale assumptions:
-    - introduced deterministic API mocking for `/api/news` and `/api/sources` in `e2e/helpers/api-mocks.ts`.
-    - updated home/header/footer/section e2e flows for contextual reading modal, ticker behavior, and current footer/legal UX.
-    - removed outdated e2e assertions tied to deleted route/detail flow and old visual snapshots.
+  - Expanded the testing baseline before refactors with new unit, integration, and e2e coverage.
+  - Added missing unit tests for key uncovered areas: quick-view modal flow, layout/components, skeleton system, legal pages, route contract, and shared helpers/services.
+  - Stabilized e2e with deterministic API mocks (`/api/news`, `/api/sources`) and updated critical flows for current behavior (context modal, header/ticker, footer/legal, section filters).
+  - Reorganized backlog scope: previous documentation ticket moved to `FPN-013`; `FPN-012` now tracks coverage + Vitest coverage setup + refactors.
+  - Renamed branch from `feat/fpn-011-lectura-en-contexto` to `feat/fpn-012-test-coverage-refactors`.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass, 61 files / 234 tests).
