@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
 
 import { formatDateNumericWithDots, formatTime24 } from '../../utils/date-formatting';
 import { createRestartableInterval } from '../../utils/restartable-interval';
@@ -104,7 +104,17 @@ export class NewsCarouselComponent {
   private readonly activeSlideIndex = signal(0);
   private readonly rotationTimer = createRestartableInterval(() => {
     this.goToNext();
-  }, 5000);
+  }, 5000, { startOnCreate: false });
+  private readonly rotationTimerSync = effect(() => {
+    const totalSlides = this.articles().length;
+    if (totalSlides > 1) {
+      this.rotationTimer.restart();
+      return;
+    }
+
+    this.rotationTimer.stop();
+    this.activeSlideIndex.set(0);
+  });
 
   protected readonly hasSlides = computed(() => this.articles().length > 1);
   protected readonly activeIndex = computed(() => {
@@ -132,7 +142,7 @@ export class NewsCarouselComponent {
 
   private rotateBy(step: number): void {
     const totalSlides = this.articles().length;
-    if (totalSlides === 0) {
+    if (totalSlides <= 1) {
       return;
     }
 

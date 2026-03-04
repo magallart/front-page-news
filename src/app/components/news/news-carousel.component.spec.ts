@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { NewsCarouselComponent } from './news-carousel.component';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 describe('NewsCarouselComponent', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('shows hero story and moves to next one when clicking next button', async () => {
     await TestBed.configureTestingModule({
       imports: [NewsCarouselComponent],
@@ -48,8 +52,77 @@ describe('NewsCarouselComponent', () => {
 
     const afterTitle = getHeroTitle(fixture.nativeElement);
     expect(beforeTitle).not.toEqual(afterTitle);
+  });
 
-    vi.useRealTimers();
+  it('does not rotate automatically when there is only one article', async () => {
+    vi.useFakeTimers();
+
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    const beforeTitle = getHeroTitle(fixture.nativeElement);
+    vi.advanceTimersByTime(10_000);
+    fixture.detectChanges();
+
+    const afterTitle = getHeroTitle(fixture.nativeElement);
+    expect(afterTitle).toBe(beforeTitle);
+  });
+
+  it('stops automatic rotation when article list shrinks to one item', async () => {
+    vi.useFakeTimers();
+
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', MOCK_ARTICLES);
+    fixture.detectChanges();
+
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    const beforeTitle = getHeroTitle(fixture.nativeElement);
+    vi.advanceTimersByTime(10_000);
+    fixture.detectChanges();
+
+    const afterTitle = getHeroTitle(fixture.nativeElement);
+    expect(afterTitle).toBe(beforeTitle);
+  });
+
+  it('restarts automatic rotation window after manual navigation', async () => {
+    vi.useFakeTimers();
+
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', MOCK_ARTICLES);
+    fixture.detectChanges();
+
+    const nextButton = fixture.nativeElement.querySelector(
+      'button[aria-label="Siguiente noticia"]',
+    ) as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+
+    const titleAfterManualMove = getHeroTitle(fixture.nativeElement);
+    vi.advanceTimersByTime(4_000);
+    fixture.detectChanges();
+    expect(getHeroTitle(fixture.nativeElement)).toBe(titleAfterManualMove);
+
+    vi.advanceTimersByTime(1_000);
+    fixture.detectChanges();
+    expect(getHeroTitle(fixture.nativeElement)).not.toBe(titleAfterManualMove);
   });
 
   it('shows author, source and formatted publication datetime in hero metadata', async () => {
