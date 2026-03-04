@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
+import { formatTime24 } from '../../utils/date-formatting';
 import { IconTrendingUpComponent } from '../icons/icon-trending-up.component';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -46,16 +47,7 @@ export class MostReadNewsComponent {
   readonly previewRequested = output<NewsItem>();
 
   protected getPublishedTime(publishedAt: string): string {
-    const date = new Date(publishedAt);
-    if (Number.isNaN(date.getTime())) {
-      return '--:--';
-    }
-
-    return new Intl.DateTimeFormat('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(date);
+    return formatTime24(new Date(publishedAt));
   }
 
   protected onPreviewRequest(event: Event, item: NewsItem): void {

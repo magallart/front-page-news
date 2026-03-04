@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
+import { formatDateNumericWithDots, formatTime24 } from '../../utils/date-formatting';
+import { createRestartableInterval } from '../../utils/restartable-interval';
 import { IconChevronLeftComponent } from '../icons/icon-chevron-left.component';
 import { IconChevronRightComponent } from '../icons/icon-chevron-right.component';
 
@@ -100,9 +102,9 @@ export class NewsCarouselComponent {
   readonly previewRequested = output<NewsItem>();
 
   private readonly activeSlideIndex = signal(0);
-  private readonly rotationTimer = createRotationTimer(() => {
+  private readonly rotationTimer = createRestartableInterval(() => {
     this.goToNext();
-  });
+  }, 5000);
 
   protected readonly hasSlides = computed(() => this.articles().length > 1);
   protected readonly activeIndex = computed(() => {
@@ -141,60 +143,9 @@ export class NewsCarouselComponent {
 
   protected formatArticlePublishedAt(publishedAt: string): string {
     const date = new Date(publishedAt);
-    const formattedDate = formatDateLabel(date);
-    const formattedTime = formatTimeLabel(date);
+    const formattedDate = formatDateNumericWithDots(date);
+    const formattedTime = formatTime24(date);
 
     return `${formattedTime} - ${formattedDate}`;
   }
-}
-
-function formatTimeLabel(date: Date): string {
-  if (Number.isNaN(date.getTime())) {
-    return '--:--';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date);
-}
-
-function formatDateLabel(date: Date): string {
-  if (Number.isNaN(date.getTime())) {
-    return '--.--.----';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-    .format(date)
-    .replaceAll('/', '.');
-}
-
-function createRotationTimer(onTick: () => void): { restart: () => void } {
-  const destroyRef = inject(DestroyRef);
-  const intervalMilliseconds = 5000;
-  let timerId: ReturnType<typeof setInterval> | undefined;
-
-  const restart = (): void => {
-    if (timerId !== undefined) {
-      clearInterval(timerId);
-    }
-
-    timerId = setInterval(() => {
-      onTick();
-    }, intervalMilliseconds);
-  };
-
-  restart();
-  destroyRef.onDestroy(() => {
-    if (timerId !== undefined) {
-      clearInterval(timerId);
-    }
-  });
-
-  return { restart };
 }
