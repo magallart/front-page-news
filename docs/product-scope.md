@@ -13,8 +13,9 @@ Build a personal learning project that aggregates RSS/Atom news from multiple ne
   - "most read" block (proxy logic for MVP)
 - Section page: `/seccion/:slug`
   - list of stories filtered by section
-  - secondary editorial block (latest or most read)
-- Article detail page: `/noticia/:id`
+  - source filters + progressive reveal
+  - contextual quick-view modal for selected stories
+- Contextual quick-view modal (no dedicated detail route)
   - partial article info only
   - clear CTA to open original publisher URL
 - Shared layout:
@@ -86,6 +87,6 @@ Status legend:
 ## MVP Acceptance Criteria
 
 - User can scan headlines from multiple sources in one place.
-- User can navigate to section pages and detail pages.
-- User can open the original article in publisher site from detail page.
+- User can navigate to section pages and open contextual preview from home/section.
+- User can open the original article in publisher site from contextual preview.
 - UI handles missing RSS fields gracefully (image/author/summary).

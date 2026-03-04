@@ -7,7 +7,7 @@ This document explains the current client-side cache strategy and the UI state c
 Scope:
 - `NewsService` and `SourcesService` cache behavior.
 - Invalidation APIs and default behavior.
-- UI state rules for Home, Section, and Detail pages.
+- UI state rules for Home and Section pages, plus quick-view modal behavior.
 
 ## Client Cache Strategy
 
@@ -66,7 +66,7 @@ UI states are resolved with page-level rules based on:
 - `warnings`
 - content availability (`itemCount` or `hasItem`)
 
-Supported states:
+Supported page states:
 - `loading`
 - `empty`
 - `error_total`
@@ -103,19 +103,16 @@ Rules:
 - `error_partial` when results exist but warnings indicate partial feed failures.
 - `success` when results render normally.
 
-### Detail Page
+### Quick View Modal
 
 Inputs:
-- aggregated dataset state (`NewsStore`)
-- fallback-by-id request state (`NewsService`)
-- `error`/`warnings` + `hasItem`
+- selected article signal on Home/Section (`NewsItem | null`)
 
 Rules:
-- `loading` while aggregated or fallback fetch is in progress.
-- `error_total` when no item is available and requests fail.
-- `empty` (not-found rendering) when requests succeed but item does not exist.
-- `error_partial` when detail can render but there are recoverable warnings.
-- `success` when item is available.
+- `closed` when no article is selected.
+- `open` when an article is selected.
+- The modal does not run an independent API fetch or fallback-by-id flow.
+- Error/loading matrix is owned by the parent page state (Home or Section).
 
 ## Manual Refresh and Invalidation Guidance
 
