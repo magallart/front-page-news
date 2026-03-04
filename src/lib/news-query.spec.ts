@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { applyNewsFilters, parseNewsQuery } from '../../server/lib/news-query';
 
-import type { Article } from '../interfaces/article.interface';
+import type { Article } from '../../shared/interfaces/article.interface';
 
 describe('server/lib/news-query', () => {
   it('parses filters and pagination from URL', () => {
@@ -82,3 +82,4 @@ function makeArticle(overrides: Partial<Article>): Article {
     publishedAt: overrides.publishedAt ?? '2026-02-17T00:00:00.000Z',
   };
 }
+

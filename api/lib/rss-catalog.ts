@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-import type { RssSourceRecord } from '../../src/interfaces/rss-source-record.interface';
+import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
 
 export async function loadRssCatalogRecords(filePath: string): Promise<readonly RssSourceRecord[]> {
   const json = await readFile(filePath, 'utf8');
@@ -45,3 +45,4 @@ function isCatalogRecord(value: unknown): value is RssSourceRecord {
     typeof candidate['sectionName'] === 'string'
   );
 }
+

@@ -6,9 +6,9 @@ import { toFeedTargetKey, toSource } from './news-feed-selection.js';
 
 import type { FeedSuccessLike } from '../interfaces/feed-success-like.interface';
 import type { ParsedFeedsResult } from '../interfaces/parsed-feeds-result.interface';
-import type { SourceFeedTarget } from '../../src/interfaces/source-feed-target.interface';
-import type { Article } from '../../src/interfaces/article.interface';
-import type { Warning } from '../../src/interfaces/warning.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
+import type { Article } from '../../shared/interfaces/article.interface';
+import type { Warning } from '../../shared/interfaces/warning.interface';
 
 export function parseFetchedFeeds(
   feeds: readonly FeedSuccessLike[],
@@ -74,3 +74,4 @@ function toErrorMessage(error: unknown): string {
 
   return String(error);
 }
+

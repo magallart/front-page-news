@@ -12,7 +12,7 @@ import type { ApiRequest } from '../server/interfaces/api-request.interface';
 import type { NewsHandlerDependencies } from '../server/interfaces/news-handler-dependencies.interface';
 import type { NewsHandlerRuntimeOptions } from '../server/interfaces/news-handler-runtime-options.interface';
 import type { NewsPayloadBuildResult } from '../server/interfaces/news-payload-build-result.interface';
-import type { SourceFeedTarget } from '../src/interfaces/source-feed-target.interface';
+import type { SourceFeedTarget } from '../shared/interfaces/source-feed-target.interface';
 import type { ServerResponse } from 'node:http';
 
 export const config = {
@@ -154,3 +154,4 @@ async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
 
   return feedTargets;
 }
+

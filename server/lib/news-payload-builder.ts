@@ -11,8 +11,8 @@ import { dedupeAndSortArticles } from './rss-normalization.js';
 
 import type { NewsHandlerDependencies } from '../interfaces/news-handler-dependencies.interface';
 import type { NewsPayloadBuildResult } from '../interfaces/news-payload-build-result.interface';
-import type { NewsQuery } from '../../src/interfaces/news-query.interface';
-import type { SourceFeedTarget } from '../../src/interfaces/source-feed-target.interface';
+import type { NewsQuery } from '../../shared/interfaces/news-query.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
 
 export class SourcesCatalogLoadError extends Error {}
 
@@ -61,3 +61,4 @@ export async function buildNewsPayload(
     },
   };
 }
+

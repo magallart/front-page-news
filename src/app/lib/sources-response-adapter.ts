@@ -1,8 +1,8 @@
 import { asRecord, asString, asStringArray, toSourcesResponseError } from './sources-response-guards';
 
-import type { Section } from '../../interfaces/section.interface';
-import type { Source } from '../../interfaces/source.interface';
-import type { SourcesResponse } from '../../interfaces/sources-response.interface';
+import type { Section } from '../../../shared/interfaces/section.interface';
+import type { Source } from '../../../shared/interfaces/source.interface';
+import type { SourcesResponse } from '../../../shared/interfaces/sources-response.interface';
 
 export function adaptSourcesResponse(payload: Record<string, unknown>): SourcesResponse {
   return {
@@ -48,3 +48,4 @@ function toSection(value: unknown, index: number): Section {
     name: asString(record['name'], `sections[${index}].name`),
   };
 }
+

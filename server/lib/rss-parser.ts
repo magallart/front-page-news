@@ -1,4 +1,4 @@
-import type { Source } from '../../src/interfaces/source.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 import type { ParsedFeedItems } from '../interfaces/parsed-feed-items.interface';
 import type { RawFeedItem } from '../interfaces/raw-feed-item.interface';
 
@@ -332,3 +332,4 @@ function toYouTubeThumbnailUrl(url: string | null): string | null {
 
   return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 }
+

@@ -1,4 +1,4 @@
-import type { WarningCode } from '../../interfaces/warning.interface';
+import type { WarningCode } from '../../../shared/interfaces/warning.interface';
 
 const NEWS_ERROR_PREFIX = 'Invalid news response';
 
@@ -53,3 +53,4 @@ export function asNumber(value: unknown, field: string): number {
 export function asWarningCode(value: unknown, field: string): WarningCode {
   return asString(value, field) as WarningCode;
 }
+

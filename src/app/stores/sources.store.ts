@@ -4,7 +4,7 @@ import { take } from 'rxjs';
 import { SourcesService } from '../services/sources.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
-import type { SourcesResponse } from '../../interfaces/sources-response.interface';
+import type { SourcesResponse } from '../../../shared/interfaces/sources-response.interface';
 
 @Injectable({ providedIn: 'root' })
 export class SourcesStore {
@@ -56,3 +56,4 @@ export class SourcesStore {
       });
   }
 }
+

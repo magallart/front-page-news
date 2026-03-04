@@ -1,10 +1,10 @@
-﻿import type { Article } from '../../interfaces/article.interface';
-import type { Source } from '../../interfaces/source.interface';
+import type { Article } from '../../../shared/interfaces/article.interface';
+import type { Source } from '../../../shared/interfaces/source.interface';
 import type { NewsItem } from '../interfaces/news-item.interface';
 import type { SourceFilterItem } from '../interfaces/source-filter-item.interface';
 
 const DEFAULT_NEWS_IMAGE_URL = '/images/no-image.jpg';
-const DEFAULT_NEWS_AUTHOR = 'Redacción';
+const DEFAULT_NEWS_AUTHOR = 'Redacci\u00F3n';
 const DEFAULT_NEWS_SOURCE = 'Fuente desconocida';
 const DEFAULT_NEWS_SECTION = 'actualidad';
 const DEFAULT_NEWS_TITLE = 'Noticia sin titular';
@@ -141,4 +141,5 @@ function toDisplayImageUrl(imageUrl: string): string {
 
   return DEFAULT_NEWS_IMAGE_URL;
 }
+
 

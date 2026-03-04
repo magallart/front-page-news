@@ -1,4 +1,4 @@
-import type { Article } from '../../src/interfaces/article.interface';
+import type { Article } from '../../shared/interfaces/article.interface';
 import type { RawFeedItem } from '../interfaces/raw-feed-item.interface';
 
 const HTML_ENTITY_MAP: Record<string, string> = {
@@ -260,3 +260,4 @@ function normalizeSummaryText(value: string): string {
 function pickLongerText(primary: string, secondary: string): string {
   return secondary.length > primary.length ? secondary : primary;
 }
+

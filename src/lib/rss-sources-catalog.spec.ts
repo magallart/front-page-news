@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildSourceFeedTargetsFromRecords, buildSourcesResponseFromRecords } from '../../server/lib/rss-sources-catalog';
 
-import type { RssSourceRecord } from '../interfaces/rss-source-record.interface';
+import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
 
 describe('server/lib/rss-sources-catalog', () => {
   it('builds deduped sections and sources from source records', () => {
@@ -85,3 +85,4 @@ describe('server/lib/rss-sources-catalog', () => {
     expect(targets[0]?.sourceBaseUrl).toBe('');
   });
 });
+

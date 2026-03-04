@@ -8,9 +8,9 @@ import {
   toNewsResponseError,
 } from './news-response-guards';
 
-import type { Article } from '../../interfaces/article.interface';
-import type { NewsResponse } from '../../interfaces/news-response.interface';
-import type { Warning } from '../../interfaces/warning.interface';
+import type { Article } from '../../../shared/interfaces/article.interface';
+import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
+import type { Warning } from '../../../shared/interfaces/warning.interface';
 
 export function adaptNewsResponse(payload: Record<string, unknown>): NewsResponse {
   return {
@@ -68,3 +68,4 @@ function toWarning(value: unknown, index: number): Warning {
     feedUrl: asNullableString(record['feedUrl'], `warnings[${index}].feedUrl`),
   };
 }
+

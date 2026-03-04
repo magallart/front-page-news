@@ -1,8 +1,8 @@
 import { FEED_FETCH_TIMEOUT_MS } from '../constants/news.constants.js';
 
-import type { NewsQuery } from '../../src/interfaces/news-query.interface';
-import type { SourceFeedTarget } from '../../src/interfaces/source-feed-target.interface';
-import type { Source } from '../../src/interfaces/source.interface';
+import type { NewsQuery } from '../../shared/interfaces/news-query.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 
 const HOME_MAX_FEEDS = 24;
 const HOME_MAX_FEEDS_PER_SOURCE = 2;
@@ -345,3 +345,4 @@ export function toSource(target: SourceFeedTarget): Source {
     sectionSlugs: [target.sectionSlug],
   };
 }
+

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { parseFeedItems } from '../../server/lib/rss-parser';
 
-import type { Source } from '../interfaces/source.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 
 describe('server/lib/rss-parser', () => {
   it('parses rss item fields', () => {
@@ -247,3 +247,4 @@ function makeSource(): Source {
     sectionSlugs: ['actualidad'],
   };
 }
+

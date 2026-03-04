@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { WARNING_CODE } from '../../server/constants/warning-code.constants';
 import { fetchFeedsConcurrently } from '../../server/lib/feed-fetcher';
 
-import type { Source } from '../interfaces/source.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 
 describe('server/lib/feed-fetcher', () => {
   it('returns empty arrays when no sources are provided', async () => {
@@ -176,3 +176,4 @@ function delay(milliseconds: number): Promise<void> {
     setTimeout(resolve, milliseconds);
   });
 }
+

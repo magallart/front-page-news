@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createNewsHandler } from '../../api/news';
 import { WARNING_CODE } from '../../server/constants/warning-code.constants';
 
-import type { SourceFeedTarget } from '../interfaces/source-feed-target.interface';
-import type { Warning } from '../interfaces/warning.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
+import type { Warning } from '../../shared/interfaces/warning.interface';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 interface HandlerSuccessPayload {
@@ -598,3 +598,4 @@ function delay(milliseconds: number): Promise<void> {
     setTimeout(resolve, milliseconds);
   });
 }
+

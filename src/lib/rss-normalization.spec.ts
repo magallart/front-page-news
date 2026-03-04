@@ -8,7 +8,7 @@ import {
   normalizeFeedItem,
 } from '../../server/lib/rss-normalization';
 
-import type { Article } from '../interfaces/article.interface';
+import type { Article } from '../../shared/interfaces/article.interface';
 
 describe('server/lib/rss-normalization', () => {
   it('normalizes valid dates to ISO', () => {
@@ -231,3 +231,4 @@ function makeArticle(overrides: Partial<Article>): Article {
     publishedAt: overrides.publishedAt ?? '2026-02-17T00:00:00.000Z',
   };
 }
+

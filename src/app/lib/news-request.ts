@@ -1,6 +1,6 @@
 import { HttpParams } from '@angular/common/http';
 
-import type { NewsQuery } from '../../interfaces/news-query.interface';
+import type { NewsQuery } from '../../../shared/interfaces/news-query.interface';
 
 export type NewsRequestQuery = Partial<NewsQuery>;
 
@@ -59,3 +59,4 @@ function isNonEmptyString(value: string | null | undefined): value is string {
 function isPositiveInteger(value: number | undefined): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
+

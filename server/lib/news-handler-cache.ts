@@ -1,4 +1,4 @@
-import type { NewsQuery } from '../../src/interfaces/news-query.interface';
+import type { NewsQuery } from '../../shared/interfaces/news-query.interface';
 
 export function toNewsQueryCacheKey(query: NewsQuery): string {
   const sourceValue = query.sourceIds.length > 0 ? query.sourceIds.join(',') : '';
@@ -20,3 +20,4 @@ export function isExpired(expiresAt: number, timestamp: number): boolean {
 export function logPerf(event: 'cache-hit' | 'cache-miss', details: Record<string, unknown>): void {
   console.info(`[api/news][${event}]`, details);
 }
+

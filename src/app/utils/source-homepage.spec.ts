@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { resolveSourceHomepage } from './source-homepage';
 
-import type { Source } from '../../interfaces/source.interface';
+import type { Source } from '../../../shared/interfaces/source.interface';
 
 describe('resolveSourceHomepage', () => {
   it('returns publisher homepage for known source id', () => {
@@ -29,3 +29,4 @@ describe('resolveSourceHomepage', () => {
     expect(resolveSourceHomepage(source)).toBe('https://custom-source.test');
   });
 });
+
