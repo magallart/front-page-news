@@ -58,10 +58,10 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           }
         </button>
 
-        <h3 class="font-editorial-title title-clamp text-xl font-semibold leading-[1.5rem] tracking-[0.01em]">
+        <h3 class="font-editorial-title text-xl font-semibold leading-[1.5rem] tracking-[0.01em]">
           <button
             type="button"
-            class="text-left transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            class="title-clamp block w-full text-left transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="onPreviewRequest($event)"
           >
             {{ article().title }}

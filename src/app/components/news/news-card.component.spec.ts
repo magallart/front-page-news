@@ -39,5 +39,8 @@ describe('NewsCardComponent', () => {
     const author = fixture.nativeElement.querySelector('p.mt-auto') as HTMLParagraphElement;
     expect(author.className).toContain('truncate');
     expect(author.className).toContain('whitespace-nowrap');
+
+    const titleButton = fixture.nativeElement.querySelector('h3 > button') as HTMLButtonElement;
+    expect(titleButton.className).toContain('title-clamp');
   });
 });
