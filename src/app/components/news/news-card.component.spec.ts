@@ -42,5 +42,12 @@ describe('NewsCardComponent', () => {
 
     const titleButton = fixture.nativeElement.querySelector('h3 > button') as HTMLButtonElement;
     expect(titleButton.className).toContain('title-clamp');
+    expect(titleButton.className).toContain('underline');
+    expect(titleButton.className).toContain('decoration-transparent');
+    expect(titleButton.className).toContain('hover:decoration-primary');
+    expect(titleButton.className).not.toContain('hover:text-primary');
+
+    const titleHeading = fixture.nativeElement.querySelector('h3') as HTMLHeadingElement;
+    expect(titleHeading.className).toContain('leading-7');
   });
 });
