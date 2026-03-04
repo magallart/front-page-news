@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+import { NAVBAR_PRIMARY_LINKS_COUNT, NAVBAR_SECONDARY_LINKS_MAX_COUNT } from '../../../constants/navbar.constants';
 import { IconSearchComponent } from '../../icons/icon-search.component';
 import { PageContainerComponent } from '../page-container.component';
 
@@ -115,6 +116,8 @@ export class NavbarMainHeaderComponent {
   readonly links = input.required<readonly NavLink[]>();
   readonly topLinks = input.required<readonly TopLink[]>();
   readonly topbarMeta = input.required<string>();
-  protected readonly primaryLinks = computed(() => this.links().slice(0, 6));
-  protected readonly secondaryLinks = computed(() => this.links().slice(6, 11));
+  protected readonly primaryLinks = computed(() => this.links().slice(0, NAVBAR_PRIMARY_LINKS_COUNT));
+  protected readonly secondaryLinks = computed(() =>
+    this.links().slice(NAVBAR_PRIMARY_LINKS_COUNT, NAVBAR_PRIMARY_LINKS_COUNT + NAVBAR_SECONDARY_LINKS_MAX_COUNT),
+  );
 }

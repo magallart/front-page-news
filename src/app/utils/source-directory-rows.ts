@@ -1,3 +1,5 @@
+import { SOURCE_DIRECTORY_ALTERNATING_ROW_PATTERN } from '../constants/source-directory.constants';
+
 import type { SourceDirectoryItem } from '../interfaces/source-directory-item.interface';
 
 export function buildFixedRows(
@@ -25,12 +27,13 @@ export function buildAlternatingRows(
 ): readonly (readonly SourceDirectoryItem[])[] {
   const rows: SourceDirectoryItem[][] = [];
   let index = 0;
-  let take = 3;
+  let patternIndex = 0;
 
   while (index < items.length) {
+    const take = SOURCE_DIRECTORY_ALTERNATING_ROW_PATTERN[patternIndex] ?? SOURCE_DIRECTORY_ALTERNATING_ROW_PATTERN[0];
     rows.push(items.slice(index, index + take));
     index += take;
-    take = take === 3 ? 2 : 3;
+    patternIndex = (patternIndex + 1) % SOURCE_DIRECTORY_ALTERNATING_ROW_PATTERN.length;
   }
 
   return rows;

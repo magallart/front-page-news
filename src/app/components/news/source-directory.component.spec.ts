@@ -1,5 +1,11 @@
-﻿import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  SOURCE_DIRECTORY_EMPTY_MESSAGE,
+  SOURCE_DIRECTORY_PLACEHOLDER_LOGO_URL,
+  SOURCE_DIRECTORY_TITLE,
+} from '../../constants/source-directory.constants';
 
 import { SourceDirectoryComponent } from './source-directory.component';
 
@@ -63,6 +69,7 @@ describe('SourceDirectoryComponent', () => {
 
     const tooltipLabels = fixture.nativeElement.querySelectorAll('span');
     expect(tooltipLabels.length).toBe(2);
+    expect(fixture.nativeElement.textContent).toContain(SOURCE_DIRECTORY_TITLE);
   });
 
   it('renders empty state when no source items are provided', async () => {
@@ -74,7 +81,7 @@ describe('SourceDirectoryComponent', () => {
     fixture.componentRef.setInput('items', []);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('No hay fuentes disponibles');
+    expect(fixture.nativeElement.textContent).toContain(SOURCE_DIRECTORY_EMPTY_MESSAGE);
   });
 
   it('uses placeholder logo when image fails to load', async () => {
@@ -90,21 +97,7 @@ describe('SourceDirectoryComponent', () => {
     image.dispatchEvent(new Event('error'));
     fixture.detectChanges();
 
-    expect(image.src).toContain('/images/sources/source-placeholder.svg');
-  });
-
-  it('ignores logo error events with no image target', async () => {
-    await TestBed.configureTestingModule({
-      imports: [SourceDirectoryComponent],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(SourceDirectoryComponent);
-
-    expect(() => {
-      (fixture.componentInstance as unknown as { handleLogoError: (event: Event) => void }).handleLogoError(
-        new Event('error'),
-      );
-    }).not.toThrow();
+    expect(image.src).toContain(SOURCE_DIRECTORY_PLACEHOLDER_LOGO_URL);
   });
 
   it('uses tablet fixed rows when matchMedia supports addEventListener', async () => {

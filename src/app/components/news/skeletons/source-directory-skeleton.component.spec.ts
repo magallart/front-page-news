@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { SOURCE_DIRECTORY_SKELETON_ROW_LENGTHS, SOURCE_DIRECTORY_TITLE } from '../../../constants/source-directory.constants';
+
 import { SourceDirectorySkeletonComponent } from './source-directory-skeleton.component';
 
 describe('SourceDirectorySkeletonComponent', () => {
@@ -15,11 +17,10 @@ describe('SourceDirectorySkeletonComponent', () => {
     const rows = fixture.nativeElement.querySelectorAll('ul');
     const text = fixture.nativeElement.textContent as string;
 
-    expect(text).toContain('Visita las webs oficiales para conocer todas las noticias');
-    expect(rows.length).toBe(3);
-    expect(rows[0]?.querySelectorAll('li').length).toBe(3);
-    expect(rows[1]?.querySelectorAll('li').length).toBe(2);
-    expect(rows[2]?.querySelectorAll('li').length).toBe(3);
+    expect(text).toContain(SOURCE_DIRECTORY_TITLE);
+    expect(rows.length).toBe(SOURCE_DIRECTORY_SKELETON_ROW_LENGTHS.length);
+    expect(rows[0]?.querySelectorAll('li').length).toBe(SOURCE_DIRECTORY_SKELETON_ROW_LENGTHS[0]);
+    expect(rows[1]?.querySelectorAll('li').length).toBe(SOURCE_DIRECTORY_SKELETON_ROW_LENGTHS[1]);
+    expect(rows[2]?.querySelectorAll('li').length).toBe(SOURCE_DIRECTORY_SKELETON_ROW_LENGTHS[2]);
   });
 });
-
