@@ -334,7 +334,7 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
   - Refactors ejecutados sin regresiones funcionales en los flujos cubiertos.
 - Tasks:
   - [✔️] Aumentar cobertura de tests unitarios, de integracion y e2e en home, seccion, modal contextual, header y footer.
-  - [ ] Instalar y configurar Vitest coverage (`@vitest/coverage-v8`) para obtener reporte de cobertura reproducible.
+  - [✔️] Instalar y configurar Vitest coverage (`@vitest/coverage-v8`) para obtener reporte de cobertura reproducible.
   - [ ] Definir baseline de coverage y ejecutar refactors de aplicacion manteniendo `lint`, `test` y `test:e2e` en verde.
 
 <a id="fpn-013"></a>
