@@ -404,3 +404,27 @@ Brief continuity notes to recover context between terminal sessions.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass, 43 files / 196 tests).
+
+## 2026-03-04
+
+- What changed:
+  - Expanded test coverage across the app to harden the baseline before refactors.
+  - Added unit tests for previously uncovered UI components and helpers:
+    - quick-view modal, breaking-news, article preview CTA.
+    - navbar main header, page container.
+    - icon components (including social icon variants).
+    - skeleton components (`skeleton-block`, `news-card`, `news-carousel`, `breaking-news`, `most-read`, `source-directory`, `section-page`).
+    - legal pages (`aviso legal`, `privacidad`, `cookies`).
+    - app routes contract (including removal guard for `/noticia/:id`).
+    - app state service and utility helpers (`app-http-error.utils`, `source-key`).
+  - Strengthened integration tests in pages:
+    - home page quick-view open/close cycle.
+    - section page quick-view open/close cycle.
+  - Reworked e2e suite to match current product behavior and remove stale assumptions:
+    - introduced deterministic API mocking for `/api/news` and `/api/sources` in `e2e/helpers/api-mocks.ts`.
+    - updated home/header/footer/section e2e flows for contextual reading modal, ticker behavior, and current footer/legal UX.
+    - removed outdated e2e assertions tied to deleted route/detail flow and old visual snapshots.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass, 61 files / 234 tests).
+  - `pnpm test:e2e` (pass, 11 tests).

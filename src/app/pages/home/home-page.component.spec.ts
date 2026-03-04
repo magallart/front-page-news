@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
+import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
@@ -241,6 +242,48 @@ describe('HomePageComponent', () => {
     const [item] = sourceDirectory.items();
 
     expect(item?.url).toBe('https://www.expansion.com');
+  });
+
+  it('opens and closes quick-view modal when children emit preview and close events', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('quick-1', 'actualidad', { sourceName: 'Fuente Rapida' })],
+    });
+    const sourcesStoreMock = createSourcesStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const carousel = fixture.debugElement.query(By.directive(NewsCarouselComponent)).componentInstance as NewsCarouselComponent;
+    carousel.previewRequested.emit({
+      id: 'quick-1',
+      title: 'Titulo quick-1',
+      summary: 'Resumen quick-1',
+      imageUrl: 'https://example.com/image.jpg',
+      source: 'Fuente Rapida',
+      section: 'actualidad',
+      publishedAt: '2026-03-04T08:30:00.000Z',
+      author: 'Autor',
+      url: 'https://example.com/quick-1',
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent as string).toContain('Abrir noticia completa en Fuente Rapida');
+
+    const quickView = fixture.debugElement.query(By.directive(NewsQuickViewModalComponent))
+      .componentInstance as NewsQuickViewModalComponent;
+    quickView.closed.emit();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent as string).not.toContain('Abrir noticia completa en Fuente Rapida');
   });
 });
 
