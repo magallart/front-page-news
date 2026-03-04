@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { NewsCardComponent } from '../../components/news/news-card.component';
+import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { NewsStore } from '../../stores/news.store';
 
@@ -249,7 +250,7 @@ describe('SectionPageComponent', () => {
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo news-1');
   });
 
-  it('opens quick-view modal when a section card requests preview', async () => {
+  it('opens quick-view modal when a section card requests preview and closes it on close event', async () => {
     const routeMock = createRouteMock({ slug: 'economia' });
     const newsStoreMock = createNewsStoreMock({
       data: [createArticle('news-1', 'economia', 'Fuente A')],
@@ -282,8 +283,14 @@ describe('SectionPageComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('app-news-quick-view-modal')).toBeTruthy();
     expect((fixture.nativeElement.textContent as string)).toContain('Abrir noticia completa en Fuente A');
+
+    const quickView = fixture.debugElement.query(By.directive(NewsQuickViewModalComponent))
+      .componentInstance as NewsQuickViewModalComponent;
+    quickView.closed.emit();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Abrir noticia completa en Fuente A');
   });
 });
 

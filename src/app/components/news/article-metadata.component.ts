@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
+import { formatDateLong, formatDateShort } from '../../utils/date-formatting';
+
 @Component({
   selector: 'app-article-metadata',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,31 +32,6 @@ export class ArticleMetadataComponent {
   readonly source = input.required<string>();
   readonly publishedAt = input.required<string>();
 
-  protected readonly formattedDateLong = computed(() => {
-    const date = new Date(this.publishedAt());
-    if (Number.isNaN(date.getTime())) {
-      return 'Fecha no disponible';
-    }
-
-    return new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(date);
-  });
-
-  protected readonly formattedDateShort = computed(() => {
-    const date = new Date(this.publishedAt());
-    if (Number.isNaN(date.getTime())) {
-      return '-- -- --';
-    }
-
-    return new Intl.DateTimeFormat('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit',
-    })
-      .format(date)
-      .replace(/\//g, '-');
-  });
+  protected readonly formattedDateLong = computed(() => formatDateLong(new Date(this.publishedAt())));
+  protected readonly formattedDateShort = computed(() => formatDateShort(new Date(this.publishedAt())));
 }

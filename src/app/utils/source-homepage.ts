@@ -1,4 +1,4 @@
-import type { Source } from '../../interfaces/source.interface';
+import type { Source } from '../../../shared/interfaces/source.interface';
 
 const SOURCE_HOMEPAGE_BY_ID: Readonly<Record<string, string>> = {
   'source-abc': 'https://www.abc.es',
@@ -22,3 +22,4 @@ const SOURCE_HOMEPAGE_BY_ID: Readonly<Record<string, string>> = {
 export function resolveSourceHomepage(source: Source): string {
   return SOURCE_HOMEPAGE_BY_ID[source.id] ?? source.baseUrl;
 }
+

@@ -1,7 +1,7 @@
 import { WARNING_CODE } from '../constants/warning-code.constants.js';
 
-import type { Source } from '../../src/interfaces/source.interface';
-import type { Warning } from '../../src/interfaces/warning.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
+import type { Warning } from '../../shared/interfaces/warning.interface';
 
 const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 const FEED_SNIPPET_BYTES = 2048;
@@ -265,3 +265,4 @@ function tryDecode(bytes: Uint8Array, charset: string): string | null {
 function decodeLatin1(bytes: Uint8Array): string {
   return new TextDecoder('windows-1252').decode(bytes);
 }
+

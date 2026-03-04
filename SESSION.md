@@ -404,3 +404,21 @@ Brief continuity notes to recover context between terminal sessions.
 - Verification performed:
   - `pnpm run lint` (pass).
   - `pnpm test -- --watch=false` (pass, 43 files / 196 tests).
+
+## 2026-03-04
+
+- What changed:
+  - Expanded the testing baseline before refactors with additional unit/integration/e2e coverage and stabilized e2e using deterministic API mocks.
+  - Reorganized planning scope: documentation moved to `FPN-013`, and `FPN-012` now tracks coverage + Vitest coverage setup + refactors; branch renamed to `feat/fpn-012-test-coverage-refactors`.
+  - Executed the full refactor plan:
+    - modularized `api/news.ts` into dedicated server modules (feed selection, cache/perf, parsing aggregation, payload builder).
+    - consolidated duplicated RSS runtime modules/specs under `server/lib`, removing legacy duplicates from `src/lib`.
+    - simplified complex UI containers (`section-page`, `app-navbar`, `source-directory`, `news-carousel`) by extracting constants and shared utilities.
+    - refactored `NewsService`/`SourcesService` to delegate cache/query/adapters/guards to `src/app/lib`.
+    - moved exported feed interfaces (`RawFeedItem`, `ParsedFeedItems`) to dedicated files under `src/interfaces`.
+  - Updated refactor tracking and backlog status to close `FPN-012` after full revalidation.
+- Verification performed:
+  - `pnpm run lint` (pass).
+  - `pnpm test -- --watch=false` (pass, 67 files / 286 tests).
+  - `pnpm test:e2e` (pass, 13 tests).
+  - `pnpm test -- --watch=false --coverage --coverage-reporters=text-summary` (pass; Statements 93.78%, Branches 89.85%, Functions 92.29%, Lines 93.69%).

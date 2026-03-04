@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { createNewsHandler } from '../../api/news';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
 
-import { WARNING_CODE } from './warning-code';
-
-import type { SourceFeedTarget } from '../interfaces/source-feed-target.interface';
-import type { Warning } from '../interfaces/warning.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
+import type { Warning } from '../../shared/interfaces/warning.interface';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 interface HandlerSuccessPayload {
@@ -271,6 +270,85 @@ describe('api/news handler contract', () => {
     expect(fetchFeedsCallCount).toBe(2);
   });
 
+  it('evicts least recently used query when cache max entries is exceeded', async () => {
+    const catalog = makeCatalogTargets();
+    let fetchFeedsCallCount = 0;
+    const nowTimestamp = 1000;
+    const handler = createNewsHandler(
+      {
+        loadSourcesCatalog: async () => catalog,
+        fetchFeeds: async (sources) => {
+          fetchFeedsCallCount += 1;
+
+          return {
+            successes: sources.map((source) => ({
+              sourceId: source.id,
+              feedUrl: source.feedUrl,
+              body: buildRssXml({
+                title: `Cache Limit Call ${fetchFeedsCallCount}`,
+                url: `https://elpais.com/cache-limit-${fetchFeedsCallCount}`,
+              }),
+            })),
+            warnings: [],
+          };
+        },
+      },
+      {
+        cacheTtlMs: 60_000,
+        cacheMaxEntries: 2,
+        now: () => nowTimestamp,
+      },
+    );
+
+    const firstResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      firstResponse as unknown as ServerResponse,
+    );
+    expect(firstResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(1);
+
+    const secondResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=cultura&page=1&limit=20') as IncomingMessage,
+      secondResponse as unknown as ServerResponse,
+    );
+    expect(secondResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(2);
+
+    const promotedFirstResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      promotedFirstResponse as unknown as ServerResponse,
+    );
+    expect(promotedFirstResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(2);
+
+    const thirdResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?page=1&limit=20') as IncomingMessage,
+      thirdResponse as unknown as ServerResponse,
+    );
+    expect(thirdResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(3);
+
+    const evictedSecondResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=cultura&page=1&limit=20') as IncomingMessage,
+      evictedSecondResponse as unknown as ServerResponse,
+    );
+    expect(evictedSecondResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(4);
+
+    const stillCachedThirdResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?page=1&limit=20') as IncomingMessage,
+      stillCachedThirdResponse as unknown as ServerResponse,
+    );
+    expect(stillCachedThirdResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(4);
+  });
+
   it('limits homepage feed fan-out and uses shorter timeout for cold home requests', async () => {
     const catalog = makeLargeCatalogTargets(40);
     let fetchedSourceCount = 0;
@@ -520,3 +598,4 @@ function delay(milliseconds: number): Promise<void> {
     setTimeout(resolve, milliseconds);
   });
 }
+

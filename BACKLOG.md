@@ -28,7 +28,8 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 | [FPN-009](#fpn-009) | Bloques editoriales de portada | Completar carousel, actualidad, secciones y "lo mas leido" del portal. | [✔️] |
 | [FPN-010](#fpn-010) | Revision de la aplicacion para la 1.0 | Ticket contenedor para bugs/cambios pre-release detectados en esta sesion. | [ ] |
 | [FPN-011](#fpn-011) | Lectura en contexto (sin pagina de detalle) | Evitar dedicar una pagina completa al detalle corto de feeds y priorizar lectura inline con CTA al medio. | [ ] |
-| [FPN-012](#fpn-012) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
+| [FPN-012](#fpn-012) | Cobertura y base de refactor | Consolidar una base de calidad antes de refactors estructurales. | [✔️] |
+| [FPN-013](#fpn-013) | Documentacion y cierre MVP | Documentar decisiones, limites y siguiente iteracion. | [ ] |
 
 ## Ticket Details
 
@@ -324,7 +325,26 @@ Backlog principal del proyecto Front Page News, enfocado en empezar a construir 
 
 <a id="fpn-012"></a>
 
-### [FPN-012] Documentacion y cierre MVP
+### [FPN-012] Cobertura y base de refactor
+
+- Description: Asegurar una red de seguridad robusta antes de iniciar refactors amplios en la aplicacion.
+- DoD:
+  - Suite de tests ampliada y estable en unit/integracion/e2e para flujos criticos.
+  - Reporte de coverage de Vitest operativo y utilizable como baseline.
+  - Refactors ejecutados sin regresiones funcionales en los flujos cubiertos.
+- Tasks:
+  - [✔️] Aumentar cobertura de tests unitarios, de integracion y e2e en home, seccion, modal contextual, header y footer.
+  - [✔️] Instalar y configurar Vitest coverage (`@vitest/coverage-v8`) para obtener reporte de cobertura reproducible.
+  - [✔️] Definir baseline de coverage y ejecutar refactors de aplicacion manteniendo `lint`, `test` y `test:e2e` en verde.
+  - [✔️] Extraer estrategia de seleccion de feeds y modularizar `api/news.ts` en modulos de servidor (`news-feed-selection`, `news-handler-cache`, `news-feed-parsing`, `news-payload-builder`).
+  - [✔️] Consolidar runtime RSS en `server/lib` eliminando duplicaciones de `src/lib` y ajustando specs al runtime canonico.
+  - [✔️] Simplificar componentes complejos (`section-page`, `app-navbar`, `source-directory`, `news-carousel`) extrayendo constantes y utilidades reutilizables.
+  - [✔️] Refactorizar `NewsService` y `SourcesService` para delegar cache TTL, construccion de query y adapters/guards en `src/app/lib`.
+  - [✔️] Mover interfaces exportadas de feed (`RawFeedItem`, `ParsedFeedItems`) a archivos dedicados en `src/interfaces`.
+
+<a id="fpn-013"></a>
+
+### [FPN-013] Documentacion y cierre MVP
 
 - Description: Cerrar primera entrega con documentacion clara y siguiente paso definido.
 - DoD:

@@ -1,6 +1,8 @@
 ﻿import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { formatSectionLabel } from '../../utils/section-label';
+
 import { ArticleMetadataComponent } from './article-metadata.component';
 import { ArticlePreviewCtaComponent } from './article-preview-cta.component';
 
@@ -94,14 +96,6 @@ export class ArticleContentComponent {
   protected onImageError(): void {
     this.hiddenImageUrl.set(this.safeArticle().imageUrl);
   }
-}
-
-function formatSectionLabel(section: string): string {
-  if (!section) {
-    return 'Actualidad';
-  }
-
-  return `${section.charAt(0).toUpperCase()}${section.slice(1)}`;
 }
 
 function normalizeOrFallback(value: string, fallback: string): string {

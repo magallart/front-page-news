@@ -1,4 +1,4 @@
-import type { WarningCode } from '../lib/warning-code';
+import type { WarningCode } from './warning-code.interface';
 export type { WarningCode };
 
 export interface Warning {

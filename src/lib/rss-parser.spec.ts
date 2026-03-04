@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseFeedItems } from './rss-parser';
+import { parseFeedItems } from '../../server/lib/rss-parser';
 
-import type { Source } from '../interfaces/source.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 
-describe('rss-parser', () => {
+describe('server/lib/rss-parser', () => {
   it('parses rss item fields', () => {
     const source = makeSource();
     const xml = `<?xml version="1.0"?>
@@ -231,6 +231,7 @@ describe('rss-parser', () => {
 
   it('throws for unsupported format', () => {
     const source = makeSource();
+    expect(() => parseFeedItems({ xml: '   ', source, sectionSlug: 'actualidad' })).toThrow('Empty feed body');
     expect(() => parseFeedItems({ xml: '<html>invalid</html>', source, sectionSlug: 'actualidad' })).toThrow(
       'Unsupported feed format'
     );
@@ -246,3 +247,4 @@ function makeSource(): Source {
     sectionSlugs: ['actualidad'],
   };
 }
+

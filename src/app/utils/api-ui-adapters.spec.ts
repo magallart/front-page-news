@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 
-import { adaptArticleToNewsItem, adaptSourceToFilterItem } from './api-ui-adapters';
+import { adaptArticleToNewsItem, adaptArticlesToNewsItems, adaptSourceToFilterItem, adaptSourcesToFilterItems } from './api-ui-adapters';
 
 describe('api-ui-adapters', () => {
   it('adapts article with safe fallback values for nullable fields', () => {
@@ -81,6 +81,47 @@ describe('api-ui-adapters', () => {
     expect(result.url).toBe('#');
   });
 
+  it('uses externalId when primary id is blank', () => {
+    const result = adaptArticleToNewsItem({
+      id: ' ',
+      externalId: 'ext-123',
+      title: 'Noticia externa',
+      summary: 'Resumen',
+      url: 'https://example.com/news-ext',
+      canonicalUrl: null,
+      imageUrl: '/images/custom.jpg',
+      thumbnailUrl: null,
+      sourceId: 'source-ext',
+      sourceName: 'Fuente Externa',
+      sectionSlug: 'actualidad',
+      author: null,
+      publishedAt: null,
+    });
+
+    expect(result.id).toBe('ext-123');
+  });
+
+  it('keeps already-proxied image urls and local thumbnails untouched', () => {
+    const result = adaptArticleToNewsItem({
+      id: 'news-5',
+      externalId: null,
+      title: 'Imagen proxied',
+      summary: 'Resumen',
+      url: 'https://example.com/news-5',
+      canonicalUrl: null,
+      imageUrl: '/api/image?url=https%3A%2F%2Fcdn.example.com%2Fhero.jpg',
+      thumbnailUrl: '/images/thumb-local.jpg',
+      sourceId: 'source-5',
+      sourceName: 'Fuente Cinco',
+      sectionSlug: 'ciencia',
+      author: 'Autor',
+      publishedAt: '2026-03-03T12:00:00.000Z',
+    });
+
+    expect(result.imageUrl).toBe('/api/image?url=https%3A%2F%2Fcdn.example.com%2Fhero.jpg');
+    expect(result.thumbnailUrl).toBe('/images/thumb-local.jpg');
+  });
+
   it('uses canonicalUrl when url is relative and canonical is absolute', () => {
     const result = adaptArticleToNewsItem({
       id: 'news-3',
@@ -133,5 +174,40 @@ describe('api-ui-adapters', () => {
       label: 'El País',
       sectionSlugs: ['actualidad-nacional', 'actualidad'],
     });
+  });
+
+  it('adapts article and source arrays with the same single-item rules', () => {
+    const newsItems = adaptArticlesToNewsItems([
+      {
+        id: 'news-6',
+        externalId: null,
+        title: 'Coleccion',
+        summary: 'Resumen',
+        url: 'https://example.com/news-6',
+        canonicalUrl: null,
+        imageUrl: null,
+        thumbnailUrl: null,
+        sourceId: 'source-6',
+        sourceName: 'Fuente Seis',
+        sectionSlug: 'economia',
+        author: null,
+        publishedAt: null,
+      },
+    ]);
+    const sourceItems = adaptSourcesToFilterItems([
+      {
+        id: 'source-6',
+        name: 'Fuente Seis',
+        baseUrl: 'https://example.com',
+        feedUrl: 'https://example.com/rss.xml',
+        sectionSlugs: ['Economia'],
+      },
+    ]);
+
+    expect(newsItems).toHaveLength(1);
+    expect(newsItems[0]?.id).toBe('news-6');
+    expect(sourceItems).toHaveLength(1);
+    expect(sourceItems[0]?.id).toBe('source-6');
+    expect(sourceItems[0]?.sectionSlugs).toEqual(['economia']);
   });
 });

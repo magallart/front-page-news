@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { fetchFeedsConcurrently } from './feed-fetcher';
-import { WARNING_CODE } from './warning-code';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
+import { fetchFeedsConcurrently } from '../../server/lib/feed-fetcher';
 
-import type { Source } from '../interfaces/source.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
 
-describe('feed-fetcher', () => {
+describe('server/lib/feed-fetcher', () => {
+  it('returns empty arrays when no sources are provided', async () => {
+    const result = await fetchFeedsConcurrently([], 1000, async () => {
+      throw new Error('fetch should not be called');
+    });
+
+    expect(result.successes).toHaveLength(0);
+    expect(result.warnings).toHaveLength(0);
+  });
+
   it('returns success for healthy feeds', async () => {
     const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
     const fetchFn = async () =>
@@ -30,6 +39,8 @@ describe('feed-fetcher', () => {
     expect(result.successes).toHaveLength(0);
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]?.code).toBe(WARNING_CODE.SOURCE_FETCH_FAILED);
+    expect(result.warnings[0]?.sourceId).toBe('source-a');
+    expect(result.warnings[0]?.feedUrl).toBe('https://a.test/rss.xml');
   });
 
   it('returns timeout warning when fetch is aborted', async () => {
@@ -49,6 +60,18 @@ describe('feed-fetcher', () => {
     expect(result.successes).toHaveLength(0);
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]?.code).toBe(WARNING_CODE.SOURCE_TIMEOUT);
+  });
+
+  it('returns fetch warning when request fails with a non-error value', async () => {
+    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
+    const fetchFn = async () => Promise.reject('socket reset');
+
+    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
+
+    expect(result.successes).toHaveLength(0);
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings[0]?.code).toBe(WARNING_CODE.SOURCE_FETCH_FAILED);
+    expect(result.warnings[0]?.message).toContain('socket reset');
   });
 
   it('decodes feed body using charset from content-type header', async () => {
@@ -74,6 +97,24 @@ describe('feed-fetcher', () => {
       new Response(feedBytes, {
         status: 200,
         headers: { 'content-type': 'application/rss+xml' },
+      });
+
+    const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
+
+    expect(result.warnings).toHaveLength(0);
+    expect(result.successes).toHaveLength(1);
+    expect(result.successes[0]?.body).toContain('<title>Espa\u00f1a</title>');
+  });
+
+  it('falls back to windows-1252 when charset candidates are unsupported or lossy', async () => {
+    const sources: readonly Source[] = [makeSource('source-a', 'https://a.test/rss.xml')];
+    const feedBytes = buildXmlBytesWithSingleByteChar('x-unsupported');
+    const fetchFn = async () =>
+      new Response(feedBytes, {
+        status: 200,
+        headers: {
+          'content-type': 'application/rss+xml; charset="utf-8"',
+        },
       });
 
     const result = await fetchFeedsConcurrently(sources, 1000, fetchFn);
@@ -135,3 +176,4 @@ function delay(milliseconds: number): Promise<void> {
     setTimeout(resolve, milliseconds);
   });
 }
+

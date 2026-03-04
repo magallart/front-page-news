@@ -6,7 +6,7 @@ import { NewsService } from '../services/news.service';
 
 import { NewsStore } from './news.store';
 
-import type { NewsResponse } from '../../interfaces/news-response.interface';
+import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
 describe('NewsStore', () => {
   it('loads news and updates data, warnings and lastUpdated', () => {
     vi.useFakeTimers();
@@ -245,3 +245,4 @@ function createNewsResponse(): NewsResponse {
     ],
   };
 }
+

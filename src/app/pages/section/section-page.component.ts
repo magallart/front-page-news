@@ -11,13 +11,20 @@ import { NewsCardComponent } from '../../components/news/news-card.component';
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
-import { SECTION_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import {
+  SECTION_PAGE_DEFAULT_SLUG,
+  SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT,
+  SECTION_PAGE_LOAD_MORE_NEWS_STEP,
+} from '../../constants/section-page.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { formatSectionLabel } from '../../utils/section-label';
+import { parseSectionQueryFilters, DEFAULT_SECTION_QUERY_FILTERS } from '../../utils/section-query-filters';
 import { resolveSectionUiState } from '../../utils/ui-state-matrix';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
+import type { SourceSelectionState } from '../../interfaces/source-selection-state.interface';
 
 @Component({
   selector: 'app-section-page',
@@ -102,46 +109,26 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
   `,
 })
 export class SectionPageComponent {
-  private static readonly INITIAL_VISIBLE_NEWS_COUNT = 24;
-  private static readonly LOAD_MORE_NEWS_STEP = 12;
-
   private readonly route = inject(ActivatedRoute);
   private readonly newsStore = inject(NewsStore);
-  private readonly sourceSelection = signal<{
-    readonly hasCustomSelection: boolean;
-    readonly selectedSources: readonly string[];
-  }>({
+  private readonly sourceSelection = signal<SourceSelectionState>({
     hasCustomSelection: false,
     selectedSources: [],
   });
-  private readonly visibleNewsCount = signal(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
+  private readonly visibleNewsCount = signal(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
   protected readonly quickViewArticle = signal<NewsItem | null>(null);
   protected readonly uiViewState = UI_VIEW_STATE;
   protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
 
   protected readonly sectionSlug = toSignal(
-    this.route.paramMap.pipe(map((params) => params.get('slug') ?? 'actualidad')),
-    { initialValue: 'actualidad' },
+    this.route.paramMap.pipe(map((params) => params.get('slug') ?? SECTION_PAGE_DEFAULT_SLUG)),
+    { initialValue: SECTION_PAGE_DEFAULT_SLUG },
   );
 
   private readonly queryFilters = toSignal(
-    this.route.queryParamMap.pipe(
-      map((params) => ({
-        sourceIds: parseSourceIds(params.get('source')),
-        searchQuery: normalizeQueryValue(params.get('q')),
-        page: parsePositiveNumber(params.get('page'), 1),
-        limit: parsePositiveNumber(params.get('limit'), SECTION_PAGE_NEWS_LIMIT),
-      })),
-    ),
-    {
-      initialValue: {
-        sourceIds: [] as readonly string[],
-        searchQuery: null as string | null,
-        page: 1,
-        limit: SECTION_PAGE_NEWS_LIMIT,
-      },
-    },
+    this.route.queryParamMap.pipe(map((params) => parseSectionQueryFilters(params))),
+    { initialValue: DEFAULT_SECTION_QUERY_FILTERS },
   );
 
   protected readonly sectionTitle = computed(() => formatSectionLabel(this.sectionSlug()));
@@ -207,7 +194,7 @@ export class SectionPageComponent {
       this.queryFilters();
       this.activeSelectedSources();
       this.sortDirection();
-      this.visibleNewsCount.set(SectionPageComponent.INITIAL_VISIBLE_NEWS_COUNT);
+      this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
     });
 
     effect(() => {
@@ -236,7 +223,7 @@ export class SectionPageComponent {
   }
 
   protected loadMoreNews(): void {
-    this.visibleNewsCount.update((count) => count + SectionPageComponent.LOAD_MORE_NEWS_STEP);
+    this.visibleNewsCount.update((count) => count + SECTION_PAGE_LOAD_MORE_NEWS_STEP);
   }
 
   protected openQuickView(item: NewsItem): void {
@@ -246,47 +233,5 @@ export class SectionPageComponent {
   protected closeQuickView(): void {
     this.quickViewArticle.set(null);
   }
-}
-
-function formatSectionLabel(slug: string): string {
-  const words = slug
-    .split('-')
-    .filter((part) => part.length > 0)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`);
-
-  return words.length > 0 ? words.join(' ') : 'Actualidad';
-}
-
-function parseSourceIds(value: string | null): readonly string[] {
-  if (!value) {
-    return [];
-  }
-
-  return value
-    .split(',')
-    .map((sourceId) => normalizeQueryValue(sourceId))
-    .filter((sourceId): sourceId is string => Boolean(sourceId));
-}
-
-function normalizeQueryValue(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const trimmed = value.trim().toLowerCase();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function parsePositiveNumber(value: string | null, fallback: number): number {
-  if (!value) {
-    return fallback;
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed < 1) {
-    return fallback;
-  }
-
-  return parsed;
 }
 

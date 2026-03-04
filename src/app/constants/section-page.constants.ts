@@ -1,0 +1,3 @@
+export const SECTION_PAGE_DEFAULT_SLUG = 'actualidad';
+export const SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT = 24;
+export const SECTION_PAGE_LOAD_MORE_NEWS_STEP = 12;

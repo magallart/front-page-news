@@ -19,9 +19,13 @@ This document defines the shared data contract and normalization strategy used b
 ## Summary Normalization
 
 - Remove `<script>` and `<style>` blocks.
+- Convert structural tags to readable breaks before stripping tags:
+  - `<br>` -> line break
+  - `</p>`, `</div>`, `</h1..h6>` -> paragraph break
+  - `</li>` -> line break
 - Strip all remaining HTML tags.
 - Decode common entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`, `&nbsp;`) and numeric entities.
-- Collapse duplicated whitespace and trim.
+- Normalize whitespace while preserving paragraph boundaries.
 
 ## Stable Id Strategy
 
@@ -34,7 +38,11 @@ This document defines the shared data contract and normalization strategy used b
 
 - Primary dedupe key: canonical URL.
 - Fallback dedupe key: `title + publishedAt`.
-- If two items share dedupe key, keep the most recent one.
+- If two items share dedupe key, merge both variants:
+  - prefer the most recent item as base.
+  - use section priority to avoid degrading to `ultima-hora` when a better section exists.
+  - preserve richer fields (`imageUrl`, `thumbnailUrl`, `author`).
+  - keep the longer summary text.
 
 ## Temporal Ordering
 

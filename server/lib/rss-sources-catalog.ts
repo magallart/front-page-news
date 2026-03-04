@@ -1,8 +1,8 @@
-import type { RssSourceRecord } from '../../src/interfaces/rss-source-record.interface';
-import type { Section } from '../../src/interfaces/section.interface';
-import type { SourceFeedTarget } from '../../src/interfaces/source-feed-target.interface';
-import type { Source } from '../../src/interfaces/source.interface';
-import type { SourcesResponse } from '../../src/interfaces/sources-response.interface';
+import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
+import type { Section } from '../../shared/interfaces/section.interface';
+import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
+import type { Source } from '../../shared/interfaces/source.interface';
+import type { SourcesResponse } from '../../shared/interfaces/sources-response.interface';
 
 export function buildSourcesResponseFromRecords(records: readonly RssSourceRecord[]): SourcesResponse {
   const normalizedRecords = normalizeCatalogRecords(records);
@@ -142,3 +142,4 @@ function toBaseUrl(feedUrl: string): string {
     return '';
   }
 }
+

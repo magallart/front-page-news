@@ -1,4 +1,4 @@
-import type { NewsResponse } from '../../interfaces/news-response.interface';
+import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
 import type { Observable } from 'rxjs';
 
 export interface NewsCacheEntry {
@@ -6,3 +6,4 @@ export interface NewsCacheEntry {
   readonly response$: Observable<NewsResponse>;
   readonly expiresAt: number;
 }
+

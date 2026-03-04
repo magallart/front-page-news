@@ -1,4 +1,4 @@
-import type { Warning } from '../../interfaces/warning.interface';
+import type { Warning } from '../../../shared/interfaces/warning.interface';
 
 export interface UiStateInput {
   readonly loading: boolean;
@@ -13,3 +13,4 @@ export interface ListingUiStateInput extends UiStateInput {
 export interface DetailUiStateInput extends UiStateInput {
   readonly hasItem: boolean;
 }
+

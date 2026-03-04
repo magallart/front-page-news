@@ -4,8 +4,8 @@ import { take } from 'rxjs';
 import { NewsService } from '../services/news.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
-import type { NewsResponse } from '../../interfaces/news-response.interface';
-import type { Warning } from '../../interfaces/warning.interface';
+import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
+import type { Warning } from '../../../shared/interfaces/warning.interface';
 import type { NewsRequestQuery } from '../services/news.service';
 
 @Injectable({ providedIn: 'root' })
@@ -79,3 +79,4 @@ export class NewsStore {
       });
   }
 }
+

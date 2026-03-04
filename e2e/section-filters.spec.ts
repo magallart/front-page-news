@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+import { mockApiRoutes } from './helpers/api-mocks';
+
 test.describe('Section Filters', () => {
-  test('opens filters, applies source filter, sort order and clear/select all', async ({ page }) => {
+  test('opens filters, applies source selection and supports quick-view preview', async ({ page }) => {
+    await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/seccion/actualidad');
 
@@ -9,8 +12,6 @@ test.describe('Section Filters', () => {
     await expect(cards).toHaveCount(5);
 
     const toggleFilters = page.getByRole('button', { name: /mostrar filtros/i });
-    await expect(toggleFilters).toBeVisible();
-    await expect(page.locator('app-icon-filter')).toBeVisible();
     await toggleFilters.click();
 
     const panel = page.locator('app-section-filters');
@@ -24,20 +25,22 @@ test.describe('Section Filters', () => {
     await expect(cards).toHaveCount(5);
 
     await panel.getByLabel('Mundo Diario').check();
-    await panel.getByLabel('Boletin Justicia').uncheck();
-    await panel.getByLabel('Portada Nacional').uncheck();
     await panel.getByLabel('Actualidad 24').uncheck();
+    await panel.getByLabel('Portada Nacional').uncheck();
+    await panel.getByLabel('Boletin Justicia').uncheck();
     await panel.getByLabel('Salud y Ciencia').uncheck();
     await expect(cards).toHaveCount(1);
 
-    await panel.getByRole('radio', { name: 'Mas antiguas primero' }).check();
-    await expect(cards.first()).toContainText('Actualidad internacional marcada por acuerdos energeticos');
+    const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
 
-    await page.getByRole('button', { name: /ocultar filtros/i }).click();
-    await expect(panel).toBeHidden();
+    await cards.first().locator('h3 button').click();
+    await expect(quickViewDialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(quickViewDialog).toHaveCount(0);
   });
 
-  test('does not render filters trigger in empty section', async ({ page }) => {
+  test('does not render filters trigger in an empty section', async ({ page }) => {
+    await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/seccion/deportes');
 

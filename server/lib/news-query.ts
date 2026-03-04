@@ -1,6 +1,6 @@
-import type { Article } from '../../src/interfaces/article.interface';
-import type { FilteredNews } from '../../src/interfaces/filtered-news.interface';
-import type { NewsQuery } from '../../src/interfaces/news-query.interface';
+import type { Article } from '../../shared/interfaces/article.interface';
+import type { FilteredNews } from '../../shared/interfaces/filtered-news.interface';
+import type { NewsQuery } from '../../shared/interfaces/news-query.interface';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -111,3 +111,4 @@ function normalizeIdValue(value: string | null): string | null {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 }
+
