@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { fetchFeedsConcurrently } from './feed-fetcher';
-import { WARNING_CODE } from './warning-code';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
+import { fetchFeedsConcurrently } from '../../server/lib/feed-fetcher';
 
 import type { Source } from '../interfaces/source.interface';
 
-describe('feed-fetcher', () => {
+describe('server/lib/feed-fetcher', () => {
   it('returns empty arrays when no sources are provided', async () => {
     const result = await fetchFeedsConcurrently([], 1000, async () => {
       throw new Error('fetch should not be called');

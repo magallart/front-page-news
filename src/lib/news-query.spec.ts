@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyNewsFilters, parseNewsQuery } from './news-query';
+import { applyNewsFilters, parseNewsQuery } from '../../server/lib/news-query';
 
 import type { Article } from '../interfaces/article.interface';
 
-describe('news-query', () => {
+describe('server/lib/news-query', () => {
   it('parses filters and pagination from URL', () => {
     const query = parseNewsQuery('/api/news?id=url-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10');
 
@@ -22,6 +22,17 @@ describe('news-query', () => {
     expect(query.id).toBeNull();
     expect(query.page).toBe(1);
     expect(query.limit).toBe(1000);
+  });
+
+  it('applies defaults for missing URL', () => {
+    const query = parseNewsQuery(undefined);
+
+    expect(query.id).toBeNull();
+    expect(query.section).toBeNull();
+    expect(query.sourceIds).toEqual([]);
+    expect(query.searchQuery).toBeNull();
+    expect(query.page).toBe(1);
+    expect(query.limit).toBe(20);
   });
 
   it('filters and paginates articles', () => {

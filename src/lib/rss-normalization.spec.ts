@@ -6,11 +6,11 @@ import {
   extractSafeSummary,
   normalizeDateToIso,
   normalizeFeedItem,
-} from './rss-normalization';
+} from '../../server/lib/rss-normalization';
 
 import type { Article } from '../interfaces/article.interface';
 
-describe('rss-normalization', () => {
+describe('server/lib/rss-normalization', () => {
   it('normalizes valid dates to ISO', () => {
     expect(normalizeDateToIso('Tue, 17 Feb 2026 10:30:00 GMT')).toBe('2026-02-17T10:30:00.000Z');
     expect(normalizeDateToIso('2026-02-17T10:30:00+01:00')).toBe('2026-02-17T09:30:00.000Z');
@@ -194,6 +194,24 @@ describe('rss-normalization', () => {
     expect(normalized?.title).toBe('Mercados \u2013 cierre | analisis');
     expect(normalized?.sourceName).toBe('Diario | Economico');
     expect(normalized?.author).toBe('Redaccion \u2013 Madrid');
+  });
+
+  it('drops feed item when title is blank after normalization', () => {
+    const normalized = normalizeFeedItem({
+      externalId: null,
+      title: '   ',
+      summary: 'Resumen',
+      url: 'https://example.com/news/blank',
+      sourceId: 'source-b',
+      sourceName: 'Diario',
+      sectionSlug: 'economia',
+      author: null,
+      publishedAt: null,
+      imageUrl: null,
+      thumbnailUrl: null,
+    });
+
+    expect(normalized).toBeNull();
   });
 });
 

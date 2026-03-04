@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createNewsHandler } from '../../api/news';
-
-import { WARNING_CODE } from './warning-code';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
 
 import type { SourceFeedTarget } from '../interfaces/source-feed-target.interface';
 import type { Warning } from '../interfaces/warning.interface';
