@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { formatBreakingNewsTimestamp } from '../../utils/breaking-news-timestamp';
 import { IconNewsComponent } from '../icons/icon-news.component';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -43,12 +44,12 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 
       @if (visibleItems().length > 0) {
         <ul class="grid grow grid-rows-4">
-          @for (item of visibleItems(); track item.id; let index = $index) {
+          @for (item of visibleItems(); track item.id) {
             <li class="min-h-0 border-b-2 border-primary/60 py-3 last:border-b-0 lg:flex lg:flex-col lg:justify-center">
               <div class="flex items-center gap-3">
                 <span class="inline-flex h-2.5 w-2.5 rounded-full bg-accent/50"></span>
                 <p class="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {{ getTimestamp(index) }}
+                  {{ getTimestamp(item.publishedAt) }}
                 </p>
               </div>
               <button
@@ -81,13 +82,10 @@ export class BreakingNewsComponent {
   readonly coverageLink = input('/seccion/actualidad');
   readonly previewRequested = output<NewsItem>();
 
-  private readonly minuteMarks = [5, 12, 19, 31] as const;
-
   protected readonly visibleItems = computed(() => this.items().slice(0, 4));
 
-  protected getTimestamp(index: number): string {
-    const minutes = this.minuteMarks[index] ?? this.minuteMarks[this.minuteMarks.length - 1];
-    return `Hace ${minutes} min`;
+  protected getTimestamp(publishedAt: string): string {
+    return formatBreakingNewsTimestamp(publishedAt);
   }
 
   protected onPreviewRequest(event: Event, item: NewsItem): void {
