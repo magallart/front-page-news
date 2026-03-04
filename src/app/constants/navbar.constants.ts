@@ -5,6 +5,8 @@ import type { TopLink } from '../../interfaces/top-link.interface';
 
 export const NAVBAR_SCROLL_STICKY_THRESHOLD = 220;
 export const NAVBAR_TICKER_HEADLINE_LIMIT = 12;
+export const NAVBAR_SIDE_MENU_DIALOG_ID = 'navbar-side-menu-dialog';
+export const NAVBAR_SIDE_MENU_TITLE_ID = 'navbar-side-menu-title';
 
 export const NAVBAR_FALLBACK_TICKER_HEADLINES: readonly TickerHeadline[] = [
   {

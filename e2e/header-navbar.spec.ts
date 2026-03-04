@@ -46,13 +46,21 @@ test.describe('Header/Navbar', () => {
     const compactMeta = page.locator('app-navbar-sticky-header p');
     await expect(compactMeta).toHaveText('');
 
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    const menuToggleButton = page.getByRole('button', { name: 'Abrir menu' });
+    await menuToggleButton.click();
+    const sideMenuDialog = page.getByRole('dialog', { name: 'Menu' });
     const sideMenu = page.locator('app-navbar-side-menu aside');
     await expect(sideMenu).toBeVisible();
+    await expect(sideMenuDialog).toBeVisible();
+    await expect(sideMenu.getByRole('button', { name: 'Cerrar menu' })).toBeFocused();
 
     await expect(sideMenu.locator('a[aria-label="Facebook"]')).toBeVisible();
     await expect(sideMenu.locator('a[aria-label="Instagram"]')).toBeVisible();
     await expect(sideMenu.locator('a[aria-label="X"]')).toBeVisible();
     await expect(sideMenu.locator('a[href="/seccion/ultima-hora"]')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(sideMenu).toHaveClass(/-translate-x-full/);
+    await expect(menuToggleButton).toBeFocused();
   });
 });

@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { NAVBAR_SIDE_MENU_DIALOG_ID } from '../../../constants/navbar.constants';
+
 import { NavbarStickyHeaderComponent } from './navbar-sticky-header.component';
 
 describe('NavbarStickyHeaderComponent', () => {
@@ -43,6 +45,8 @@ describe('NavbarStickyHeaderComponent', () => {
 
     const button = fixture.nativeElement.querySelector('button[aria-label="Abrir menu"]') as HTMLButtonElement;
     expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.getAttribute('aria-controls')).toBe(NAVBAR_SIDE_MENU_DIALOG_ID);
+    expect(button.getAttribute('aria-haspopup')).toBe('dialog');
 
     button.click();
     fixture.detectChanges();

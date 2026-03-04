@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { NAVBAR_SIDE_MENU_DIALOG_ID } from '../../../constants/navbar.constants';
 import { IconMenuComponent } from '../../icons/icon-menu.component';
 import { PageContainerComponent } from '../page-container.component';
 
@@ -28,6 +29,8 @@ import { PageContainerComponent } from '../page-container.component';
               class="mr-2 inline-flex h-10 w-10 items-center justify-center text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:mr-3"
               (click)="menuToggle.emit()"
               [attr.aria-expanded]="menuOpen()"
+              [attr.aria-controls]="sideMenuDialogId"
+              aria-haspopup="dialog"
               aria-label="Abrir menu"
             >
               <app-icon-menu />
@@ -51,6 +54,8 @@ import { PageContainerComponent } from '../page-container.component';
   `,
 })
 export class NavbarStickyHeaderComponent {
+  protected readonly sideMenuDialogId = NAVBAR_SIDE_MENU_DIALOG_ID;
+
   readonly visible = input.required<boolean>();
   readonly menuOpen = input.required<boolean>();
   readonly topbarMeta = input.required<string>();

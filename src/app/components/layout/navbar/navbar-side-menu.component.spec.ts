@@ -2,20 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { NAVBAR_SIDE_MENU_DIALOG_ID, NAVBAR_SIDE_MENU_TITLE_ID } from '../../../constants/navbar.constants';
+
 import { NavbarSideMenuComponent } from './navbar-side-menu.component';
+
+import type { ComponentFixture } from '@angular/core/testing';
 
 describe('NavbarSideMenuComponent', () => {
   it('renders social icons in a single row and without text labels', async () => {
-    await TestBed.configureTestingModule({
-      imports: [NavbarSideMenuComponent],
-      providers: [provideRouter([])],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(NavbarSideMenuComponent);
-    fixture.componentRef.setInput('open', true);
-    fixture.componentRef.setInput('links', MOCK_LINKS);
-    fixture.componentRef.setInput('socialLinks', MOCK_SOCIAL_LINKS);
-    fixture.detectChanges();
+    const fixture = await createFixture();
 
     const socialList = fixture.nativeElement.querySelector('ul.flex.items-center.gap-2');
     expect(socialList).toBeTruthy();
@@ -28,17 +23,21 @@ describe('NavbarSideMenuComponent', () => {
     expect(socialLabels).not.toContain('X');
   });
 
-  it('emits close event from overlay and close button', async () => {
-    await TestBed.configureTestingModule({
-      imports: [NavbarSideMenuComponent],
-      providers: [provideRouter([])],
-    }).compileComponents();
+  it('exposes dialog semantics and labelling attributes when open', async () => {
+    const fixture = await createFixture();
 
-    const fixture = TestBed.createComponent(NavbarSideMenuComponent);
-    fixture.componentRef.setInput('open', true);
-    fixture.componentRef.setInput('links', MOCK_LINKS);
-    fixture.componentRef.setInput('socialLinks', MOCK_SOCIAL_LINKS);
-    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(`#${NAVBAR_SIDE_MENU_DIALOG_ID}`) as HTMLElement;
+    const heading = fixture.nativeElement.querySelector(`#${NAVBAR_SIDE_MENU_TITLE_ID}`) as HTMLElement;
+
+    expect(panel).toBeTruthy();
+    expect(panel.getAttribute('role')).toBe('dialog');
+    expect(panel.getAttribute('aria-modal')).toBe('true');
+    expect(panel.getAttribute('aria-labelledby')).toBe(NAVBAR_SIDE_MENU_TITLE_ID);
+    expect(heading.textContent?.trim()).toBe('Menu');
+  });
+
+  it('emits close event from overlay and close button', async () => {
+    const fixture = await createFixture();
 
     const closeSpy = vi.fn();
     fixture.componentInstance.closed.subscribe(closeSpy);
@@ -59,16 +58,7 @@ describe('NavbarSideMenuComponent', () => {
   });
 
   it('emits close event when selecting a navigation link', async () => {
-    await TestBed.configureTestingModule({
-      imports: [NavbarSideMenuComponent],
-      providers: [provideRouter([])],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(NavbarSideMenuComponent);
-    fixture.componentRef.setInput('open', true);
-    fixture.componentRef.setInput('links', MOCK_LINKS);
-    fixture.componentRef.setInput('socialLinks', MOCK_SOCIAL_LINKS);
-    fixture.detectChanges();
+    const fixture = await createFixture();
 
     const closeSpy = vi.fn();
     fixture.componentInstance.closed.subscribe(closeSpy);
@@ -79,11 +69,90 @@ describe('NavbarSideMenuComponent', () => {
 
     expect(closeSpy).toHaveBeenCalledOnce();
   });
+
+  it('emits close event when Escape key is pressed', async () => {
+    const fixture = await createFixture();
+
+    const closeSpy = vi.fn();
+    fixture.componentInstance.closed.subscribe(closeSpy);
+
+    const panel = fixture.nativeElement.querySelector(`#${NAVBAR_SIDE_MENU_DIALOG_ID}`) as HTMLElement;
+    panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(closeSpy).toHaveBeenCalledOnce();
+  });
+
+  it('focuses close button on open and restores previous focus on close', async () => {
+    const openerButton = document.createElement('button');
+    openerButton.type = 'button';
+    openerButton.textContent = 'Open menu';
+    document.body.appendChild(openerButton);
+    openerButton.focus();
+
+    const fixture = await createFixture(false);
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const closeButton = fixture.nativeElement.querySelector('button[aria-label="Cerrar menu"]') as HTMLButtonElement;
+    expect(document.activeElement).toBe(closeButton);
+
+    fixture.componentRef.setInput('open', false);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    expect(document.activeElement).toBe(openerButton);
+    openerButton.remove();
+  });
+
+  it('traps keyboard focus inside the menu panel', async () => {
+    const fixture = await createFixture();
+    await flushMicrotasks();
+
+    const panel = fixture.nativeElement.querySelector(`#${NAVBAR_SIDE_MENU_DIALOG_ID}`) as HTMLElement;
+    const focusableElements = Array.from(panel.querySelectorAll<HTMLElement>('button, a[href]'));
+    const firstFocusableElement = focusableElements[0];
+    const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+    expect(firstFocusableElement).toBeTruthy();
+    expect(lastFocusableElement).toBeTruthy();
+
+    firstFocusableElement?.focus();
+    firstFocusableElement?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(lastFocusableElement);
+
+    lastFocusableElement?.focus();
+    lastFocusableElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(firstFocusableElement);
+  });
 });
+
+async function createFixture(open = true): Promise<ComponentFixture<NavbarSideMenuComponent>> {
+  await TestBed.configureTestingModule({
+    imports: [NavbarSideMenuComponent],
+    providers: [provideRouter([])],
+  }).compileComponents();
+
+  const fixture = TestBed.createComponent(NavbarSideMenuComponent);
+  fixture.componentRef.setInput('open', open);
+  fixture.componentRef.setInput('links', MOCK_LINKS);
+  fixture.componentRef.setInput('socialLinks', MOCK_SOCIAL_LINKS);
+  fixture.detectChanges();
+  return fixture;
+}
+
+async function flushMicrotasks(): Promise<void> {
+  await Promise.resolve();
+}
 
 const MOCK_LINKS = [
   { label: 'Actualidad', href: '/seccion/actualidad', exact: false },
-  { label: 'Economía', href: '/seccion/economia', exact: false },
+  { label: 'Economia', href: '/seccion/economia', exact: false },
 ] as const;
 
 const MOCK_SOCIAL_LINKS = [
