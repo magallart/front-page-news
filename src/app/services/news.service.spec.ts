@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NEWS_CACHE_TTL_MS, NewsService } from './news.service';
+import { NEWS_CACHE_MAX_ENTRIES, NEWS_CACHE_TTL_MS, NewsService } from './news.service';
 
 describe('NewsService', () => {
   let service: NewsService;
@@ -138,6 +138,38 @@ describe('NewsService', () => {
     const secondRequest = httpController.expectOne('/api/news?section=economia');
     secondRequest.flush(createValidNewsPayload());
     await secondRequestPromise;
+  });
+
+  it('evicts least recently used entry when cache reaches max size', async () => {
+    configureTestingModule();
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
+
+    for (let index = 0; index < NEWS_CACHE_MAX_ENTRIES; index += 1) {
+      const section = `section-${index}`;
+      const requestPromise = firstValueFrom(service.getNews({ section }));
+      const request = httpController.expectOne(`/api/news?section=${section}`);
+      request.flush(createValidNewsPayload());
+      await requestPromise;
+    }
+
+    const promotedRequestPromise = firstValueFrom(service.getNews({ section: 'section-0' }));
+    httpController.expectNone('/api/news?section=section-0');
+    await expect(promotedRequestPromise).resolves.toEqual(createValidNewsPayload());
+
+    const overflowRequestPromise = firstValueFrom(service.getNews({ section: 'section-overflow' }));
+    const overflowRequest = httpController.expectOne('/api/news?section=section-overflow');
+    overflowRequest.flush(createValidNewsPayload());
+    await overflowRequestPromise;
+
+    const evictedRequestPromise = firstValueFrom(service.getNews({ section: 'section-1' }));
+    const evictedRequest = httpController.expectOne('/api/news?section=section-1');
+    evictedRequest.flush(createValidNewsPayload());
+    await evictedRequestPromise;
+
+    const stillCachedRequestPromise = firstValueFrom(service.getNews({ section: 'section-0' }));
+    httpController.expectNone('/api/news?section=section-0');
+    await expect(stillCachedRequestPromise).resolves.toEqual(createValidNewsPayload());
   });
 
   it('clears all cached entries with clear()', async () => {

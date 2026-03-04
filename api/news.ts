@@ -20,6 +20,7 @@ export const config = {
 };
 
 const NEWS_HANDLER_CACHE_TTL_MS = 60_000;
+const NEWS_HANDLER_CACHE_MAX_ENTRIES = 64;
 const PERF_LOGS_ENV_FLAG = 'NEWS_PERF_LOGS';
 
 const defaultDependencies: NewsHandlerDependencies = {
@@ -41,6 +42,7 @@ export function createNewsHandler(
     ...overrides,
   };
   const cacheTtlMs = runtimeOptions.cacheTtlMs ?? NEWS_HANDLER_CACHE_TTL_MS;
+  const cacheMaxEntries = Math.max(1, runtimeOptions.cacheMaxEntries ?? NEWS_HANDLER_CACHE_MAX_ENTRIES);
   const now = runtimeOptions.now ?? (() => Date.now());
   const enablePerfLogs = runtimeOptions.enablePerfLogs ?? process.env[PERF_LOGS_ENV_FLAG] === '1';
   const responseCache = new Map<string, CachedNewsPayload>();
@@ -52,12 +54,15 @@ export function createNewsHandler(
     }
 
     const startedAt = now();
+    pruneExpiredCacheEntries(responseCache, startedAt);
+
     const query = parseNewsQuery(request.url);
     const cacheKey = toNewsQueryCacheKey(query);
     const cached = responseCache.get(cacheKey);
 
-    if (cached && !isExpired(cached.expiresAt, now())) {
+    if (cached && !isExpired(cached.expiresAt, startedAt)) {
       try {
+        promoteCacheEntry(responseCache, cacheKey, cached);
         const { payload } = await cached.payloadPromise;
         if (enablePerfLogs) {
           logPerf('cache-hit', {
@@ -82,6 +87,7 @@ export function createNewsHandler(
       payloadPromise,
       expiresAt: now() + cacheTtlMs,
     });
+    enforceCacheSizeLimit(responseCache, cacheMaxEntries);
 
     try {
       const { payload, timings } = await payloadPromise;
@@ -113,6 +119,30 @@ export function createNewsHandler(
 }
 
 export default createNewsHandler();
+
+function pruneExpiredCacheEntries(cache: Map<string, CachedNewsPayload>, nowTimestamp: number): void {
+  for (const [cacheKey, cacheEntry] of cache.entries()) {
+    if (isExpired(cacheEntry.expiresAt, nowTimestamp)) {
+      cache.delete(cacheKey);
+    }
+  }
+}
+
+function promoteCacheEntry(cache: Map<string, CachedNewsPayload>, cacheKey: string, cacheEntry: CachedNewsPayload): void {
+  cache.delete(cacheKey);
+  cache.set(cacheKey, cacheEntry);
+}
+
+function enforceCacheSizeLimit(cache: Map<string, CachedNewsPayload>, maxEntries: number): void {
+  while (cache.size > maxEntries) {
+    const oldestCacheKey = cache.keys().next().value;
+    if (typeof oldestCacheKey !== 'string') {
+      return;
+    }
+
+    cache.delete(oldestCacheKey);
+  }
+}
 
 async function loadSourcesCatalog(): Promise<readonly SourceFeedTarget[]> {
   const records = await loadRssCatalogRecords(RSS_SOURCES_FILE_PATH);

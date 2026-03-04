@@ -21,6 +21,7 @@ export { buildNewsHttpParams } from '../lib/news-request';
 export { adaptNewsResponse } from '../lib/news-response-adapter';
 
 export const NEWS_CACHE_TTL_MS = 60_000;
+export const NEWS_CACHE_MAX_ENTRIES = 32;
 
 @Injectable({ providedIn: 'root' })
 export class NewsService {
@@ -32,12 +33,15 @@ export class NewsService {
     const cacheKey = toNewsCacheKey(params);
     const section = params.get('section');
 
+    this.pruneExpiredEntries();
+
     if (options.forceRefresh) {
       this.responseCache.delete(cacheKey);
     }
 
     const cached = this.responseCache.get(cacheKey);
     if (cached && !isCacheExpired(cached.expiresAt)) {
+      this.promoteCacheEntry(cacheKey, cached);
       return cached.response$;
     }
 
@@ -51,6 +55,7 @@ export class NewsService {
       response$: request$,
       expiresAt: Date.now() + NEWS_CACHE_TTL_MS,
     });
+    this.enforceCacheSizeLimit();
 
     return request$;
   }
@@ -60,11 +65,37 @@ export class NewsService {
   }
 
   invalidateBySection(sectionSlug: string): void {
+    this.pruneExpiredEntries();
+
     const normalizedSection = normalizeSection(sectionSlug);
     for (const [cacheKey, cacheEntry] of this.responseCache.entries()) {
       if (cacheEntry.section === normalizedSection) {
         this.responseCache.delete(cacheKey);
       }
+    }
+  }
+
+  private pruneExpiredEntries(): void {
+    for (const [cacheKey, cacheEntry] of this.responseCache.entries()) {
+      if (isCacheExpired(cacheEntry.expiresAt)) {
+        this.responseCache.delete(cacheKey);
+      }
+    }
+  }
+
+  private promoteCacheEntry(cacheKey: string, cacheEntry: NewsCacheEntry): void {
+    this.responseCache.delete(cacheKey);
+    this.responseCache.set(cacheKey, cacheEntry);
+  }
+
+  private enforceCacheSizeLimit(): void {
+    while (this.responseCache.size > NEWS_CACHE_MAX_ENTRIES) {
+      const oldestCacheKey = this.responseCache.keys().next().value;
+      if (typeof oldestCacheKey !== 'string') {
+        return;
+      }
+
+      this.responseCache.delete(oldestCacheKey);
     }
   }
 

@@ -11,6 +11,7 @@ import type { SourcesRequestOptions } from '../interfaces/sources-request-option
 export { adaptSourcesResponse } from '../lib/sources-response-adapter';
 
 export const SOURCES_CACHE_TTL_MS = 300_000;
+export const SOURCES_CACHE_MAX_ENTRIES = 1;
 
 @Injectable({ providedIn: 'root' })
 export class SourcesService {
@@ -22,12 +23,10 @@ export class SourcesService {
       this.clear();
     }
 
-    if (this.cachedResponse && !isCacheExpired(this.cachedResponse.expiresAt)) {
-      return this.cachedResponse.response$;
-    }
+    this.pruneExpiredEntry();
 
     if (this.cachedResponse) {
-      this.cachedResponse = null;
+      return this.cachedResponse.response$;
     }
 
     const request$ = this.http.get<Record<string, unknown>>('/api/sources').pipe(
@@ -43,11 +42,24 @@ export class SourcesService {
       response$: request$,
       expiresAt: Date.now() + SOURCES_CACHE_TTL_MS,
     };
+    this.enforceCachePolicy();
 
     return request$;
   }
 
   clear(): void {
     this.cachedResponse = null;
+  }
+
+  private pruneExpiredEntry(): void {
+    if (this.cachedResponse && isCacheExpired(this.cachedResponse.expiresAt)) {
+      this.cachedResponse = null;
+    }
+  }
+
+  private enforceCachePolicy(): void {
+    if (SOURCES_CACHE_MAX_ENTRIES < 1) {
+      this.cachedResponse = null;
+    }
   }
 }
