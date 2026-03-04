@@ -20,17 +20,19 @@ test.describe('Home Page', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
 
+    const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
+
     await page.locator('app-news-carousel article > button').click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    await expect(page.locator('[role="dialog"] h1')).toContainText('Acuerdo europeo');
+    await expect(quickViewDialog).toBeVisible();
+    await expect(quickViewDialog.locator('h1')).toContainText('Acuerdo europeo');
 
     await page.locator('.quick-view-dialog button[aria-label="Cerrar modal"]').click();
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    await expect(quickViewDialog).toHaveCount(0);
 
     await page.locator('app-news-carousel article > button').click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await expect(quickViewDialog).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    await expect(quickViewDialog).toHaveCount(0);
   });
 
   test('opens quick-view modal from breaking and most-read lists', async ({ page }) => {
@@ -38,13 +40,15 @@ test.describe('Home Page', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
 
+    const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
+
     await page.locator('#breaking-news ul button').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await expect(quickViewDialog).toBeVisible();
     await page.locator('.quick-view-overlay').click({ position: { x: 6, y: 6 } });
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    await expect(quickViewDialog).toHaveCount(0);
 
     await page.locator('#most-read-news ol li button').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await expect(quickViewDialog).toBeVisible();
     await expect(page.locator('app-article-preview-cta a')).toHaveAttribute('target', '_blank');
   });
 });

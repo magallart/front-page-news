@@ -31,10 +31,12 @@ test.describe('Section Filters', () => {
     await panel.getByLabel('Salud y Ciencia').uncheck();
     await expect(cards).toHaveCount(1);
 
+    const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
+
     await cards.first().locator('h3 button').click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await expect(quickViewDialog).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+    await expect(quickViewDialog).toHaveCount(0);
   });
 
   test('does not render filters trigger in an empty section', async ({ page }) => {
@@ -47,4 +49,3 @@ test.describe('Section Filters', () => {
     await expect(page.locator('app-error-state')).toBeVisible();
   });
 });
-
