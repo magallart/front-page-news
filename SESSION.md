@@ -317,7 +317,7 @@ Brief continuity notes to recover context between terminal sessions.
       - `feat(article): [FPN-010] add dedicated article-page loading skeleton`
       - `chore(router): [FPN-010] remove temporary home-skeleton route and update backlog`
 
-## 2026-02-24 (final)
+## 2026-02-24
 
 - What changed:
   - Stabilized text encoding end-to-end for news ingestion and rendering.
@@ -363,9 +363,6 @@ Brief continuity notes to recover context between terminal sessions.
     - dedupe now preserves the longest summary variant for duplicated articles.
     - normalization keeps paragraph boundaries when source HTML provides block structure.
     - article detail now renders normalized summary as multiple paragraphs when paragraph breaks exist.
-- Verification performed:
-  - `pnpm run lint` (pass).
-  - `pnpm test -- --watch=false` (pass).
 
 ## 2026-03-02
 
@@ -389,9 +386,6 @@ Brief continuity notes to recover context between terminal sessions.
     - breaking block now uses balanced selection with per-source cap.
     - source keys are normalized across selection/ranking utils to avoid bypassing caps with naming variants (`ABC`, ` abc `, `Abc`).
   - User manually validated the final behavior in local: portada now keeps section/source variety as expected.
-- Verification performed:
-  - `pnpm run lint` (pass).
-  - `pnpm test` (pass, 45 files / 202 tests).
 
 ## 2026-03-03
 
@@ -417,8 +411,7 @@ Brief continuity notes to recover context between terminal sessions.
     - refactored `NewsService`/`SourcesService` to delegate cache/query/adapters/guards to `src/app/lib`.
     - moved exported feed interfaces (`RawFeedItem`, `ParsedFeedItems`) to dedicated files under `src/interfaces`.
   - Updated refactor tracking and backlog status to close `FPN-012` after full revalidation.
-- Verification performed:
-  - `pnpm run lint` (pass).
-  - `pnpm test -- --watch=false` (pass, 67 files / 286 tests).
-  - `pnpm test:e2e` (pass, 13 tests).
-  - `pnpm test -- --watch=false --coverage --coverage-reporters=text-summary` (pass; Statements 93.78%, Branches 89.85%, Functions 92.29%, Lines 93.69%).
+  - Applied final UI fixes under `FPN-010`:
+    - breaking-news headlines now use improved line-height and direct gold underline on hover (without text color swap).
+    - homepage carousel images now fill the full hero area to avoid gray side gaps.
+
