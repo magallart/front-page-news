@@ -415,3 +415,11 @@ Brief continuity notes to recover context between terminal sessions.
     - breaking-news headlines now use improved line-height and direct gold underline on hover (without text color swap).
     - homepage carousel images now fill the full hero area to avoid gray side gaps.
 
+## 2026-04-20
+
+- What changed:
+  - Updated `AGENTS.md` and `agents/git.md` to support autonomous execution with validated milestone commits.
+  - Replaced mandatory per-commit confirmation with an explicit autonomous-mode policy and safety boundaries.
+  - Required English conventional commits with explicit summaries and descriptive `What` / `Why` / `Validation` bodies.
+  - Added a rule requiring terminal-based behavior verification before autonomous commits.
+

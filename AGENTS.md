@@ -105,20 +105,29 @@ This file acts as the **single source of truth** for global conventions and deci
 - Always use conventional commits.
 - Prefer atomic commits: one logical change per commit.
 - Do not group unrelated file changes in a single commit.
-- Never create commits without explicit user approval in the current conversation.
-- Commit or push actions are allowed only after the user explicitly asks for them.
-- Global commit approval rule: before every `git commit`, always ask for explicit confirmation in that exact moment.
-  This rule is permanent and does not depend on user reminders.
+- Commits must always be written in English.
+- Commit subjects and bodies must be explicit and self-contained.
+- Avoid terse commit messages or low-signal summaries.
+- Commit or push actions are allowed only after the user explicitly asks for them, or when the repository/session is operating in an explicitly authorized autonomous mode.
+- In autonomous mode, the agent may create commits without asking again only for validated milestones that belong to the active task.
+- In autonomous mode, the agent must not auto-commit when unrelated local changes are present, when validation fails, or when the change includes unconfirmed architecture decisions, dependency changes, destructive actions, or deployment-impacting operations.
 - Commit and PR descriptions must be explicit and self-contained, not terse.
 - Avoid vague messages like "fix stuff", "updates", or "cleanup".
 - If the project uses `BACKLOG.md`, commit subjects must include the ticket id.
 - Required commit subject format with ticket: `type(scope): [TICKET-ID] explicit summary`.
+- Base conventional commit format without ticket: `type(scope): explicit summary`.
+- Every automated commit must include a descriptive body with:
+  - `What:` the concrete change set
+  - `Why:` the reason for the change
+  - `Validation:` terminal checks that were executed and their result
 - PR title format:
   - [<project_name>] Clear and concise description.
 - PR body should follow `.github/pull_request_template.md`.
 - Before committing or opening a PR:
   - pnpm run lint.
   - pnpm test.
+- Before every autonomous commit, the agent must verify the task behavior from the terminal using the most relevant available checks for the change.
+- A commit is valid only after the agent has observed successful terminal output for the required checks.
 - PR descriptions must be concise and focused on a high-level summary of what changed.
 - If a new global restriction is introduced (e.g. “never X”, “always Y”), it must be documented **in this file**.
 
@@ -126,9 +135,11 @@ This file acts as the **single source of truth** for global conventions and deci
 
 - If a request is unclear, ask precise and concrete questions before acting.
 - Simple, well-defined tasks may be executed directly.
-- Complex changes (refactors, new features, architectural decisions) require confirmation of understanding before execution.
+- Complex changes may be executed autonomously once scope and intent are clear.
+- Confirmation is still required before changing architecture direction, adding dependencies, performing destructive actions, or taking release/deployment actions.
 - Never assume implicit requirements.
 - If critical information is missing, stop and request it.
+- Prefer working through complete validated milestones instead of stopping after each small edit when the task can be safely completed end-to-end.
 
 ## Session Continuity
 

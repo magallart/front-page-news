@@ -14,10 +14,12 @@ Specialized in git workflows, commits, and pull requests.
 - PRs must be small and focused.
 - Commit messages should be clear and descriptive.
 - Commit messages must include enough context to be understood without opening the diff.
+- All commit messages must be written in English.
+- Avoid short or generic commit text.
 - Prefer atomic commits: one logical change per commit.
 - If a ticket touches many files, split work into multiple commits by concern (e.g. refactor, feature, tests, docs).
 - Never mix unrelated changes in the same commit.
-- Use a short conventional-commit subject plus a body with:
+- Use a conventional-commit subject plus a body with:
   - what changed
   - why it changed
   - how it was validated
@@ -26,9 +28,11 @@ Specialized in git workflows, commits, and pull requests.
 - Ticket format examples: `[AP-003]`, `[FP-012]`.
 - Follow the defined PR title format.
 - Ensure lint and tests pass before merging.
-- Never commit unless the user explicitly requests or approves the commit in the current conversation.
-- Before every `git commit`, always ask for explicit confirmation in that exact moment.
-- If commit intent is ambiguous, stop and ask for confirmation before running any `git commit` command.
+- Support autonomous mode when the repository or current session explicitly allows it.
+- In autonomous mode, create commits automatically only for validated milestones within the active task scope.
+- Do not auto-commit if unrelated working tree changes are present, if validation is incomplete, or if the change includes unapproved architecture, dependency, destructive, or deployment decisions.
+- Outside autonomous mode, never commit unless the user explicitly requests or approves the commit in the current conversation.
+- If commit intent or commit scope is ambiguous, stop and ask before running any `git commit` command.
 
 ## Branching
 
@@ -48,13 +52,21 @@ Examples:
 - `refactor(router): [AP-021] simplify route guards`
 - `test(repo-button): [FP-019] add regression coverage`
 
-Recommended structure:
+Recommended structure with ticket:
 
 - Subject: `type(scope): [TICKET-ID] explicit summary`
 - Body:
   - `What:` specific change
   - `Why:` reason / problem solved
-  - `Validation:` lint/tests/manual checks
+  - `Validation:` terminal checks/manual checks
+
+Recommended structure without ticket:
+
+- Subject: `type(scope): explicit summary`
+- Body:
+  - `What:` specific change
+  - `Why:` reason / problem solved
+  - `Validation:` terminal checks/manual checks
 
 ## PR Checklist (REQUIRED)
 
@@ -72,4 +84,6 @@ Recommended structure:
 
 - Do not bundle refactors and features in the same PR.
 - Prefer one logical change per PR.
-- Avoid “cleanup” commits without context.
+- Before any autonomous commit, run the most relevant terminal validation for the task and confirm the behavior works from observed command results.
+- Treat `pnpm run lint` and `pnpm test` as the default baseline unless the repository defines a stricter or more targeted validation path.
+- Avoid "cleanup" commits without context.
