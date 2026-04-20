@@ -422,4 +422,9 @@ Brief continuity notes to recover context between terminal sessions.
   - Replaced mandatory per-commit confirmation with an explicit autonomous-mode policy and safety boundaries.
   - Required English conventional commits with explicit summaries and descriptive `What` / `Why` / `Validation` bodies.
   - Added a rule requiring terminal-based behavior verification before autonomous commits.
+  - Repaired the local dependency tree enough to recover Angular CLI lint/typecheck through direct commands after a broken `node_modules` rebuild.
+  - Confirmed `pnpm exec ng lint` and `pnpm run typecheck` pass again.
+  - Stabilized the workspace by adding a repo-level `.npmrc` with `node-linker=hoisted`, rebuilding `node_modules` offline, and adding `semver` as a direct dev dependency.
+  - Confirmed `pnpm run lint` passes again with the normal package scripts.
+  - Confirmed `pnpm test -- --watch=false` passes again after the hoisted reinstall.
 
