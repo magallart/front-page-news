@@ -28,6 +28,10 @@ Specialized in git workflows, commits, and pull requests.
 - Ticket format examples: `[AP-003]`, `[FP-012]`.
 - Follow the defined PR title format.
 - Ensure lint and tests pass before merging.
+- In this repository, "tests pass" means the full validation baseline unless the user explicitly narrows it for the current task:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
 - Support autonomous mode when the repository or current session explicitly allows it.
 - In autonomous mode, create commits automatically only for validated milestones within the active task scope.
 - Do not auto-commit if unrelated working tree changes are present, if validation is incomplete, or if the change includes unapproved architecture, dependency, destructive, or deployment decisions.
@@ -86,4 +90,8 @@ Recommended structure without ticket:
 - Prefer one logical change per PR.
 - Before any autonomous commit, run the most relevant terminal validation for the task and confirm the behavior works from observed command results.
 - Treat `pnpm run lint` and `pnpm test` as the default baseline unless the repository defines a stricter or more targeted validation path.
+- This repository defines a stricter default validation path:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
 - Avoid "cleanup" commits without context.

@@ -18,6 +18,7 @@ This agent defines how tests are written, what is expected by default, and how t
 - **Unit tests**: Vitest (Angular 21).
 - **End-to-end tests**: Playwright.
 - Failing tests always block merges.
+- For validated milestones, the default expectation is to run the complete repository test suite, not only focused test files.
 
 ## Responsibilities
 
@@ -156,6 +157,16 @@ E2E tests exist to answer one question:
 ## Commands
 
 ```bash
-pnpm test
 pnpm run lint
+pnpm test
+pnpm test:e2e
 ```
+
+## Validation Policy (REQUIRED)
+
+- Focused test runs are allowed during implementation for quick feedback.
+- A milestone is not considered validated until the full baseline passes:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
+- If a full-suite command is already approved or operationally simpler than a custom runner, prefer it to avoid approval friction and environment-specific blockers.

@@ -80,6 +80,13 @@ This file acts as the **single source of truth** for global conventions and deci
   - Type checking.
   - Linting.
   - Tests.
+- By default, milestone validation must run the full application test suite, not only targeted tests.
+- Targeted tests may be used during development for fast feedback, but they are not sufficient to mark a milestone as validated.
+- Unless the user explicitly waives it for the current task, full validation means:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
+- When sandbox restrictions interfere with ad hoc test commands, prefer the full validated commands above so execution can remain autonomous without approval loops.
 - No code with failing checks is acceptable.
 - When behavior changes:
   - Tests must be added or updated.
@@ -126,7 +133,13 @@ This file acts as the **single source of truth** for global conventions and deci
 - Before committing or opening a PR:
   - pnpm run lint.
   - pnpm test.
+- Before committing or opening a PR when e2e coverage exists in the repository:
+  - pnpm test:e2e.
 - Before every autonomous commit, the agent must verify the task behavior from the terminal using the most relevant available checks for the change.
+- For this repository, the default autonomous milestone validation is the full suite:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
 - A commit is valid only after the agent has observed successful terminal output for the required checks.
 - PR descriptions must be concise and focused on a high-level summary of what changed.
 - If a new global restriction is introduced (e.g. “never X”, “always Y”), it must be documented **in this file**.
