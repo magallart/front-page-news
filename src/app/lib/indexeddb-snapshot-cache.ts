@@ -1,3 +1,5 @@
+import { Injectable } from '@angular/core';
+
 import { toNewsSnapshotKey, toSourcesSnapshotKey } from '../../../shared/lib/snapshot-key';
 
 import { toNewsSnapshotQuery } from './news-request';
@@ -26,15 +28,22 @@ interface IndexedDbSnapshotCacheOptions {
   readonly openDatabase?: () => Promise<SnapshotCacheDatabase | null>;
 }
 
+interface SnapshotCacheWriteOptions {
+  readonly staleAtMs?: number;
+  readonly expiresAtMs?: number;
+}
+
 let sharedDatabasePromise: Promise<SnapshotCacheDatabase | null> | null = null;
 
+@Injectable({ providedIn: 'root' })
 export class IndexedDbSnapshotCache {
-  private readonly now: () => number;
-  private readonly openDatabase: () => Promise<SnapshotCacheDatabase | null>;
+  private now: () => number = () => Date.now();
+  private openDatabase: () => Promise<SnapshotCacheDatabase | null> = openSharedSnapshotCacheDatabase;
 
-  constructor(options: IndexedDbSnapshotCacheOptions = {}) {
-    this.now = options.now ?? (() => Date.now());
-    this.openDatabase = options.openDatabase ?? openSharedSnapshotCacheDatabase;
+  withOptions(options: IndexedDbSnapshotCacheOptions): this {
+    this.now = options.now ?? this.now;
+    this.openDatabase = options.openDatabase ?? this.openDatabase;
+    return this;
   }
 
   async getNewsSnapshot(query: NewsRequestQuery = {}): Promise<PersistedNewsSnapshotRecord | null> {
@@ -42,8 +51,11 @@ export class IndexedDbSnapshotCache {
     return this.readRecord<PersistedNewsSnapshotRecord>(SNAPSHOT_CACHE_STORE_NAME.NEWS, key);
   }
 
-  async putNewsSnapshot(snapshot: NewsSnapshot): Promise<PersistedNewsSnapshotRecord> {
-    const record = this.toPersistedRecord(snapshot);
+  async putNewsSnapshot(
+    snapshot: NewsSnapshot,
+    options: SnapshotCacheWriteOptions = {},
+  ): Promise<PersistedNewsSnapshotRecord> {
+    const record = this.toPersistedRecord(snapshot, options);
     await this.writeRecord(SNAPSHOT_CACHE_STORE_NAME.NEWS, record);
     return record;
   }
@@ -57,8 +69,11 @@ export class IndexedDbSnapshotCache {
     return this.readRecord<PersistedSourcesSnapshotRecord>(SNAPSHOT_CACHE_STORE_NAME.SOURCES, toSourcesSnapshotKey());
   }
 
-  async putSourcesSnapshot(snapshot: SourcesSnapshot): Promise<PersistedSourcesSnapshotRecord> {
-    const record = this.toPersistedRecord(snapshot);
+  async putSourcesSnapshot(
+    snapshot: SourcesSnapshot,
+    options: SnapshotCacheWriteOptions = {},
+  ): Promise<PersistedSourcesSnapshotRecord> {
+    const record = this.toPersistedRecord(snapshot, options);
     await this.writeRecord(SNAPSHOT_CACHE_STORE_NAME.SOURCES, record);
     return record;
   }
@@ -170,15 +185,19 @@ export class IndexedDbSnapshotCache {
 
   private toPersistedRecord<TSnapshot extends NewsSnapshot | SourcesSnapshot>(
     snapshot: TSnapshot,
+    options: SnapshotCacheWriteOptions,
   ): PersistedSnapshotRecord<TSnapshot> {
     const timestamp = this.now();
+    const staleAtMs = options.staleAtMs ?? parseTimestamp(snapshot.staleAt);
+    const expiresAtMs = options.expiresAtMs ?? parseTimestamp(snapshot.expiresAt);
+
     return {
       key: snapshot.key,
       snapshot,
       persistedAtMs: timestamp,
       lastReadAtMs: timestamp,
-      staleAtMs: parseTimestamp(snapshot.staleAt),
-      expiresAtMs: parseTimestamp(snapshot.expiresAt),
+      staleAtMs,
+      expiresAtMs,
     };
   }
 

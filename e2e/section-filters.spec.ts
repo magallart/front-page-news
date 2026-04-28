@@ -6,7 +6,7 @@ test.describe('Section Filters', () => {
   test('opens filters, applies source selection and supports quick-view preview', async ({ page }) => {
     await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
-    await page.goto('/seccion/actualidad');
+    await page.goto('/seccion/actualidad', { waitUntil: 'domcontentloaded' });
 
     const cards = page.locator('app-news-card');
     await expect(cards).toHaveCount(5);
@@ -42,7 +42,7 @@ test.describe('Section Filters', () => {
   test('does not render filters trigger in an empty section', async ({ page }) => {
     await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
-    await page.goto('/seccion/deportes');
+    await page.goto('/seccion/deportes', { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByRole('button', { name: /filtros/i })).toHaveCount(0);
     await expect(page.locator('app-section-filters')).toHaveCount(0);

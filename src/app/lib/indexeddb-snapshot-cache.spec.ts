@@ -10,7 +10,7 @@ describe('src/app/lib/indexeddb-snapshot-cache', () => {
   it('stores and reads news snapshots using the canonical query key', async () => {
     let nowMs = Date.parse('2026-04-28T08:00:00.000Z');
     const database = createInMemorySnapshotCacheDatabase();
-    const cache = new IndexedDbSnapshotCache({
+    const cache = new IndexedDbSnapshotCache().withOptions({
       now: () => nowMs,
       openDatabase: async () => database,
     });
@@ -32,7 +32,7 @@ describe('src/app/lib/indexeddb-snapshot-cache', () => {
   it('drops expired records on read and reports them through prune', async () => {
     let nowMs = Date.parse('2026-04-28T08:00:00.000Z');
     const database = createInMemorySnapshotCacheDatabase();
-    const cache = new IndexedDbSnapshotCache({
+    const cache = new IndexedDbSnapshotCache().withOptions({
       now: () => nowMs,
       openDatabase: async () => database,
     });
@@ -62,7 +62,7 @@ describe('src/app/lib/indexeddb-snapshot-cache', () => {
   });
 
   it('degrades to a noop cache when IndexedDB is unavailable', async () => {
-    const cache = new IndexedDbSnapshotCache({
+    const cache = new IndexedDbSnapshotCache().withOptions({
       openDatabase: async () => null,
     });
 

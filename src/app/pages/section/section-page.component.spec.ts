@@ -10,6 +10,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
+import { IndexedDbSnapshotCache } from '../../lib/indexeddb-snapshot-cache';
+import { RemoteNewsSnapshotService } from '../../services/remote-news-snapshot.service';
 import { NewsStore } from '../../stores/news.store';
 
 import { SectionPageComponent } from './section-page.component';
@@ -17,6 +19,13 @@ import { SectionPageComponent } from './section-page.component';
 describe('SectionPageComponent', () => {
   it('integrates with /api/news for section slug and renders filtered cards', async () => {
     const routeMock = createRouteMock({ slug: 'economia' });
+    const indexedDbSnapshotCacheMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+      putNewsSnapshot: vi.fn().mockResolvedValue(undefined),
+    };
+    const remoteNewsSnapshotServiceMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+    };
 
     await TestBed.configureTestingModule({
       imports: [SectionPageComponent],
@@ -25,6 +34,8 @@ describe('SectionPageComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: routeMock },
+        { provide: IndexedDbSnapshotCache, useValue: indexedDbSnapshotCacheMock },
+        { provide: RemoteNewsSnapshotService, useValue: remoteNewsSnapshotServiceMock },
       ],
     }).compileComponents();
 
@@ -32,8 +43,14 @@ describe('SectionPageComponent', () => {
     const httpController = TestBed.inject(HttpTestingController);
 
     fixture.detectChanges();
+    await flushPendingAsyncHydration();
 
-    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=300');
+    const request = httpController.expectOne((request) =>
+      request.url === '/api/news' &&
+      request.params.get('section') === 'economia' &&
+      request.params.get('page') === '1' &&
+      request.params.get('limit') === '300',
+    );
     expect(request.request.method).toBe('GET');
     request.flush({
       articles: [
@@ -46,10 +63,13 @@ describe('SectionPageComponent', () => {
       warnings: [],
     });
 
-    fixture.detectChanges();
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      const cards = fixture.nativeElement.querySelectorAll('app-news-card');
+      expect(cards.length).toBe(2);
+    });
 
-    const cards = fixture.nativeElement.querySelectorAll('app-news-card');
-    expect(cards.length).toBe(2);
     expect((fixture.nativeElement.textContent as string)).toContain('Titulo integration-1');
 
     httpController.verify();
@@ -298,6 +318,10 @@ function createRouteMock(params: Record<string, string>, query: Record<string, s
   return {
     paramMap: of(convertToParamMap(params)),
     queryParamMap: of(convertToParamMap(query)),
+    snapshot: {
+      paramMap: convertToParamMap(params),
+      queryParamMap: convertToParamMap(query),
+    },
   };
 }
 
@@ -346,6 +370,12 @@ function openFiltersPanel(fixture: { nativeElement: HTMLElement; detectChanges: 
   const toggle = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
   toggle.click();
   fixture.detectChanges();
+}
+
+async function flushPendingAsyncHydration(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
 }
 
 

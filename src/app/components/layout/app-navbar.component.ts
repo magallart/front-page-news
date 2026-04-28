@@ -64,6 +64,7 @@ export class AppNavbarComponent {
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = NAVBAR_TICKER_HEADLINE_LIMIT;
   private readonly fallbackTickerHeadlines = NAVBAR_FALLBACK_TICKER_HEADLINES;
+  private readonly tickerNewsQuery = { page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT } as const;
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
@@ -79,9 +80,9 @@ export class AppNavbarComponent {
   );
 
   protected readonly tickerHeadlines = computed<readonly TickerHeadline[]>(() =>
-    this.newsStore.data().length > 0
+    this.newsStore.data(this.tickerNewsQuery).length > 0
       ? this.newsStore
-          .data()
+          .data(this.tickerNewsQuery)
           .slice(0, this.tickerLimit)
           .map((item) => ({ id: item.id, title: item.title }))
       : this.fallbackTickerHeadlines,
@@ -162,10 +163,10 @@ export class AppNavbarComponent {
       return;
     }
 
-    if (this.newsStore.loading() || this.newsStore.data().length > 0) {
+    if (this.newsStore.loading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
       return;
     }
 
-    this.newsStore.load({ page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT });
+    this.newsStore.load(this.tickerNewsQuery);
   }
 }

@@ -18,8 +18,8 @@ test.describe('Header/Navbar', () => {
     const sideMenu = page.locator('app-navbar-side-menu aside');
     await expect(sideMenu).toBeVisible();
 
-    await sideMenu.getByRole('link', { name: 'Actualidad' }).click();
-    await expect(page).toHaveURL(/\/seccion\/actualidad$/);
+    await sideMenu.getByRole('link', { name: 'Actualidad' }).click({ noWaitAfter: true });
+    await page.waitForURL(/\/seccion\/actualidad$/);
   });
 
   test('ticker uses text headlines and badge routes to /seccion/ultima-hora', async ({ page }) => {
@@ -31,8 +31,8 @@ test.describe('Header/Navbar', () => {
     await expect(tickerHeadlineSpans.first()).toBeVisible();
     await expect(page.locator('app-navbar-ticker .ticker-sequence a')).toHaveCount(0);
 
-    await page.locator('app-navbar-ticker a[href="/seccion/ultima-hora"]').first().click();
-    await expect(page).toHaveURL(/\/seccion\/ultima-hora$/);
+    await page.locator('app-navbar-ticker a[href="/seccion/ultima-hora"]').first().click({ noWaitAfter: true });
+    await page.waitForURL(/\/seccion\/ultima-hora$/);
   });
 
   test('mobile: sticky header is visible and side menu shows social links', async ({ page }) => {

@@ -228,6 +228,15 @@ const SECTION_BY_SLUG: Readonly<Record<string, readonly MockArticle[]>> = {
 const ALL_ARTICLES = [...HOME_NEWS_ARTICLES, ...SECTION_ACTUALIDAD_ARTICLES] as const;
 
 export async function mockApiRoutes(page: Page): Promise<void> {
+  await page.route('**/api/image**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'image/gif',
+      body: 'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==',
+      isBase64: true,
+    });
+  });
+
   await page.route('**/api/sources', async (route) => {
     await route.fulfill({
       status: 200,

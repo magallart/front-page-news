@@ -1,82 +1,261 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { take } from 'rxjs';
 
+import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
+import { toNewsSnapshotQuery } from '../lib/news-request';
 import { NewsService } from '../services/news.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
 import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
 import type { Warning } from '../../../shared/interfaces/warning.interface';
 import type { NewsRequestQuery } from '../services/news.service';
+import type { Subscription } from 'rxjs';
+
+interface NewsStoreEntryState {
+  readonly query: NewsRequestQuery;
+  readonly visibleResponse: NewsResponse | null;
+  readonly pendingResponse: NewsResponse | null;
+  readonly error: string | null;
+  readonly lastUpdated: number | null;
+  readonly isHydrated: boolean;
+  readonly isInitialLoading: boolean;
+  readonly isRefreshing: boolean;
+  readonly isShowingStaleData: boolean;
+  readonly hasFreshUpdateAvailable: boolean;
+  readonly activeRequestId: number;
+}
+
+type NewsStoreState = Readonly<Record<string, NewsStoreEntryState>>;
 
 @Injectable({ providedIn: 'root' })
 export class NewsStore {
   private readonly newsService = inject(NewsService);
-  private readonly lastQuerySignal = signal<NewsRequestQuery | null>(null);
-  private activeRequestId = 0;
-
-  private readonly loadingSignal = signal(false);
-  readonly loading = this.loadingSignal.asReadonly();
-
-  private readonly dataSignal = signal<NewsResponse['articles']>([]);
-  readonly data = this.dataSignal.asReadonly();
-
-  private readonly errorSignal = signal<string | null>(null);
-  readonly error = this.errorSignal.asReadonly();
-
-  private readonly warningsSignal = signal<readonly Warning[]>([]);
-  readonly warnings = this.warningsSignal.asReadonly();
-
-  private readonly lastUpdatedSignal = signal<number | null>(null);
-  readonly lastUpdated = this.lastUpdatedSignal.asReadonly();
+  private readonly entriesSignal = signal<NewsStoreState>({});
+  private readonly lastQueryKeySignal = signal<string | null>(null);
+  private readonly subscriptions = new Map<string, Subscription>();
 
   load(query: NewsRequestQuery = {}): void {
-    this.lastQuerySignal.set({ ...query });
+    const key = toQueryKey(query);
+    this.lastQueryKeySignal.set(key);
     this.fetchNews(query, false);
   }
 
-  refresh(): void {
-    const query = this.lastQuerySignal();
-    if (!query) {
+  refresh(query?: NewsRequestQuery): void {
+    const resolvedQuery = this.resolveQuery(query);
+    if (!resolvedQuery) {
       return;
     }
 
-    this.fetchNews(query, true);
+    this.fetchNews(resolvedQuery, true);
   }
 
-  clearError(): void {
-    this.errorSignal.set(null);
+  applyFreshUpdate(query?: NewsRequestQuery): void {
+    const resolvedQuery = this.resolveQuery(query);
+    if (!resolvedQuery) {
+      return;
+    }
+
+    const key = toQueryKey(resolvedQuery);
+    const currentEntry = this.getEntry(key);
+    if (!currentEntry.pendingResponse) {
+      return;
+    }
+
+    this.setEntry(key, {
+      ...currentEntry,
+      visibleResponse: currentEntry.pendingResponse,
+      pendingResponse: null,
+      lastUpdated: Date.now(),
+      isShowingStaleData: false,
+      hasFreshUpdateAvailable: false,
+    });
+  }
+
+  clearError(query?: NewsRequestQuery): void {
+    const resolvedQuery = this.resolveQuery(query);
+    if (!resolvedQuery) {
+      return;
+    }
+
+    const key = toQueryKey(resolvedQuery);
+    this.setEntry(key, {
+      ...this.getEntry(key),
+      error: null,
+    });
+  }
+
+  data(query?: NewsRequestQuery): NewsResponse['articles'] {
+    return this.getResolvedEntry(query).visibleResponse?.articles ?? [];
+  }
+
+  warnings(query?: NewsRequestQuery): readonly Warning[] {
+    return this.getResolvedEntry(query).visibleResponse?.warnings ?? [];
+  }
+
+  error(query?: NewsRequestQuery): string | null {
+    return this.getResolvedEntry(query).error;
+  }
+
+  lastUpdated(query?: NewsRequestQuery): number | null {
+    return this.getResolvedEntry(query).lastUpdated;
+  }
+
+  loading(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).isInitialLoading;
+  }
+
+  isHydrated(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).isHydrated;
+  }
+
+  isInitialLoading(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).isInitialLoading;
+  }
+
+  isRefreshing(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).isRefreshing;
+  }
+
+  isShowingStaleData(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).isShowingStaleData;
+  }
+
+  hasFreshUpdateAvailable(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).hasFreshUpdateAvailable;
   }
 
   private fetchNews(query: NewsRequestQuery, forceRefresh: boolean): void {
-    const requestId = this.activeRequestId + 1;
-    this.activeRequestId = requestId;
+    const key = toQueryKey(query);
+    const currentEntry = this.getEntry(key);
+    const requestId = currentEntry.activeRequestId + 1;
 
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
+    this.subscriptions.get(key)?.unsubscribe();
 
-    this.newsService
-      .getNews(query, { forceRefresh })
-      .pipe(take(1))
-      .subscribe({
-        next: (response) => {
-          if (requestId !== this.activeRequestId) {
-            return;
-          }
+    this.setEntry(key, {
+      ...currentEntry,
+      query: { ...query },
+      error: null,
+      isInitialLoading: currentEntry.visibleResponse === null,
+      isRefreshing: currentEntry.visibleResponse !== null || forceRefresh,
+      activeRequestId: requestId,
+      pendingResponse: forceRefresh ? null : currentEntry.pendingResponse,
+      hasFreshUpdateAvailable: forceRefresh ? false : currentEntry.hasFreshUpdateAvailable,
+    });
 
-          this.dataSignal.set(response.articles);
-          this.warningsSignal.set(response.warnings);
-          this.lastUpdatedSignal.set(Date.now());
-          this.loadingSignal.set(false);
-        },
-        error: (error: unknown) => {
-          if (requestId !== this.activeRequestId) {
-            return;
-          }
+    const subscription = this.newsService.getNews(query, { forceRefresh }).subscribe({
+      next: (result) => {
+        const latestEntry = this.getEntry(key);
+        if (latestEntry.activeRequestId !== requestId) {
+          return;
+        }
 
-          this.errorSignal.set(getUserErrorMessage(error, 'No se pudieron cargar las noticias.'));
-          this.loadingSignal.set(false);
-        },
-      });
+        if (latestEntry.visibleResponse === null || forceRefresh) {
+          this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
+          return;
+        }
+
+        this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
+      },
+      error: (error: unknown) => {
+        const latestEntry = this.getEntry(key);
+        if (latestEntry.activeRequestId !== requestId) {
+          return;
+        }
+
+        this.setEntry(key, {
+          ...latestEntry,
+          error: getUserErrorMessage(error, 'No se pudieron cargar las noticias.'),
+          isInitialLoading: false,
+          isRefreshing: false,
+        });
+      },
+      complete: () => {
+        const latestEntry = this.getEntry(key);
+        if (latestEntry.activeRequestId !== requestId) {
+          return;
+        }
+
+        this.setEntry(key, {
+          ...latestEntry,
+          isInitialLoading: false,
+          isRefreshing: false,
+        });
+      },
+    });
+
+    this.subscriptions.set(key, subscription);
+  }
+
+  private applyVisibleResult(
+    key: string,
+    currentEntry: NewsStoreEntryState,
+    response: NewsResponse,
+    isStale: boolean,
+    isRefreshing: boolean,
+  ): void {
+    this.setEntry(key, {
+      ...currentEntry,
+      visibleResponse: response,
+      pendingResponse: null,
+      error: null,
+      lastUpdated: Date.now(),
+      isHydrated: true,
+      isInitialLoading: false,
+      isRefreshing,
+      isShowingStaleData: isStale,
+      hasFreshUpdateAvailable: false,
+    });
+  }
+
+  private resolveQuery(query?: NewsRequestQuery): NewsRequestQuery | null {
+    if (query) {
+      return query;
+    }
+
+    const key = this.lastQueryKeySignal();
+    if (!key) {
+      return null;
+    }
+
+    return this.getEntry(key).query;
+  }
+
+  private getResolvedEntry(query?: NewsRequestQuery): NewsStoreEntryState {
+    const resolvedQuery = this.resolveQuery(query);
+    if (!resolvedQuery) {
+      return createEmptyEntry({});
+    }
+
+    return this.getEntry(toQueryKey(resolvedQuery));
+  }
+
+  private getEntry(key: string): NewsStoreEntryState {
+    return this.entriesSignal()[key] ?? createEmptyEntry({});
+  }
+
+  private setEntry(key: string, entry: NewsStoreEntryState): void {
+    this.entriesSignal.update((state) => ({
+      ...state,
+      [key]: entry,
+    }));
   }
 }
 
+function toQueryKey(query: NewsRequestQuery): string {
+  return toNewsSnapshotKey(toNewsSnapshotQuery(query));
+}
+
+function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
+  return {
+    query,
+    visibleResponse: null,
+    pendingResponse: null,
+    error: null,
+    lastUpdated: null,
+    isHydrated: false,
+    isInitialLoading: false,
+    isRefreshing: false,
+    isShowingStaleData: false,
+    hasFreshUpdateAvailable: false,
+    activeRequestId: 0,
+  };
+}
