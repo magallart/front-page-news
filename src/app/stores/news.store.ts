@@ -153,17 +153,7 @@ export class NewsStore {
           return;
         }
 
-        if (areNewsResponsesEqual(latestEntry.visibleResponse, result.response)) {
-          this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
-          return;
-        }
-
-        this.setEntry(key, {
-          ...latestEntry,
-          pendingResponse: result.response,
-          hasFreshUpdateAvailable: true,
-          isRefreshing: result.isRefreshing,
-        });
+        this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
       },
       error: (error: unknown) => {
         const latestEntry = this.getEntry(key);
@@ -268,8 +258,4 @@ function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
     hasFreshUpdateAvailable: false,
     activeRequestId: 0,
   };
-}
-
-function areNewsResponsesEqual(left: NewsResponse, right: NewsResponse): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
 }

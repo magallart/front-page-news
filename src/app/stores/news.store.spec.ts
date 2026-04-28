@@ -54,7 +54,7 @@ describe('NewsStore', () => {
     expect(store.isShowingStaleData({ section: 'economia' })).toBe(true);
   });
 
-  it('stores a fresh update as pending during background revalidation', () => {
+  it('applies a fresh update to visible state during background revalidation', () => {
     const stream = createObservableController<NewsServiceResult>();
     const newsServiceMock = {
       getNews: vi.fn().mockReturnValue(stream.observable),
@@ -86,14 +86,9 @@ describe('NewsStore', () => {
     );
     stream.complete();
 
-    expect(store.data({ section: 'economia' })[0]?.id).toBe('news-1');
-    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(true);
-    expect(store.isRefreshing({ section: 'economia' })).toBe(false);
-
-    store.applyFreshUpdate({ section: 'economia' });
-
     expect(store.data({ section: 'economia' })[0]?.id).toBe('news-2');
     expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
+    expect(store.isRefreshing({ section: 'economia' })).toBe(false);
     expect(store.isShowingStaleData({ section: 'economia' })).toBe(false);
   });
 
