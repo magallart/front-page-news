@@ -142,6 +142,122 @@ describe('api/news handler contract', () => {
     expect(payload.articles[0]?.sectionSlug).toBe('actualidad');
   });
 
+  it('serves a valid snapshot payload before fetching feeds', async () => {
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => {
+        throw new Error('should-not-load-catalog');
+      },
+      fetchFeeds: async () => {
+        throw new Error('should-not-fetch-feeds');
+      },
+      snapshotReader: {
+        async getNewsSnapshot() {
+          return {
+            key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+            kind: 'news',
+            generatedAt: '2026-04-28T08:00:00.000Z',
+            staleAt: '2026-04-28T08:15:00.000Z',
+            expiresAt: '2026-04-29T20:00:00.000Z',
+            query: {
+              id: null,
+              section: 'actualidad',
+              sourceIds: [],
+              searchQuery: null,
+              page: 1,
+              limit: 20,
+            },
+            payload: {
+              articles: [],
+              total: 0,
+              page: 1,
+              limit: 20,
+              warnings: [],
+            },
+          };
+        },
+        async getSourcesSnapshot() {
+          return null;
+        },
+      },
+    });
+
+    const response = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      response as unknown as ServerResponse,
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(readJson<HandlerSuccessPayload>(response).total).toBe(0);
+  });
+
+  it('ignores expired snapshots and falls back to feed fetching', async () => {
+    const catalog = makeCatalogTargets().filter((target) => target.sectionSlug === 'actualidad');
+    let fetchFeedsCallCount = 0;
+    const handler = createNewsHandler(
+      {
+        loadSourcesCatalog: async () => catalog,
+        fetchFeeds: async (sources) => {
+          fetchFeedsCallCount += 1;
+
+          return {
+            successes: sources.map((source) => ({
+              sourceId: source.id,
+              feedUrl: source.feedUrl,
+              body: buildRssXml({
+                title: 'Fallback Fresh Feed',
+                url: 'https://elpais.com/fallback-fresh-feed',
+              }),
+            })),
+            warnings: [],
+          };
+        },
+        snapshotReader: {
+          async getNewsSnapshot() {
+            return {
+              key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+              kind: 'news',
+              generatedAt: '2026-04-26T08:00:00.000Z',
+              staleAt: '2026-04-26T08:15:00.000Z',
+              expiresAt: '2026-04-27T08:00:00.000Z',
+              query: {
+                id: null,
+                section: 'actualidad',
+                sourceIds: [],
+                searchQuery: null,
+                page: 1,
+                limit: 20,
+              },
+              payload: {
+                articles: [],
+                total: 0,
+                page: 1,
+                limit: 20,
+                warnings: [],
+              },
+            };
+          },
+          async getSourcesSnapshot() {
+            return null;
+          },
+        },
+      },
+      {
+        now: () => Date.parse('2026-04-28T08:00:00.000Z'),
+      },
+    );
+
+    const response = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      response as unknown as ServerResponse,
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(1);
+    expect(readJson<HandlerSuccessPayload>(response).articles[0]?.title).toBe('Fallback Fresh Feed');
+  });
+
   it('returns 500 and no-store when catalog loading fails', async () => {
     const handler = createNewsHandler({
       loadSourcesCatalog: async () => {
