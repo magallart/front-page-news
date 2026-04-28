@@ -4,6 +4,9 @@ import type { NewsQuery } from '../../../shared/interfaces/news-query.interface'
 
 export type NewsRequestQuery = Partial<NewsQuery>;
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+
 export function buildNewsHttpParams(query: NewsRequestQuery): HttpParams {
   let params = new HttpParams();
 
@@ -48,6 +51,17 @@ export function toNewsCacheKey(params: HttpParams): string {
   return query.length > 0 ? `/api/news?${query}` : '/api/news';
 }
 
+export function toNewsSnapshotQuery(query: NewsRequestQuery): NewsQuery {
+  return {
+    id: normalizeIdValue(query.id),
+    section: normalizeQueryValue(query.section),
+    sourceIds: normalizeSourceIds(query.sourceIds),
+    searchQuery: normalizeQueryValue(query.searchQuery),
+    page: normalizePositiveInteger(query.page, DEFAULT_PAGE),
+    limit: normalizePositiveInteger(query.limit, DEFAULT_LIMIT),
+  };
+}
+
 export function normalizeSection(value: string): string {
   return value.trim().toLowerCase();
 }
@@ -58,5 +72,35 @@ function isNonEmptyString(value: string | null | undefined): value is string {
 
 function isPositiveInteger(value: number | undefined): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+function normalizeSourceIds(value: readonly string[] | undefined): readonly string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    return [];
+  }
+
+  return value
+    .map((sourceId) => normalizeQueryValue(sourceId))
+    .filter((sourceId): sourceId is string => sourceId !== null);
+}
+
+function normalizeQueryValue(value: string | null | undefined): string | null {
+  if (!isNonEmptyString(value)) {
+    return null;
+  }
+
+  return value.trim().toLowerCase();
+}
+
+function normalizeIdValue(value: string | null | undefined): string | null {
+  if (!isNonEmptyString(value)) {
+    return null;
+  }
+
+  return value.trim();
+}
+
+function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+  return isPositiveInteger(value) ? value : fallback;
 }
 
