@@ -23,6 +23,8 @@ Specialized in git workflows, commits, and pull requests.
   - what changed
   - why it changed
   - how it was validated
+- For this repository, terminal commits created by the agent must use a single `-m` line only.
+- Do not create commit bodies with additional `-m` flags unless the user explicitly asks for it.
 - Avoid overly concise or generic text (e.g. "minor fixes", "update", "cleanup").
 - When `BACKLOG.md` is present, include the ticket id in the commit subject.
 - Ticket format examples: `[AP-003]`, `[FP-012]`.

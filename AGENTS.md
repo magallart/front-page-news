@@ -115,6 +115,9 @@ This file acts as the **single source of truth** for global conventions and deci
 - Commits must always be written in English.
 - Commit subjects and bodies must be explicit and self-contained.
 - Avoid terse commit messages or low-signal summaries.
+- Automated commits created by the agent must use a single `-m` subject line only.
+- Do not add a second `-m` body when creating commits from the terminal.
+- The single commit message line must still follow the required conventional commit format and remain explicit.
 - Commit or push actions are allowed only after the user explicitly asks for them, or when the repository/session is operating in an explicitly authorized autonomous mode.
 - In autonomous mode, the agent may create commits without asking again only for validated milestones that belong to the active task.
 - In autonomous mode, the agent must not auto-commit when unrelated local changes are present, when validation fails, or when the change includes unconfirmed architecture decisions, dependency changes, destructive actions, or deployment-impacting operations.
