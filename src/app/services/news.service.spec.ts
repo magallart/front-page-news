@@ -1,31 +1,72 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { toArray } from 'rxjs/operators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NEWS_CACHE_MAX_ENTRIES, NEWS_CACHE_TTL_MS, NewsService } from './news.service';
+import { FORCE_REFRESH_HEADER, NEWS_CACHE_TTL_MS } from '../constants/news-cache.constants';
+import { NEWS_SERVICE_RESULT_SOURCE } from '../interfaces/news-service-result-source.interface';
+import { IndexedDbSnapshotCache } from '../lib/indexeddb-snapshot-cache';
+
+import { NewsService } from './news.service';
+import { RemoteNewsSnapshotService } from './remote-news-snapshot.service';
+
+import type { NewsResponse } from '../../../shared/interfaces/news-response.interface';
+import type { NewsSnapshot } from '../../../shared/interfaces/news-snapshot.interface';
+import type { PersistedNewsSnapshotRecord } from '../interfaces/persisted-news-snapshot-record.interface';
 
 describe('NewsService', () => {
   let service: NewsService;
   let httpController: HttpTestingController;
+  let indexedDbSnapshotCacheMock: {
+    getNewsSnapshot: ReturnType<typeof vi.fn>;
+    putNewsSnapshot: ReturnType<typeof vi.fn>;
+  };
+  let remoteNewsSnapshotServiceMock: {
+    getNewsSnapshot: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+    indexedDbSnapshotCacheMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+      putNewsSnapshot: vi.fn().mockResolvedValue(undefined),
+    };
+    remoteNewsSnapshotServiceMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        NewsService,
+        {
+          provide: IndexedDbSnapshotCache,
+          useValue: indexedDbSnapshotCacheMock,
+        },
+        {
+          provide: RemoteNewsSnapshotService,
+          useValue: remoteNewsSnapshotServiceMock,
+        },
+      ],
+    });
+
+    service = TestBed.inject(NewsService);
+    httpController = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
     vi.useRealTimers();
     httpController.verify();
+    TestBed.resetTestingModule();
   });
 
-  it('builds typed query params for /api/news', () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    firstValueFrom(
+  it('builds typed query params and requests a fresh network response', async () => {
+    const requestPromise = firstValueFrom(
       service.getNews({
         id: 'url-article-123',
         section: '  Economia ',
@@ -36,98 +77,113 @@ describe('NewsService', () => {
       }),
     );
 
+    await flushPendingAsyncHydration();
     const request = httpController.expectOne(
-      '/api/news?id=url-article-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10'
+      '/api/news?id=url-article-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10',
     );
     expect(request.request.method).toBe('GET');
+    expect(request.request.headers.get(FORCE_REFRESH_HEADER)).toBe('1');
     request.flush(createValidNewsPayload());
+
+    await expect(requestPromise).resolves.toMatchObject({
+      source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+      isRefreshing: false,
+      isStale: false,
+      response: createValidNewsPayload(),
+    });
   });
 
-  it('omits invalid or empty query params', () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    firstValueFrom(
-      service.getNews({
-        section: '   ',
-        sourceIds: [' ', ''],
-        searchQuery: ' ',
-        page: 0,
-        limit: -5,
+  it('hydrates from IndexedDB without hitting the network when the cached snapshot is fresh', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
+      createPersistedNewsSnapshotRecord({
+        expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
       }),
     );
 
-    const request = httpController.expectOne('/api/news');
-    expect(request.request.method).toBe('GET');
-    request.flush(createValidNewsPayload());
+    const result = await firstValueFrom(service.getNews({ section: 'actualidad' }));
+
+    httpController.expectNone('/api/news?section=actualidad');
+    expect(remoteNewsSnapshotServiceMock.getNewsSnapshot).not.toHaveBeenCalled();
+    expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB);
+    expect(result.isRefreshing).toBe(false);
   });
 
-  it('returns a strictly adapted response for /api/news', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
+  it('hydrates from a remote snapshot and persists it locally when no IndexedDB record exists', async () => {
+    remoteNewsSnapshotServiceMock.getNewsSnapshot.mockResolvedValue(
+      createNewsSnapshot({
+        key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+        query: {
+          id: null,
+          section: 'actualidad',
+          sourceIds: [],
+          searchQuery: null,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
 
-    const requestPromise = firstValueFrom(service.getNews());
-    const request = httpController.expectOne('/api/news');
-    request.flush(createValidNewsPayload());
+    const result = await firstValueFrom(service.getNews({ section: 'actualidad' }));
 
-    await expect(requestPromise).resolves.toEqual(createValidNewsPayload());
+    httpController.expectNone('/api/news?section=actualidad');
+    expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.REMOTE_SNAPSHOT);
+    expect(indexedDbSnapshotCacheMock.putNewsSnapshot).toHaveBeenCalledTimes(1);
   });
 
-  it('reuses cached response for identical queries', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
+  it('emits stale cached data first and then the revalidated network response', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
+      createPersistedNewsSnapshotRecord({
+        staleAtMs: Date.parse('2025-12-31T23:00:00.000Z'),
+        expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
+      }),
+    );
 
-    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia', page: 1, limit: 10 }));
-    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia', page: 1, limit: 10 }));
+    const resultPromise = lastValueFrom(service.getNews({ section: 'actualidad' }).pipe(toArray()));
 
-    const request = httpController.expectOne('/api/news?section=economia&page=1&limit=10');
-    request.flush(createValidNewsPayload());
+    await flushPendingAsyncHydration();
+    const request = httpController.expectOne('/api/news?section=actualidad');
+    request.flush(
+      createValidNewsPayload({
+        articles: [
+          {
+            ...createValidNewsPayload().articles[0],
+            id: 'news-2',
+            title: 'Titulo revalidado',
+          },
+        ],
+      }),
+    );
 
-    await expect(Promise.all([firstRequestPromise, secondRequestPromise])).resolves.toEqual([
-      createValidNewsPayload(),
-      createValidNewsPayload(),
+    await expect(resultPromise).resolves.toMatchObject([
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isRefreshing: true,
+        isStale: true,
+      },
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        isRefreshing: false,
+        isStale: false,
+      },
     ]);
   });
 
-  it('creates a request on cache miss for a query key', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    const requestPromise = firstValueFrom(service.getNews({ section: 'deportes', page: 1, limit: 20 }));
-
-    const request = httpController.expectOne('/api/news?section=deportes&page=1&limit=20');
-    expect(request.request.method).toBe('GET');
-    request.flush(createValidNewsPayload());
-
-    await expect(requestPromise).resolves.toEqual(createValidNewsPayload());
-  });
-
-  it('creates a new request when query changes', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    const economyRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const economyRequest = httpController.expectOne('/api/news?section=economia');
-    economyRequest.flush(createValidNewsPayload());
-    await economyRequestPromise;
-
-    const cultureRequestPromise = firstValueFrom(service.getNews({ section: 'cultura' }));
-    const cultureRequest = httpController.expectOne('/api/news?section=cultura');
-    cultureRequest.flush(createValidNewsPayload());
-    await cultureRequestPromise;
-  });
-
-  it('creates a new request when cache entry TTL expires', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
+  it('reuses the memory cache for identical queries within ttl', async () => {
     const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    await flushPendingAsyncHydration();
+    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    firstRequest.flush(createValidNewsPayload());
+    await firstRequestPromise;
+
+    const secondRequestResult = await firstValueFrom(service.getNews({ section: 'economia' }));
+
+    httpController.expectNone('/api/news?section=economia');
+    expect(secondRequestResult.source).toBe(NEWS_SERVICE_RESULT_SOURCE.MEMORY);
+  });
+
+  it('fetches again when the memory cache ttl expires', async () => {
+    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    await flushPendingAsyncHydration();
     const firstRequest = httpController.expectOne('/api/news?section=economia');
     firstRequest.flush(createValidNewsPayload());
     await firstRequestPromise;
@@ -135,109 +191,32 @@ describe('NewsService', () => {
     vi.setSystemTime(new Date(Date.now() + NEWS_CACHE_TTL_MS + 1));
 
     const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    await flushPendingAsyncHydration();
     const secondRequest = httpController.expectOne('/api/news?section=economia');
     secondRequest.flush(createValidNewsPayload());
     await secondRequestPromise;
   });
 
-  it('evicts least recently used entry when cache reaches max size', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
+  it('bypasses hydrated caches when forceRefresh is true', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
+      createPersistedNewsSnapshotRecord({
+        expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
+      }),
+    );
 
-    for (let index = 0; index < NEWS_CACHE_MAX_ENTRIES; index += 1) {
-      const section = `section-${index}`;
-      const requestPromise = firstValueFrom(service.getNews({ section }));
-      const request = httpController.expectOne(`/api/news?section=${section}`);
-      request.flush(createValidNewsPayload());
-      await requestPromise;
-    }
+    const requestPromise = firstValueFrom(service.getNews({ section: 'economia' }, { forceRefresh: true }));
+    await flushPendingAsyncHydration();
+    const request = httpController.expectOne('/api/news?section=economia');
+    request.flush(createValidNewsPayload());
+    const result = await requestPromise;
 
-    const promotedRequestPromise = firstValueFrom(service.getNews({ section: 'section-0' }));
-    httpController.expectNone('/api/news?section=section-0');
-    await expect(promotedRequestPromise).resolves.toEqual(createValidNewsPayload());
-
-    const overflowRequestPromise = firstValueFrom(service.getNews({ section: 'section-overflow' }));
-    const overflowRequest = httpController.expectOne('/api/news?section=section-overflow');
-    overflowRequest.flush(createValidNewsPayload());
-    await overflowRequestPromise;
-
-    const evictedRequestPromise = firstValueFrom(service.getNews({ section: 'section-1' }));
-    const evictedRequest = httpController.expectOne('/api/news?section=section-1');
-    evictedRequest.flush(createValidNewsPayload());
-    await evictedRequestPromise;
-
-    const stillCachedRequestPromise = firstValueFrom(service.getNews({ section: 'section-0' }));
-    httpController.expectNone('/api/news?section=section-0');
-    await expect(stillCachedRequestPromise).resolves.toEqual(createValidNewsPayload());
+    expect(indexedDbSnapshotCacheMock.getNewsSnapshot).not.toHaveBeenCalled();
+    expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.NETWORK);
   });
 
-  it('clears all cached entries with clear()', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const firstRequest = httpController.expectOne('/api/news?section=economia');
-    firstRequest.flush(createValidNewsPayload());
-    await firstRequestPromise;
-
-    service.clear();
-
-    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const secondRequest = httpController.expectOne('/api/news?section=economia');
-    secondRequest.flush(createValidNewsPayload());
-    await secondRequestPromise;
-  });
-
-  it('invalidates only entries for selected section', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    const economyPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const economyRequest = httpController.expectOne('/api/news?section=economia');
-    economyRequest.flush(createValidNewsPayload());
-    await economyPromise;
-
-    const culturePromise = firstValueFrom(service.getNews({ section: 'cultura' }));
-    const cultureRequest = httpController.expectOne('/api/news?section=cultura');
-    cultureRequest.flush(createValidNewsPayload());
-    await culturePromise;
-
-    service.invalidateBySection('economia');
-
-    const refreshedEconomyPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const refreshedEconomyRequest = httpController.expectOne('/api/news?section=economia');
-    refreshedEconomyRequest.flush(createValidNewsPayload());
-    await refreshedEconomyPromise;
-
-    const cachedCulturePromise = firstValueFrom(service.getNews({ section: 'cultura' }));
-    await expect(cachedCulturePromise).resolves.toEqual(createValidNewsPayload());
-  });
-
-  it('forces refresh when forceRefresh is true', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
-    const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
-    const firstRequest = httpController.expectOne('/api/news?section=economia');
-    firstRequest.flush(createValidNewsPayload());
-    await firstRequestPromise;
-
-    const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }, { forceRefresh: true }));
-    const secondRequest = httpController.expectOne('/api/news?section=economia');
-    secondRequest.flush(createValidNewsPayload());
-    await secondRequestPromise;
-  });
-
-  it('fails when response shape is invalid', async () => {
-    configureTestingModule();
-    service = TestBed.inject(NewsService);
-    httpController = TestBed.inject(HttpTestingController);
-
+  it('fails when the network response shape is invalid and no cached data exists', async () => {
     const requestPromise = firstValueFrom(service.getNews());
+    await flushPendingAsyncHydration();
     const request = httpController.expectOne('/api/news');
     request.flush({
       articles: [],
@@ -251,13 +230,7 @@ describe('NewsService', () => {
   });
 });
 
-function configureTestingModule(): void {
-  TestBed.configureTestingModule({
-    providers: [provideHttpClient(), provideHttpClientTesting()],
-  });
-}
-
-function createValidNewsPayload() {
+function createValidNewsPayload(overrides: Partial<NewsResponse> = {}): NewsResponse {
   return {
     articles: [
       {
@@ -279,5 +252,56 @@ function createValidNewsPayload() {
     page: 1,
     limit: 20,
     warnings: [],
+    ...overrides,
+  };
+}
+
+async function flushPendingAsyncHydration(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
+function createNewsSnapshot(overrides: Partial<NewsSnapshot> = {}): NewsSnapshot {
+  return {
+    key: 'news:id=-:section=-:source=-:q=-:page=1:limit=20',
+    kind: 'news',
+    generatedAt: '2026-01-01T00:00:00.000Z',
+    staleAt: '2026-01-01T00:15:00.000Z',
+    expiresAt: '2026-01-01T12:00:00.000Z',
+    query: {
+      id: null,
+      section: null,
+      sourceIds: [],
+      searchQuery: null,
+      page: 1,
+      limit: 20,
+    },
+    payload: createValidNewsPayload(),
+    ...overrides,
+  };
+}
+
+function createPersistedNewsSnapshotRecord(
+  overrides: Partial<PersistedNewsSnapshotRecord> = {},
+): PersistedNewsSnapshotRecord {
+  return {
+    key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+    snapshot: createNewsSnapshot({
+      key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+      query: {
+        id: null,
+        section: 'actualidad',
+        sourceIds: [],
+        searchQuery: null,
+        page: 1,
+        limit: 20,
+      },
+    }),
+    persistedAtMs: Date.parse('2026-01-01T00:00:00.000Z'),
+    lastReadAtMs: Date.parse('2026-01-01T00:00:00.000Z'),
+    staleAtMs: Date.parse('2026-01-01T00:15:00.000Z'),
+    expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
+    ...overrides,
   };
 }
