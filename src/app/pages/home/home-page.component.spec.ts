@@ -11,6 +11,8 @@ import { NewsCarouselComponent } from '../../components/news/news-carousel.compo
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
 import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { IndexedDbSnapshotCache } from '../../lib/indexeddb-snapshot-cache';
+import { RemoteNewsSnapshotService } from '../../services/remote-news-snapshot.service';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 
@@ -19,6 +21,13 @@ import { HomePageComponent } from './home-page.component';
 describe('HomePageComponent', () => {
   it('integrates with /api/news and renders mixed rows from real store data', async () => {
     const sourcesStoreMock = createSourcesStoreMock();
+    const indexedDbSnapshotCacheMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+      putNewsSnapshot: vi.fn().mockResolvedValue(undefined),
+    };
+    const remoteNewsSnapshotServiceMock = {
+      getNewsSnapshot: vi.fn().mockResolvedValue(null),
+    };
 
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
@@ -26,6 +35,8 @@ describe('HomePageComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: IndexedDbSnapshotCache, useValue: indexedDbSnapshotCacheMock },
+        { provide: RemoteNewsSnapshotService, useValue: remoteNewsSnapshotServiceMock },
         { provide: SourcesStore, useValue: sourcesStoreMock },
       ],
     }).compileComponents();
@@ -34,8 +45,12 @@ describe('HomePageComponent', () => {
     const httpController = TestBed.inject(HttpTestingController);
 
     fixture.detectChanges();
-
-    const request = httpController.expectOne('/api/news?page=1&limit=250');
+    await fixture.whenStable();
+    const request = await expectPendingRequest(httpController, (request) =>
+      request.url === '/api/news' &&
+      request.params.get('page') === '1' &&
+      request.params.get('limit') === '250',
+    );
     expect(request.request.method).toBe('GET');
     request.flush({
       articles: [
@@ -50,13 +65,15 @@ describe('HomePageComponent', () => {
       warnings: [],
     });
 
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-source-directory')).toBeTruthy();
-    expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(2);
+    await fixture.whenStable();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('app-source-directory')).toBeTruthy();
+      expect(fixture.nativeElement.querySelectorAll('app-section-block').length).toBe(2);
+    });
 
     httpController.verify();
   });
@@ -378,4 +395,19 @@ function createArticle(
 
 function toIso(now: number, minutesAgo: number): string {
   return new Date(now - minutesAgo * 60 * 1000).toISOString();
+}
+
+async function expectPendingRequest(
+  httpController: HttpTestingController,
+  matcher: Parameters<HttpTestingController['expectOne']>[0],
+) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return httpController.expectOne(matcher);
+    } catch {
+      await Promise.resolve();
+    }
+  }
+
+  return httpController.expectOne(matcher);
 }

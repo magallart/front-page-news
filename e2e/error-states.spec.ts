@@ -30,7 +30,7 @@ test.describe('Error States', () => {
     });
 
     await page.setViewportSize({ width: 1366, height: 900 });
-    await page.goto('/seccion/actualidad');
+    await page.goto('/seccion/actualidad', { waitUntil: 'domcontentloaded' });
 
     await expect(page.locator('app-error-state')).toBeVisible();
     await expect(page.locator('app-news-card')).toHaveCount(0);

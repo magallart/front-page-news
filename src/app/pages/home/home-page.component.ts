@@ -92,15 +92,16 @@ export class HomePageComponent implements OnInit {
   private readonly newsStore = inject(NewsStore);
   private readonly sourcesStore = inject(SourcesStore);
   protected readonly uiViewState = UI_VIEW_STATE;
+  private readonly homeNewsQuery = { page: 1, limit: HOME_PAGE_NEWS_LIMIT } as const;
 
-  private readonly newsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data()));
+  private readonly newsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data(this.homeNewsQuery)));
   protected readonly quickViewArticle = signal<NewsItem | null>(null);
 
   protected readonly uiState = computed(() =>
     resolveHomeUiState({
-      loading: this.newsStore.loading(),
-      error: this.newsStore.error(),
-      warnings: this.newsStore.warnings(),
+      loading: this.newsStore.loading(this.homeNewsQuery),
+      error: this.newsStore.error(this.homeNewsQuery),
+      warnings: this.newsStore.warnings(this.homeNewsQuery),
       itemCount: this.newsItems().length,
     }),
   );
@@ -119,7 +120,7 @@ export class HomePageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.newsStore.load({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
+    this.newsStore.load(this.homeNewsQuery);
     this.sourcesStore.loadInitial();
   }
 

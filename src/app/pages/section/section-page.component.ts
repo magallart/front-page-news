@@ -1,7 +1,6 @@
-﻿import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 
 import { IconEyeComponent } from '../../components/icons/icon-eye.component';
 import { IconFilterComponent } from '../../components/icons/icon-filter.component';
@@ -20,11 +19,12 @@ import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { formatSectionLabel } from '../../utils/section-label';
-import { parseSectionQueryFilters, DEFAULT_SECTION_QUERY_FILTERS } from '../../utils/section-query-filters';
+import { DEFAULT_SECTION_QUERY_FILTERS, parseSectionQueryFilters } from '../../utils/section-query-filters';
 import { resolveSectionUiState } from '../../utils/ui-state-matrix';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
 import type { SourceSelectionState } from '../../interfaces/source-selection-state.interface';
+import type { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-section-page',
@@ -71,7 +71,7 @@ import type { SourceSelectionState } from '../../interfaces/source-selection-sta
                   [selectedSources]="activeSelectedSources()"
                   [sortDirection]="sortDirection()"
                   (selectedSourcesChange)="onSelectedSourcesChange($event)"
-                  (sortDirectionChange)="sortDirection.set($event)"
+                  (sortDirectionChange)="onSortDirectionChange($event)"
                 />
               </div>
             }
@@ -108,8 +108,10 @@ import type { SourceSelectionState } from '../../interfaces/source-selection-sta
     <app-news-quick-view-modal [article]="quickViewArticle()" (closed)="closeQuickView()" />
   `,
 })
-export class SectionPageComponent {
+export class SectionPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly newsStore = inject(NewsStore);
   private readonly sourceSelection = signal<SourceSelectionState>({
     hasCustomSelection: false,
@@ -120,20 +122,26 @@ export class SectionPageComponent {
   protected readonly uiViewState = UI_VIEW_STATE;
   protected readonly filtersOpen = signal(false);
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
-
-  protected readonly sectionSlug = toSignal(
-    this.route.paramMap.pipe(map((params) => params.get('slug') ?? SECTION_PAGE_DEFAULT_SLUG)),
-    { initialValue: SECTION_PAGE_DEFAULT_SLUG },
-  );
-
-  private readonly queryFilters = toSignal(
-    this.route.queryParamMap.pipe(map((params) => parseSectionQueryFilters(params))),
-    { initialValue: DEFAULT_SECTION_QUERY_FILTERS },
+  protected readonly sectionSlug = signal(this.route.snapshot.paramMap.get('slug') ?? SECTION_PAGE_DEFAULT_SLUG);
+  private readonly queryFilters = signal(
+    parseSectionQueryFilters(this.route.snapshot.queryParamMap) ?? DEFAULT_SECTION_QUERY_FILTERS,
   );
 
   protected readonly sectionTitle = computed(() => formatSectionLabel(this.sectionSlug()));
+  private readonly sectionNewsQuery = computed(() => {
+    const slug = this.sectionSlug();
+    const filters = this.queryFilters();
+
+    return {
+      section: slug,
+      sourceIds: filters.sourceIds,
+      searchQuery: filters.searchQuery,
+      page: filters.page,
+      limit: filters.limit,
+    };
+  });
   private readonly sectionArticles = computed(() =>
-    this.newsStore.data().filter((article) => article.sectionSlug === this.sectionSlug()),
+    this.newsStore.data(this.sectionNewsQuery()).filter((article) => article.sectionSlug === this.sectionSlug()),
   );
   protected readonly sectionNews = computed(() => adaptArticlesToNewsItems(this.sectionArticles()));
   protected readonly hasSectionNews = computed(() => this.sectionNews().length > 0);
@@ -171,44 +179,25 @@ export class SectionPageComponent {
 
   protected readonly sectionUiState = computed(() =>
     resolveSectionUiState({
-      loading: this.newsStore.loading(),
-      error: this.newsStore.error(),
-      warnings: this.newsStore.warnings(),
+      loading: this.newsStore.loading(this.sectionNewsQuery()),
+      error: this.newsStore.error(this.sectionNewsQuery()),
+      warnings: this.newsStore.warnings(this.sectionNewsQuery()),
       itemCount: this.filteredSectionNews().length,
     }),
   );
 
-  constructor() {
-    effect(() => {
-      this.sectionSlug();
-      this.sourceSelection.set({
-        hasCustomSelection: false,
-        selectedSources: [],
+  ngOnInit(): void {
+    this.syncFromRouteSnapshot();
+
+    this.router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        if (!(event instanceof NavigationEnd)) {
+          return;
+        }
+
+        this.syncFromRouteSnapshot();
       });
-      this.filtersOpen.set(false);
-      this.sortDirection.set('desc');
-    });
-
-    effect(() => {
-      this.sectionSlug();
-      this.queryFilters();
-      this.activeSelectedSources();
-      this.sortDirection();
-      this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
-    });
-
-    effect(() => {
-      const slug = this.sectionSlug();
-      const filters = this.queryFilters();
-
-      this.newsStore.load({
-        section: slug,
-        sourceIds: filters.sourceIds,
-        searchQuery: filters.searchQuery,
-        page: filters.page,
-        limit: filters.limit,
-      });
-    });
   }
 
   protected toggleFilters(): void {
@@ -216,10 +205,16 @@ export class SectionPageComponent {
   }
 
   protected onSelectedSourcesChange(nextSources: readonly string[]): void {
+    this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
     this.sourceSelection.set({
       hasCustomSelection: true,
       selectedSources: nextSources,
     });
+  }
+
+  protected onSortDirectionChange(direction: 'asc' | 'desc'): void {
+    this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
+    this.sortDirection.set(direction);
   }
 
   protected loadMoreNews(): void {
@@ -233,5 +228,27 @@ export class SectionPageComponent {
   protected closeQuickView(): void {
     this.quickViewArticle.set(null);
   }
-}
 
+  private syncFromRouteSnapshot(): void {
+    const slug = this.route.snapshot.paramMap.get('slug') ?? SECTION_PAGE_DEFAULT_SLUG;
+    const filters = parseSectionQueryFilters(this.route.snapshot.queryParamMap);
+
+    this.sectionSlug.set(slug);
+    this.queryFilters.set(filters);
+    this.sourceSelection.set({
+      hasCustomSelection: false,
+      selectedSources: [],
+    });
+    this.filtersOpen.set(false);
+    this.sortDirection.set('desc');
+    this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
+
+    this.newsStore.load({
+      section: slug,
+      sourceIds: filters.sourceIds,
+      searchQuery: filters.searchQuery,
+      page: filters.page,
+      limit: filters.limit,
+    });
+  }
+}
