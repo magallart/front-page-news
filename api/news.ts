@@ -69,8 +69,18 @@ export function createNewsHandler(
     const cacheKey = toNewsQueryCacheKey(query);
     const cached = getCachedPayloadIfAvailable(responseCache, cacheKey, startedAt);
     if (cached) {
-      await sendCachedPayload(cached, responseCache, cacheKey, startedAt, now, enablePerfLogs, response);
-      return;
+      const wasServedFromCache = await sendCachedPayload(
+        cached,
+        responseCache,
+        cacheKey,
+        startedAt,
+        now,
+        enablePerfLogs,
+        response,
+      );
+      if (wasServedFromCache) {
+        return;
+      }
     }
 
     if (responseCache.has(cacheKey)) {
@@ -149,7 +159,7 @@ async function sendCachedPayload(
   now: () => number,
   enablePerfLogs: boolean,
   response: ServerResponse,
-): Promise<void> {
+): Promise<boolean> {
   try {
     promoteCacheEntry(cache, cacheKey, cached);
     const { payload } = await cached.payloadPromise;
@@ -161,8 +171,10 @@ async function sendCachedPayload(
     }
 
     sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+    return true;
   } catch {
     cache.delete(cacheKey);
+    return false;
   }
 }
 
