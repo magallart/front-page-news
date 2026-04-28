@@ -386,6 +386,63 @@ describe('api/news handler contract', () => {
     expect(fetchFeedsCallCount).toBe(2);
   });
 
+  it('rebuilds the payload when an in-memory cached promise was previously rejected', async () => {
+    const catalog = makeCatalogTargets().filter((target) => target.sectionSlug === 'actualidad');
+    let fetchFeedsCallCount = 0;
+    const handler = createNewsHandler({
+      loadSourcesCatalog: async () => catalog,
+      fetchFeeds: async (sources) => {
+        fetchFeedsCallCount += 1;
+
+        if (fetchFeedsCallCount === 1) {
+          throw new Error('transient-feed-failure');
+        }
+
+        return {
+          successes: sources.map((source) => ({
+            sourceId: source.id,
+            feedUrl: source.feedUrl,
+            body: buildRssXml({
+              title: 'Recovered After Cache Rejection',
+              url: 'https://elpais.com/recovered-after-cache-rejection',
+            }),
+          })),
+          warnings: [],
+        };
+      },
+    });
+
+    const firstResponse = createMockResponse();
+    const secondResponse = createMockResponse();
+
+    await Promise.all([
+      handler(
+        createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+        firstResponse as unknown as ServerResponse,
+      ),
+      handler(
+        createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+        secondResponse as unknown as ServerResponse,
+      ),
+    ]);
+
+    expect(firstResponse.statusCode).toBe(500);
+    expect(readJson<HandlerErrorPayload>(firstResponse).error).toBe('Unable to load RSS sources catalog');
+    expect(secondResponse.statusCode).toBe(200);
+    expect(readJson<HandlerSuccessPayload>(secondResponse).articles[0]?.title).toBe('Recovered After Cache Rejection');
+    expect(fetchFeedsCallCount).toBe(2);
+
+    const retryResponse = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/news?section=actualidad&page=1&limit=20') as IncomingMessage,
+      retryResponse as unknown as ServerResponse,
+    );
+
+    expect(retryResponse.statusCode).toBe(200);
+    expect(fetchFeedsCallCount).toBe(2);
+    expect(readJson<HandlerSuccessPayload>(retryResponse).articles[0]?.title).toBe('Recovered After Cache Rejection');
+  });
+
   it('evicts least recently used query when cache max entries is exceeded', async () => {
     const catalog = makeCatalogTargets();
     let fetchFeedsCallCount = 0;

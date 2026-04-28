@@ -29,6 +29,19 @@ describe('shared/lib/snapshot-key', () => {
     ).toBe('news:id=-:section=-:source=-:q=-:page=1:limit=20');
   });
 
+  it('preserves id casing when building news keys', () => {
+    expect(
+      toNewsSnapshotKey({
+        id: 'Article-ABC',
+        section: null,
+        sourceIds: [],
+        searchQuery: null,
+        page: 1,
+        limit: 20,
+      }),
+    ).toBe('news:id=Article-ABC:section=-:source=-:q=-:page=1:limit=20');
+  });
+
   it('builds the default sources key', () => {
     expect(toSourcesSnapshotKey()).toBe('sources:default');
   });
