@@ -24,6 +24,7 @@ export const config = {
 const NEWS_HANDLER_CACHE_TTL_MS = 60_000;
 const NEWS_HANDLER_CACHE_MAX_ENTRIES = 64;
 const PERF_LOGS_ENV_FLAG = 'NEWS_PERF_LOGS';
+const FORCE_REFRESH_HEADER = 'x-news-force-refresh';
 
 const defaultDependencies: NewsHandlerDependencies = {
   loadSourcesCatalog,
@@ -87,7 +88,8 @@ export function createNewsHandler(
       responseCache.delete(cacheKey);
     }
 
-    const payloadPromise = resolveNewsPayload(dependencies, query, now, startedAt);
+    const shouldBypassSnapshot = request.headers?.[FORCE_REFRESH_HEADER] === '1';
+    const payloadPromise = resolveNewsPayload(dependencies, query, now, startedAt, shouldBypassSnapshot);
     responseCache.set(cacheKey, {
       payloadPromise,
       expiresAt: now() + cacheTtlMs,
@@ -183,13 +185,16 @@ async function resolveNewsPayload(
   query: NewsQuery,
   now: () => number,
   startedAt: number,
+  shouldBypassSnapshot: boolean,
 ): Promise<NewsPayloadBuildResult> {
-  const snapshot = await dependencies.snapshotReader.getNewsSnapshot(query);
-  if (snapshot && !isExpired(Date.parse(snapshot.expiresAt), startedAt)) {
-    return {
-      payload: snapshot.payload,
-      timings: SNAPSHOT_TIMINGS,
-    };
+  if (!shouldBypassSnapshot) {
+    const snapshot = await dependencies.snapshotReader.getNewsSnapshot(query);
+    if (snapshot && !isExpired(Date.parse(snapshot.expiresAt), startedAt)) {
+      return {
+        payload: snapshot.payload,
+        timings: SNAPSHOT_TIMINGS,
+      };
+    }
   }
 
   return buildNewsPayload(dependencies, query, now);
