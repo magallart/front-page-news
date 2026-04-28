@@ -11,7 +11,7 @@ export function toNewsSnapshotKey(query: NewsQuery): string {
 
   return [
     'news',
-    `id=${normalizeNullablePart(query.id)}`,
+    `id=${normalizeIdPart(query.id)}`,
     `section=${normalizeNullablePart(query.section)}`,
     `source=${normalizeListPart(normalizedSourceIds)}`,
     `q=${normalizeNullablePart(query.searchQuery)}`,
@@ -30,6 +30,15 @@ function normalizeNullablePart(value: string | null): string {
   }
 
   const normalizedValue = value.trim().toLowerCase();
+  return normalizedValue.length > 0 ? normalizedValue : EMPTY_KEY_PART;
+}
+
+function normalizeIdPart(value: string | null): string {
+  if (typeof value !== 'string') {
+    return EMPTY_KEY_PART;
+  }
+
+  const normalizedValue = value.trim();
   return normalizedValue.length > 0 ? normalizedValue : EMPTY_KEY_PART;
 }
 
