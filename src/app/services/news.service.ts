@@ -52,19 +52,26 @@ export class NewsService {
 
     this.pruneExpiredEntries();
 
+    let memoryResult: NewsServiceResult | null = null;
+
     if (!forceRefresh) {
       const cached = this.responseCache.get(snapshotKey);
       if (cached && !isExpired(cached.memoryExpiresAt)) {
         this.promoteCacheEntry(snapshotKey, cached);
-        return new Observable((subscriber) => {
-          subscriber.next({
-            ...cached.result,
-            source: 'memory',
-            isRefreshing: false,
-            isStale: isExpired(cached.result.staleAtMs),
+        const isMemoryResultStale = isExpired(cached.result.staleAtMs);
+        memoryResult = {
+          ...cached.result,
+          source: 'memory',
+          isRefreshing: isMemoryResultStale,
+          isStale: isMemoryResultStale,
+        };
+
+        if (!isMemoryResultStale) {
+          return new Observable((subscriber) => {
+            subscriber.next(memoryResult!);
+            subscriber.complete();
           });
-          subscriber.complete();
-        });
+        }
       }
 
       if (cached) {
@@ -76,9 +83,13 @@ export class NewsService {
       let cancelled = false;
 
       const execute = async (): Promise<void> => {
-        let hydratedResult: NewsServiceResult | null = null;
+        let hydratedResult: NewsServiceResult | null = memoryResult;
 
-        if (!forceRefresh) {
+        if (memoryResult) {
+          subscriber.next(memoryResult);
+        }
+
+        if (!forceRefresh && !memoryResult) {
           hydratedResult =
             (await this.loadIndexedDbSnapshot(query)) ??
             (await this.loadRemoteSnapshot(query));

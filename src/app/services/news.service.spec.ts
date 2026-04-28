@@ -181,6 +181,55 @@ describe('NewsService', () => {
     expect(secondRequestResult.source).toBe(NEWS_SERVICE_RESULT_SOURCE.MEMORY);
   });
 
+  it('revalidates when serving a stale memory entry within ttl', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
+      createPersistedNewsSnapshotRecord({
+        staleAtMs: Date.parse('2025-12-31T23:00:00.000Z'),
+        expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
+      }),
+    );
+
+    const firstResultPromise = lastValueFrom(service.getNews({ section: 'economia' }).pipe(toArray()));
+    await flushPendingAsyncHydration();
+    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    firstRequest.flush('upstream timeout', { status: 504, statusText: 'Gateway Timeout' });
+    await expect(firstResultPromise).resolves.toMatchObject([
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isRefreshing: true,
+        isStale: true,
+      },
+    ]);
+
+    const secondResultPromise = lastValueFrom(service.getNews({ section: 'economia' }).pipe(toArray()));
+    await flushPendingAsyncHydration();
+    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    secondRequest.flush(
+      createValidNewsPayload({
+        articles: [
+          {
+            ...createValidNewsPayload().articles[0],
+            id: 'news-2',
+            title: 'Titulo revalidado desde memoria stale',
+          },
+        ],
+      }),
+    );
+
+    await expect(secondResultPromise).resolves.toMatchObject([
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.MEMORY,
+        isRefreshing: true,
+        isStale: true,
+      },
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        isRefreshing: false,
+        isStale: false,
+      },
+    ]);
+  });
+
   it('fetches again when the memory cache ttl expires', async () => {
     const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
     await flushPendingAsyncHydration();
