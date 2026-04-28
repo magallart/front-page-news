@@ -80,6 +80,13 @@ This file acts as the **single source of truth** for global conventions and deci
   - Type checking.
   - Linting.
   - Tests.
+- By default, milestone validation must run the full application test suite, not only targeted tests.
+- Targeted tests may be used during development for fast feedback, but they are not sufficient to mark a milestone as validated.
+- Unless the user explicitly waives it for the current task, full validation means:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
+- When sandbox restrictions interfere with ad hoc test commands, prefer the full validated commands above so execution can remain autonomous without approval loops.
 - No code with failing checks is acceptable.
 - When behavior changes:
   - Tests must be added or updated.
@@ -108,6 +115,9 @@ This file acts as the **single source of truth** for global conventions and deci
 - Commits must always be written in English.
 - Commit subjects and bodies must be explicit and self-contained.
 - Avoid terse commit messages or low-signal summaries.
+- Automated commits created by the agent must use a single `-m` subject line only.
+- Do not add a second `-m` body when creating commits from the terminal.
+- The single commit message line must still follow the required conventional commit format and remain explicit.
 - Commit or push actions are allowed only after the user explicitly asks for them, or when the repository/session is operating in an explicitly authorized autonomous mode.
 - In autonomous mode, the agent may create commits without asking again only for validated milestones that belong to the active task.
 - In autonomous mode, the agent must not auto-commit when unrelated local changes are present, when validation fails, or when the change includes unconfirmed architecture decisions, dependency changes, destructive actions, or deployment-impacting operations.
@@ -126,7 +136,13 @@ This file acts as the **single source of truth** for global conventions and deci
 - Before committing or opening a PR:
   - pnpm run lint.
   - pnpm test.
+- Before committing or opening a PR when e2e coverage exists in the repository:
+  - pnpm test:e2e.
 - Before every autonomous commit, the agent must verify the task behavior from the terminal using the most relevant available checks for the change.
+- For this repository, the default autonomous milestone validation is the full suite:
+  - `pnpm run lint`
+  - `pnpm test`
+  - `pnpm test:e2e`
 - A commit is valid only after the agent has observed successful terminal output for the required checks.
 - PR descriptions must be concise and focused on a high-level summary of what changed.
 - If a new global restriction is introduced (e.g. “never X”, “always Y”), it must be documented **in this file**.

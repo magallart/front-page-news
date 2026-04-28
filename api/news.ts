@@ -1,4 +1,5 @@
 import { CACHE_CONTROL_HEADER_VALUE, RSS_SOURCES_FILE_PATH } from '../server/constants/news.constants.js';
+import { createBlobSnapshotReader } from '../server/lib/blob-snapshot-reader.js';
 import { fetchFeedsConcurrently } from '../server/lib/feed-fetcher.js';
 import { isExpired, logPerf, toNewsQueryCacheKey } from '../server/lib/news-handler-cache.js';
 import { buildNewsPayload, SourcesCatalogLoadError } from '../server/lib/news-payload-builder.js';
@@ -12,6 +13,7 @@ import type { ApiRequest } from '../server/interfaces/api-request.interface';
 import type { NewsHandlerDependencies } from '../server/interfaces/news-handler-dependencies.interface';
 import type { NewsHandlerRuntimeOptions } from '../server/interfaces/news-handler-runtime-options.interface';
 import type { NewsPayloadBuildResult } from '../server/interfaces/news-payload-build-result.interface';
+import type { NewsQuery } from '../shared/interfaces/news-query.interface';
 import type { SourceFeedTarget } from '../shared/interfaces/source-feed-target.interface';
 import type { ServerResponse } from 'node:http';
 
@@ -26,12 +28,19 @@ const PERF_LOGS_ENV_FLAG = 'NEWS_PERF_LOGS';
 const defaultDependencies: NewsHandlerDependencies = {
   loadSourcesCatalog,
   fetchFeeds: fetchFeedsConcurrently,
+  snapshotReader: createBlobSnapshotReader(),
 };
 
 interface CachedNewsPayload {
   readonly expiresAt: number;
   readonly payloadPromise: Promise<NewsPayloadBuildResult>;
 }
+
+const SNAPSHOT_TIMINGS = {
+  catalogMs: 0,
+  fetchMs: 0,
+  parseAndFilterMs: 0,
+};
 
 export function createNewsHandler(
   overrides: Partial<NewsHandlerDependencies> = {},
@@ -58,31 +67,17 @@ export function createNewsHandler(
 
     const query = parseNewsQuery(request.url);
     const cacheKey = toNewsQueryCacheKey(query);
-    const cached = responseCache.get(cacheKey);
-
-    if (cached && !isExpired(cached.expiresAt, startedAt)) {
-      try {
-        promoteCacheEntry(responseCache, cacheKey, cached);
-        const { payload } = await cached.payloadPromise;
-        if (enablePerfLogs) {
-          logPerf('cache-hit', {
-            cacheKey,
-            totalMs: now() - startedAt,
-          });
-        }
-
-        sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
-        return;
-      } catch {
-        responseCache.delete(cacheKey);
-      }
+    const cached = getCachedPayloadIfAvailable(responseCache, cacheKey, startedAt);
+    if (cached) {
+      await sendCachedPayload(cached, responseCache, cacheKey, startedAt, now, enablePerfLogs, response);
+      return;
     }
 
-    if (cached) {
+    if (responseCache.has(cacheKey)) {
       responseCache.delete(cacheKey);
     }
 
-    const payloadPromise = buildNewsPayload(dependencies, query, now);
+    const payloadPromise = resolveNewsPayload(dependencies, query, now, startedAt);
     responseCache.set(cacheKey, {
       payloadPromise,
       expiresAt: now() + cacheTtlMs,
@@ -131,6 +126,61 @@ function pruneExpiredCacheEntries(cache: Map<string, CachedNewsPayload>, nowTime
 function promoteCacheEntry(cache: Map<string, CachedNewsPayload>, cacheKey: string, cacheEntry: CachedNewsPayload): void {
   cache.delete(cacheKey);
   cache.set(cacheKey, cacheEntry);
+}
+
+function getCachedPayloadIfAvailable(
+  cache: Map<string, CachedNewsPayload>,
+  cacheKey: string,
+  startedAt: number,
+): CachedNewsPayload | null {
+  const cached = cache.get(cacheKey);
+  if (!cached || isExpired(cached.expiresAt, startedAt)) {
+    return null;
+  }
+
+  return cached;
+}
+
+async function sendCachedPayload(
+  cached: CachedNewsPayload,
+  cache: Map<string, CachedNewsPayload>,
+  cacheKey: string,
+  startedAt: number,
+  now: () => number,
+  enablePerfLogs: boolean,
+  response: ServerResponse,
+): Promise<void> {
+  try {
+    promoteCacheEntry(cache, cacheKey, cached);
+    const { payload } = await cached.payloadPromise;
+    if (enablePerfLogs) {
+      logPerf('cache-hit', {
+        cacheKey,
+        totalMs: now() - startedAt,
+      });
+    }
+
+    sendJson(response, 200, payload, CACHE_CONTROL_HEADER_VALUE);
+  } catch {
+    cache.delete(cacheKey);
+  }
+}
+
+async function resolveNewsPayload(
+  dependencies: NewsHandlerDependencies,
+  query: NewsQuery,
+  now: () => number,
+  startedAt: number,
+): Promise<NewsPayloadBuildResult> {
+  const snapshot = await dependencies.snapshotReader.getNewsSnapshot(query);
+  if (snapshot && !isExpired(Date.parse(snapshot.expiresAt), startedAt)) {
+    return {
+      payload: snapshot.payload,
+      timings: SNAPSHOT_TIMINGS,
+    };
+  }
+
+  return buildNewsPayload(dependencies, query, now);
 }
 
 function enforceCacheSizeLimit(cache: Map<string, CachedNewsPayload>, maxEntries: number): void {

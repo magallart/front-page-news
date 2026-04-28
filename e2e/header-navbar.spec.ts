@@ -11,7 +11,7 @@ test.describe('Header/Navbar', () => {
     const stickyContainer = page.locator('app-navbar-sticky-header > div').first();
     await expect(stickyContainer).toHaveClass(/-translate-y-full/);
 
-    await page.evaluate(() => window.scrollTo(0, 700));
+    await page.locator('#most-read').scrollIntoViewIfNeeded();
     await expect(stickyContainer).toHaveClass(/translate-y-0/);
 
     await page.getByRole('button', { name: 'Abrir menu' }).click();
