@@ -8,6 +8,7 @@ import { PageContainerComponent } from '../../components/layout/page-container.c
 import { ErrorStateComponent } from '../../components/news/error-state.component';
 import { NewsCardComponent } from '../../components/news/news-card.component';
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
+import { NewsRefreshIndicatorComponent } from '../../components/news/news-refresh-indicator.component';
 import { SectionFiltersComponent } from '../../components/news/section-filters.component';
 import { SectionPageSkeletonComponent } from '../../components/news/skeletons/section-page-skeleton.component';
 import {
@@ -33,6 +34,7 @@ import type { OnInit } from '@angular/core';
     PageContainerComponent,
     NewsCardComponent,
     ErrorStateComponent,
+    NewsRefreshIndicatorComponent,
     SectionFiltersComponent,
     SectionPageSkeletonComponent,
     NewsQuickViewModalComponent,
@@ -52,6 +54,15 @@ import type { OnInit } from '@angular/core';
             message="Estamos teniendo problemas para cargar esta sección. Inténtalo de nuevo en unos minutos."
           />
         } @else {
+          <app-news-refresh-indicator
+            [scopeLabel]="sectionTitle()"
+            [isRefreshing]="isRefreshing()"
+            [isShowingStaleData]="isShowingStaleData()"
+            [hasFreshUpdateAvailable]="hasFreshUpdateAvailable()"
+            [lastUpdated]="lastUpdated()"
+            (dismissed)="dismissFreshUpdateNotice()"
+          />
+
           @if (hasSectionNews()) {
             <div class="mb-4 flex justify-start">
               <button
@@ -185,6 +196,10 @@ export class SectionPageComponent implements OnInit {
       itemCount: this.filteredSectionNews().length,
     }),
   );
+  protected readonly isRefreshing = computed(() => this.newsStore.isRefreshing(this.sectionNewsQuery()));
+  protected readonly isShowingStaleData = computed(() => this.newsStore.isShowingStaleData(this.sectionNewsQuery()));
+  protected readonly hasFreshUpdateAvailable = computed(() => this.newsStore.hasFreshUpdateAvailable(this.sectionNewsQuery()));
+  protected readonly lastUpdated = computed(() => this.newsStore.lastUpdated(this.sectionNewsQuery()));
 
   ngOnInit(): void {
     this.syncFromRouteSnapshot();
@@ -227,6 +242,10 @@ export class SectionPageComponent implements OnInit {
 
   protected closeQuickView(): void {
     this.quickViewArticle.set(null);
+  }
+
+  protected dismissFreshUpdateNotice(): void {
+    this.newsStore.dismissFreshUpdateNotice(this.sectionNewsQuery());
   }
 
   private syncFromRouteSnapshot(): void {
