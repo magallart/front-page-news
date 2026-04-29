@@ -1,3 +1,12 @@
+import {
+  buildOrderedSectionSlugs,
+  compareFeedTargets,
+  compareSectionSlugs,
+  type NormalizedCatalogRecord,
+  normalizeCatalogRecords,
+  selectPreferredCatalogRecord,
+} from './source-targets';
+
 import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
 import type { Section } from '../../shared/interfaces/section.interface';
 import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
@@ -20,14 +29,8 @@ export function buildSourceFeedTargetsFromRecords(records: readonly RssSourceRec
   const uniqueTargets = new Map<string, SourceFeedTarget>();
 
   for (const record of normalizedRecords) {
-    const sourceSlug = toSlug(record.sourceName);
-    const sectionSlug = toSlug(record.sectionName);
-    if (!sourceSlug || !sectionSlug) {
-      continue;
-    }
-
-    const sourceId = `source-${sourceSlug}`;
-    const key = `${sourceId}|${sectionSlug}|${record.feedUrl}`;
+    const sourceId = `source-${record.sourceSlug}`;
+    const key = `${sourceId}|${record.sectionSlug}|${record.feedUrl}`;
     if (uniqueTargets.has(key)) {
       continue;
     }
@@ -35,111 +38,75 @@ export function buildSourceFeedTargetsFromRecords(records: readonly RssSourceRec
     uniqueTargets.set(key, {
       sourceId,
       sourceName: record.sourceName,
-      sourceBaseUrl: toBaseUrl(record.feedUrl),
+      sourceBaseUrl: record.sourceBaseUrl,
       feedUrl: record.feedUrl,
-      sectionSlug,
+      sectionSlug: record.sectionSlug,
     });
   }
 
-  return Array.from(uniqueTargets.values()).sort((first, second) => {
-    const sourceOrder = first.sourceName.localeCompare(second.sourceName, 'es');
-    if (sourceOrder !== 0) {
-      return sourceOrder;
-    }
-
-    return first.sectionSlug.localeCompare(second.sectionSlug, 'es');
-  });
+  return Array.from(uniqueTargets.values()).sort(compareFeedTargets);
 }
 
-function buildSections(records: readonly RssSourceRecord[]): readonly Section[] {
+function buildSections(records: readonly NormalizedCatalogRecord[]): readonly Section[] {
   const sectionBySlug = new Map<string, Section>();
 
   for (const record of records) {
-    const slug = toSlug(record.sectionName);
-    if (!slug || sectionBySlug.has(slug)) {
+    if (sectionBySlug.has(record.sectionSlug)) {
       continue;
     }
 
-    sectionBySlug.set(slug, {
-      id: `section-${slug}`,
-      slug,
+    sectionBySlug.set(record.sectionSlug, {
+      id: `section-${record.sectionSlug}`,
+      slug: record.sectionSlug,
       name: record.sectionName,
     });
   }
 
-  return Array.from(sectionBySlug.values()).sort((first, second) => first.name.localeCompare(second.name, 'es'));
-}
-
-function buildSources(records: readonly RssSourceRecord[]): readonly Source[] {
-  const sourceMap = new Map<string, { source: Source; sectionSlugs: Set<string> }>();
-
-  for (const record of records) {
-    const sourceSlug = toSlug(record.sourceName);
-    if (!sourceSlug) {
-      continue;
+  return Array.from(sectionBySlug.values()).sort((first, second) => {
+    const priorityOrder = compareSectionSlugs(first.slug, second.slug);
+    if (priorityOrder !== 0) {
+      return priorityOrder;
     }
 
-    const sourceId = `source-${sourceSlug}`;
-    const sectionSlug = toSlug(record.sectionName);
-    const baseUrl = toBaseUrl(record.feedUrl);
+    return first.name.localeCompare(second.name, 'es');
+  });
+}
+
+function buildSources(records: readonly NormalizedCatalogRecord[]): readonly Source[] {
+  const sourceMap = new Map<
+    string,
+    {
+      preferredRecord: NormalizedCatalogRecord;
+      sourceName: string;
+      sectionSlugs: Set<string>;
+    }
+  >();
+
+  for (const record of records) {
+    const sourceId = `source-${record.sourceSlug}`;
 
     const current = sourceMap.get(sourceId);
     if (!current) {
       sourceMap.set(sourceId, {
-        source: {
-          id: sourceId,
-          name: record.sourceName,
-          baseUrl,
-          feedUrl: record.feedUrl,
-          sectionSlugs: sectionSlug ? [sectionSlug] : [],
-        },
-        sectionSlugs: sectionSlug ? new Set([sectionSlug]) : new Set<string>(),
+        preferredRecord: record,
+        sourceName: record.sourceName,
+        sectionSlugs: new Set([record.sectionSlug]),
       });
       continue;
     }
 
-    if (sectionSlug) {
-      current.sectionSlugs.add(sectionSlug);
-    }
+    current.preferredRecord = selectPreferredCatalogRecord(current.preferredRecord, record);
+    current.sectionSlugs.add(record.sectionSlug);
   }
 
   return Array.from(sourceMap.values())
     .map((entry) => ({
-      ...entry.source,
-      sectionSlugs: Array.from(entry.sectionSlugs).sort(),
+      id: `source-${entry.preferredRecord.sourceSlug}`,
+      name: entry.sourceName,
+      baseUrl: entry.preferredRecord.sourceBaseUrl,
+      feedUrl: entry.preferredRecord.feedUrl,
+      sectionSlugs: buildOrderedSectionSlugs(Array.from(entry.sectionSlugs)),
     }))
     .sort((first, second) => first.name.localeCompare(second.name, 'es'));
-}
-
-function normalizeCatalogRecords(records: readonly RssSourceRecord[]): readonly RssSourceRecord[] {
-  return records
-    .map((record) => ({
-      sourceName: sanitizeCatalogText(record.sourceName),
-      feedUrl: record.feedUrl.trim(),
-      sectionName: sanitizeCatalogText(record.sectionName),
-    }))
-    .filter((record) => Boolean(record.sourceName) && Boolean(record.feedUrl) && Boolean(record.sectionName));
-}
-
-function sanitizeCatalogText(value: string): string {
-  return value.trim();
-}
-
-function toSlug(value: string): string {
-  return sanitizeCatalogText(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function toBaseUrl(feedUrl: string): string {
-  try {
-    const url = new URL(feedUrl);
-    return `${url.protocol}//${url.hostname}`;
-  } catch {
-    return '';
-  }
 }
 
