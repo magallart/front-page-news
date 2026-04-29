@@ -147,7 +147,7 @@ export class NewsStore {
           return;
         }
 
-        this.setEntry(key, {
+        this.finalizeRequest(key, requestId, {
           ...latestEntry,
           error: getUserErrorMessage(error, 'No se pudieron cargar las noticias.'),
           isInitialLoading: false,
@@ -160,7 +160,7 @@ export class NewsStore {
           return;
         }
 
-        this.setEntry(key, {
+        this.finalizeRequest(key, requestId, {
           ...latestEntry,
           isInitialLoading: false,
           isRefreshing: false,
@@ -228,6 +228,16 @@ export class NewsStore {
       ...state,
       [key]: entry,
     }));
+  }
+
+  private finalizeRequest(key: string, requestId: number, entry: NewsStoreEntryState): void {
+    const latestEntry = this.getEntry(key);
+    if (latestEntry.activeRequestId !== requestId) {
+      return;
+    }
+
+    this.setEntry(key, entry);
+    this.subscriptions.delete(key);
   }
 }
 

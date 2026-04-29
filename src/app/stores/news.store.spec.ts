@@ -128,6 +128,26 @@ describe('NewsStore', () => {
     expect(store.hasFreshUpdateAvailable({ section: 'actualidad', limit: 10 })).toBe(true);
   });
 
+  it('unsubscribes the previous in-flight request when reloading the same query', () => {
+    const firstStream = createObservableController<NewsServiceResult>();
+    const secondStream = createObservableController<NewsServiceResult>();
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValueOnce(firstStream.observable).mockReturnValueOnce(secondStream.observable),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'actualidad' });
+    store.load({ section: 'actualidad' });
+
+    expect(firstStream.unsubscribeCount()).toBe(1);
+    expect(secondStream.unsubscribeCount()).toBe(0);
+
+    secondStream.next(createServiceResult());
+    secondStream.complete();
+
+    expect(store.isRefreshing({ section: 'actualidad' })).toBe(false);
+  });
+
   it('dismisses the fresh update notice without altering visible data', () => {
     const stream = createObservableController<NewsServiceResult>();
     const newsServiceMock = {
@@ -279,16 +299,22 @@ function createObservableController<T>(): {
   next(value: T): void;
   complete(): void;
   error(error: unknown): void;
+  unsubscribeCount(): number;
 } {
   let nextHandler: ((value: T) => void) | null = null;
   let completeHandler: (() => void) | null = null;
   let errorHandler: ((error: unknown) => void) | null = null;
+  let unsubscribeCounter = 0;
 
   return {
     observable: new Observable<T>((subscriber) => {
       nextHandler = (value) => subscriber.next(value);
       completeHandler = () => subscriber.complete();
       errorHandler = (error) => subscriber.error(error);
+
+      return () => {
+        unsubscribeCounter += 1;
+      };
     }),
     next(value: T) {
       nextHandler?.(value);
@@ -298,6 +324,9 @@ function createObservableController<T>(): {
     },
     error(error: unknown) {
       errorHandler?.(error);
+    },
+    unsubscribeCount() {
+      return unsubscribeCounter;
     },
   };
 }
