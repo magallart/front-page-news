@@ -159,8 +159,8 @@ export class NewsService {
   }
 
   private async loadIndexedDbSnapshot(query: NewsRequestQueryInput): Promise<NewsServiceResult | null> {
-    const record = await this.indexedDbSnapshotCache.getNewsSnapshot(query);
-    if (!record) {
+    const record = await this.readIndexedDbSnapshotSafely(query);
+    if (record === null) {
       return null;
     }
 
@@ -180,7 +180,7 @@ export class NewsService {
       generatedAtMs + LOCAL_NEWS_SNAPSHOT_EXPIRES_AFTER_MS,
     );
 
-    await this.indexedDbSnapshotCache.putNewsSnapshot(snapshot, {
+    await this.persistIndexedDbSnapshotSafely(snapshot, {
       staleAtMs,
       expiresAtMs,
     });
@@ -210,7 +210,7 @@ export class NewsService {
     )
       .then(async (response) => {
         const snapshot = buildLocalNewsSnapshot(normalizedQuery, response, Date.now());
-        await this.indexedDbSnapshotCache.putNewsSnapshot(snapshot);
+        await this.persistIndexedDbSnapshotSafely(snapshot);
 
         const result = this.toServiceResult(
           snapshot,
@@ -227,6 +227,30 @@ export class NewsService {
 
     this.inFlightFreshRequests.set(snapshotKey, requestPromise);
     return requestPromise;
+  }
+
+  private async readIndexedDbSnapshotSafely(
+    query: NewsRequestQueryInput,
+  ): Promise<Awaited<ReturnType<IndexedDbSnapshotCache['getNewsSnapshot']>> | null> {
+    try {
+      return await this.indexedDbSnapshotCache.getNewsSnapshot(query);
+    } catch {
+      return null;
+    }
+  }
+
+  private async persistIndexedDbSnapshotSafely(
+    snapshot: NewsSnapshot,
+    options?: {
+      readonly staleAtMs?: number;
+      readonly expiresAtMs?: number;
+    },
+  ): Promise<void> {
+    try {
+      await this.indexedDbSnapshotCache.putNewsSnapshot(snapshot, options);
+    } catch {
+      // Local persistence is an optimization; do not fail visible data delivery.
+    }
   }
 
   private pruneExpiredEntries(): void {

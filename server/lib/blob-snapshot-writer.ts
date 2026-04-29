@@ -13,7 +13,7 @@ interface BlobSnapshotWriterOptions {
   readonly access?: 'public' | 'private';
 }
 
-const BLOB_READ_WRITE_TOKEN_ENV = 'BLOB_READ_WRITE_TOKEN';
+export const BLOB_READ_WRITE_TOKEN_ENV = 'BLOB_READ_WRITE_TOKEN';
 
 export function createBlobSnapshotWriter(options: BlobSnapshotWriterOptions = {}): SnapshotWriter {
   const putBlob = options.put ?? put;

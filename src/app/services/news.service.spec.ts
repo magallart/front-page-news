@@ -78,8 +78,14 @@ describe('NewsService', () => {
     );
 
     await flushPendingAsyncHydration();
-    const request = httpController.expectOne(
-      '/api/news?id=url-article-123&section=economia&source=source-a,source-b&q=inflacion&page=2&limit=10',
+    const request = await expectPendingRequest(httpController, (request) =>
+      request.url === '/api/news' &&
+      request.params.get('id') === 'url-article-123' &&
+      request.params.get('section') === 'economia' &&
+      request.params.get('source') === 'source-a,source-b' &&
+      request.params.get('q') === 'inflacion' &&
+      request.params.get('page') === '2' &&
+      request.params.get('limit') === '10',
     );
     expect(request.request.method).toBe('GET');
     expect(request.request.headers.get(FORCE_REFRESH_HEADER)).toBe('1');
@@ -130,6 +136,51 @@ describe('NewsService', () => {
     expect(indexedDbSnapshotCacheMock.putNewsSnapshot).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to a remote snapshot when IndexedDB read throws', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockRejectedValue(new Error('indexeddb-read-failed'));
+    remoteNewsSnapshotServiceMock.getNewsSnapshot.mockResolvedValue(
+      createNewsSnapshot({
+        key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+        query: {
+          id: null,
+          section: 'actualidad',
+          sourceIds: [],
+          searchQuery: null,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+
+    const result = await firstValueFrom(service.getNews({ section: 'actualidad' }));
+
+    httpController.expectNone('/api/news?section=actualidad');
+    expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.REMOTE_SNAPSHOT);
+    expect(indexedDbSnapshotCacheMock.putNewsSnapshot).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps serving a remote snapshot when persisting it to IndexedDB fails', async () => {
+    indexedDbSnapshotCacheMock.putNewsSnapshot.mockRejectedValue(new Error('indexeddb-write-failed'));
+    remoteNewsSnapshotServiceMock.getNewsSnapshot.mockResolvedValue(
+      createNewsSnapshot({
+        key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+        query: {
+          id: null,
+          section: 'actualidad',
+          sourceIds: [],
+          searchQuery: null,
+          page: 1,
+          limit: 20,
+        },
+      }),
+    );
+
+    const result = await firstValueFrom(service.getNews({ section: 'actualidad' }));
+
+    httpController.expectNone('/api/news?section=actualidad');
+    expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.REMOTE_SNAPSHOT);
+  });
+
   it('emits stale cached data first and then the revalidated network response', async () => {
     indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
       createPersistedNewsSnapshotRecord({
@@ -141,7 +192,7 @@ describe('NewsService', () => {
     const resultPromise = lastValueFrom(service.getNews({ section: 'actualidad' }).pipe(toArray()));
 
     await flushPendingAsyncHydration();
-    const request = httpController.expectOne('/api/news?section=actualidad');
+    const request = await expectPendingRequest(httpController, '/api/news?section=actualidad');
     request.flush(
       createValidNewsPayload({
         articles: [
@@ -171,7 +222,7 @@ describe('NewsService', () => {
   it('reuses the memory cache for identical queries within ttl', async () => {
     const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
     await flushPendingAsyncHydration();
-    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    const firstRequest = await expectPendingRequest(httpController, '/api/news?section=economia');
     firstRequest.flush(createValidNewsPayload());
     await firstRequestPromise;
 
@@ -179,6 +230,22 @@ describe('NewsService', () => {
 
     httpController.expectNone('/api/news?section=economia');
     expect(secondRequestResult.source).toBe(NEWS_SERVICE_RESULT_SOURCE.MEMORY);
+  });
+
+  it('keeps serving a fresh network result when IndexedDB persistence fails after revalidation', async () => {
+    indexedDbSnapshotCacheMock.putNewsSnapshot.mockRejectedValue(new Error('indexeddb-write-failed'));
+
+    const requestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
+    await flushPendingAsyncHydration();
+    const request = await expectPendingRequest(httpController, '/api/news?section=economia');
+    request.flush(createValidNewsPayload());
+
+    await expect(requestPromise).resolves.toMatchObject({
+      source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+      isRefreshing: false,
+      isStale: false,
+      response: createValidNewsPayload(),
+    });
   });
 
   it('revalidates when serving a stale memory entry within ttl', async () => {
@@ -191,7 +258,7 @@ describe('NewsService', () => {
 
     const firstResultPromise = lastValueFrom(service.getNews({ section: 'economia' }).pipe(toArray()));
     await flushPendingAsyncHydration();
-    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    const firstRequest = await expectPendingRequest(httpController, '/api/news?section=economia');
     firstRequest.flush('upstream timeout', { status: 504, statusText: 'Gateway Timeout' });
     await expect(firstResultPromise).resolves.toMatchObject([
       {
@@ -203,7 +270,7 @@ describe('NewsService', () => {
 
     const secondResultPromise = lastValueFrom(service.getNews({ section: 'economia' }).pipe(toArray()));
     await flushPendingAsyncHydration();
-    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    const secondRequest = await expectPendingRequest(httpController, '/api/news?section=economia');
     secondRequest.flush(
       createValidNewsPayload({
         articles: [
@@ -233,7 +300,7 @@ describe('NewsService', () => {
   it('fetches again when the memory cache ttl expires', async () => {
     const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
     await flushPendingAsyncHydration();
-    const firstRequest = httpController.expectOne('/api/news?section=economia');
+    const firstRequest = await expectPendingRequest(httpController, '/api/news?section=economia');
     firstRequest.flush(createValidNewsPayload());
     await firstRequestPromise;
 
@@ -241,7 +308,7 @@ describe('NewsService', () => {
 
     const secondRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
     await flushPendingAsyncHydration();
-    const secondRequest = httpController.expectOne('/api/news?section=economia');
+    const secondRequest = await expectPendingRequest(httpController, '/api/news?section=economia');
     secondRequest.flush(createValidNewsPayload());
     await secondRequestPromise;
   });
@@ -255,7 +322,7 @@ describe('NewsService', () => {
 
     const requestPromise = firstValueFrom(service.getNews({ section: 'economia' }, { forceRefresh: true }));
     await flushPendingAsyncHydration();
-    const request = httpController.expectOne('/api/news?section=economia');
+    const request = await expectPendingRequest(httpController, '/api/news?section=economia');
     request.flush(createValidNewsPayload());
     const result = await requestPromise;
 
@@ -266,7 +333,7 @@ describe('NewsService', () => {
   it('fails when the network response shape is invalid and no cached data exists', async () => {
     const requestPromise = firstValueFrom(service.getNews());
     await flushPendingAsyncHydration();
-    const request = httpController.expectOne('/api/news');
+    const request = await expectPendingRequest(httpController, '/api/news');
     request.flush({
       articles: [],
       total: 1,
@@ -309,6 +376,21 @@ async function flushPendingAsyncHydration(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
   await Promise.resolve();
+}
+
+async function expectPendingRequest(
+  httpController: HttpTestingController,
+  matcher: Parameters<HttpTestingController['expectOne']>[0],
+) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return httpController.expectOne(matcher);
+    } catch {
+      await Promise.resolve();
+    }
+  }
+
+  return httpController.expectOne(matcher);
 }
 
 function createNewsSnapshot(overrides: Partial<NewsSnapshot> = {}): NewsSnapshot {

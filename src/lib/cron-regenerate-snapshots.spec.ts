@@ -18,6 +18,7 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
   it('returns 405 for non-get methods', async () => {
     const handler = createCronRegenerateSnapshotsHandler({
       cronSecret: 'secret',
+      blobReadWriteToken: 'blob-token',
     });
 
     const response = createMockResponse();
@@ -30,6 +31,7 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
   it('returns 401 when authorization does not match the cron secret', async () => {
     const handler = createCronRegenerateSnapshotsHandler({
       cronSecret: 'secret',
+      blobReadWriteToken: 'blob-token',
     });
 
     const response = createMockResponse();
@@ -66,6 +68,7 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
     const now = vi.fn(() => Date.parse('2026-04-28T08:00:00.000Z'));
     const handler = createCronRegenerateSnapshotsHandler({
       cronSecret: 'secret',
+      blobReadWriteToken: 'blob-token',
       now,
       logger,
       fetchFeeds,
@@ -110,6 +113,7 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
   it('returns 500 when the cron secret is not configured', async () => {
     const handler = createCronRegenerateSnapshotsHandler({
       cronSecret: '   ',
+      blobReadWriteToken: 'blob-token',
     });
 
     const response = createMockResponse();
@@ -117,6 +121,24 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
 
     expect(response.statusCode).toBe(500);
     expect(readJson<{ error: string }>(response).error).toBe('Cron secret is not configured');
+  });
+
+  it('returns 500 when the blob write token is not configured', async () => {
+    const handler = createCronRegenerateSnapshotsHandler({
+      cronSecret: 'secret',
+      blobReadWriteToken: '   ',
+    });
+
+    const response = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/cron/regenerate-snapshots', {
+        authorization: 'Bearer secret',
+      }) as IncomingMessage,
+      response as unknown as ServerResponse,
+    );
+
+    expect(response.statusCode).toBe(500);
+    expect(readJson<{ error: string }>(response).error).toBe('Blob write token is not configured');
   });
 });
 
