@@ -45,7 +45,7 @@ describe('SectionPageComponent', () => {
     fixture.detectChanges();
     await flushPendingAsyncHydration();
 
-    const request = httpController.expectOne((request) =>
+    const request = await expectPendingRequest(httpController, (request) =>
       request.url === '/api/news' &&
       request.params.get('section') === 'economia' &&
       request.params.get('page') === '1' &&
@@ -456,6 +456,21 @@ async function flushPendingAsyncHydration(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
   await Promise.resolve();
+}
+
+async function expectPendingRequest(
+  httpController: HttpTestingController,
+  matcher: Parameters<HttpTestingController['expectOne']>[0],
+) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      return httpController.expectOne(matcher);
+    } catch {
+      await Promise.resolve();
+    }
+  }
+
+  return httpController.expectOne(matcher);
 }
 
 
