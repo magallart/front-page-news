@@ -24,7 +24,8 @@ Use it when snapshot freshness, hydration, or regeneration behavior looks wrong 
 
 - `BLOB_READ_WRITE_TOKEN`
   - required by `server/lib/blob-snapshot-writer.ts`
-  - if missing, cron regeneration degrades to a noop writer
+  - required by `api/cron/regenerate-snapshots.ts` before regeneration starts
+  - if missing, cron regeneration returns `500 Blob write token is not configured`
 
 ### Cron protection
 
@@ -112,6 +113,12 @@ Cause:
 Cause:
 
 - wrong bearer token
+
+### Cron returns `500 Blob write token is not configured`
+
+Cause:
+
+- `BLOB_READ_WRITE_TOKEN` missing or blank in the deployment environment
 
 ### Cron returns `200` but few snapshot keys are written
 
