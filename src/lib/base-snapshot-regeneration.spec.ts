@@ -108,6 +108,45 @@ describe('server/lib/base-snapshot-regeneration', () => {
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
     expect(result.keys).toEqual(['sources:default']);
   });
+
+  it('does not degrade every shared section snapshot from an unscoped fetch warning', async () => {
+    const putNewsSnapshot = vi.fn().mockResolvedValue(undefined);
+    const putSourcesSnapshot = vi.fn().mockResolvedValue(undefined);
+
+    const result = await regenerateBaseSnapshots({
+      loadCatalogRecords: async () => makeCatalogRecords(),
+      fetchFeeds: async (sources: readonly Source[]) => ({
+        successes: sources.map((source, index) => ({
+          sourceId: source.id,
+          feedUrl: source.feedUrl,
+          body: buildRssXml({
+            title: `${source.name} ${index + 1}`,
+            url: `https://example.com/${source.id}/${index + 1}`,
+          }),
+          contentType: 'application/rss+xml',
+        })),
+        warnings: [
+          {
+            code: WARNING_CODE.SOURCE_FETCH_FAILED,
+            message: 'Unexpected fetch error: worker rejected',
+            sourceId: null,
+            feedUrl: null,
+          },
+        ] satisfies readonly Warning[],
+      }),
+      snapshotWriter: {
+        putNewsSnapshot,
+        putSourcesSnapshot,
+      },
+      now: () => Date.parse('2026-04-28T08:00:00.000Z'),
+    });
+
+    expect(putNewsSnapshot).toHaveBeenCalledTimes(11);
+    expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
+    expect(result.skippedKeys).toEqual([]);
+    expect(result.persistedKeys).toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
+    expect(result.persistedKeys).toContain('news:id=-:section=tecnologia:source=-:q=-:page=1:limit=300');
+  });
 });
 
 function makeCatalogRecords(): readonly RssSourceRecord[] {

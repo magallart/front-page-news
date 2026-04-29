@@ -108,7 +108,7 @@ function resolveFetchWarnings(
 
   return warnings.filter((warning) => {
     if (!warning.sourceId || !warning.feedUrl) {
-      return true;
+      return false;
     }
 
     return selectedTargetKeys.has(toFeedTargetKey(warning.sourceId, warning.feedUrl));
