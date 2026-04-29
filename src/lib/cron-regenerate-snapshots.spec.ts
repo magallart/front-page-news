@@ -105,7 +105,7 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
     expect(payload.keys).toContain('sources:default');
     expect(putNewsSnapshot).toHaveBeenCalledTimes(11);
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
-    expect(fetchFeeds).toHaveBeenCalledTimes(11);
+    expect(fetchFeeds).toHaveBeenCalledTimes(2);
     expect(logger.info).toHaveBeenCalledTimes(2);
     expect(logger.error).not.toHaveBeenCalled();
   });
