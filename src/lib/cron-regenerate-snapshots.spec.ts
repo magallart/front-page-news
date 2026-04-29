@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createCronRegenerateSnapshotsHandler } from '../../api/cron/regenerate-snapshots';
+import { WARNING_CODE } from '../../server/constants/warning-code.constants';
 
 import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
 import type { Source } from '../../shared/interfaces/source.interface';
@@ -92,6 +93,11 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
       newsSnapshots: number;
       sourcesSnapshots: number;
       totalSnapshots: number;
+      attemptedKeys: readonly string[];
+      persistedKeys: readonly string[];
+      skippedKeys: readonly string[];
+      skippedReasons: Readonly<Record<string, string>>;
+      warningsCount: number;
       keys: readonly string[];
     }>(response);
 
@@ -100,13 +106,75 @@ describe('api/cron/regenerate-snapshots handler contract', () => {
     expect(payload.newsSnapshots).toBe(11);
     expect(payload.sourcesSnapshots).toBe(1);
     expect(payload.totalSnapshots).toBe(12);
+    expect(payload.attemptedKeys).toHaveLength(12);
+    expect(payload.persistedKeys).toHaveLength(12);
+    expect(payload.skippedKeys).toHaveLength(0);
+    expect(payload.skippedReasons).toEqual({});
+    expect(payload.warningsCount).toBe(0);
     expect(payload.keys).toContain('news:id=-:section=-:source=-:q=-:page=1:limit=250');
     expect(payload.keys).toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
     expect(payload.keys).toContain('sources:default');
     expect(putNewsSnapshot).toHaveBeenCalledTimes(11);
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
     expect(fetchFeeds).toHaveBeenCalledTimes(2);
-    expect(logger.info).toHaveBeenCalledTimes(2);
+    expect(logger.info).toHaveBeenCalledTimes(14);
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  it('reports partial regeneration details when some snapshots are skipped', async () => {
+    const logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+    };
+    const handler = createCronRegenerateSnapshotsHandler({
+      cronSecret: 'secret',
+      blobReadWriteToken: 'blob-token',
+      logger,
+      loadCatalogRecords: async () => makeCatalogRecords(),
+      fetchFeeds: async (sources: readonly Source[]) => ({
+        successes: sources.map((source, index) => ({
+          sourceId: source.id,
+          feedUrl: source.feedUrl,
+          body: buildRssXml({
+            title: `${source.name} ${index + 1}`,
+            url: `https://example.com/${source.id}/${index + 1}`,
+          }),
+          contentType: 'application/rss+xml',
+        })),
+        warnings: [
+          {
+            code: WARNING_CODE.SOURCE_TIMEOUT,
+            message: 'timeout',
+            sourceId: 'source-fuente-uno',
+            feedUrl: 'https://source-one.test/actualidad.xml',
+          },
+        ],
+      }),
+    });
+
+    const response = createMockResponse();
+    await handler(
+      createRequest('GET', '/api/cron/regenerate-snapshots', {
+        authorization: 'Bearer secret',
+      }) as IncomingMessage,
+      response as unknown as ServerResponse,
+    );
+
+    const payload = readJson<{
+      totalSnapshots: number;
+      persistedKeys: readonly string[];
+      skippedKeys: readonly string[];
+      skippedReasons: Readonly<Record<string, string>>;
+      warningsCount: number;
+    }>(response);
+
+    expect(response.statusCode).toBe(200);
+    expect(payload.totalSnapshots).toBe(10);
+    expect(payload.persistedKeys).toContain('sources:default');
+    expect(payload.skippedKeys).toContain('news:id=-:section=-:source=-:q=-:page=1:limit=250');
+    expect(payload.skippedKeys).toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
+    expect(payload.skippedReasons['news:id=-:section=-:source=-:q=-:page=1:limit=250']).toBe('blocking_warning');
+    expect(payload.warningsCount).toBeGreaterThan(0);
     expect(logger.error).not.toHaveBeenCalled();
   });
 
