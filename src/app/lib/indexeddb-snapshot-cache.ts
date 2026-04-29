@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { toNewsSnapshotKey, toSourcesSnapshotKey } from '../../../shared/lib/snapshot-key';
+import { toSourcesSnapshotKey } from '../../../shared/lib/snapshot-key';
 
-import { toNewsSnapshotQuery } from './news-request';
+import { toNewsRequestSnapshotKey } from './news-request';
 
 import type { NewsRequestQuery } from './news-request';
 import type { NewsSnapshot } from '../../../shared/interfaces/news-snapshot.interface';
@@ -47,7 +47,7 @@ export class IndexedDbSnapshotCache {
   }
 
   async getNewsSnapshot(query: NewsRequestQuery = {}): Promise<PersistedNewsSnapshotRecord | null> {
-    const key = toNewsSnapshotKey(toNewsSnapshotQuery(query));
+    const key = toNewsRequestSnapshotKey(query);
     return this.readRecord<PersistedNewsSnapshotRecord>(SNAPSHOT_CACHE_STORE_NAME.NEWS, key);
   }
 
@@ -61,7 +61,7 @@ export class IndexedDbSnapshotCache {
   }
 
   async deleteNewsSnapshot(query: NewsRequestQuery = {}): Promise<void> {
-    const key = toNewsSnapshotKey(toNewsSnapshotQuery(query));
+    const key = toNewsRequestSnapshotKey(query);
     await this.deleteRecord(SNAPSHOT_CACHE_STORE_NAME.NEWS, key);
   }
 

@@ -1,8 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 
 import { areNewsResponsesEqual } from '../../../shared/lib/news-response-equality';
-import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
-import { toNewsSnapshotQuery } from '../lib/news-request';
+import { toNewsRequestSnapshotKey } from '../lib/news-request';
 import { NewsService } from '../services/news.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
@@ -238,7 +237,7 @@ export class NewsStore {
 }
 
 function toQueryKey(query: NewsRequestQuery): string {
-  return toNewsSnapshotKey(toNewsSnapshotQuery(query));
+  return toNewsRequestSnapshotKey(query);
 }
 
 function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {

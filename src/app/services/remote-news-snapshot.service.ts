@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
 import { buildSnapshotBlobUrl, normalizeSnapshotBaseUrl } from '../../../shared/lib/snapshot-url';
 import { environment } from '../../environments/environment';
-import { toNewsSnapshotQuery } from '../lib/news-request';
+import { toNewsRequestSnapshotKey } from '../lib/news-request';
 import { adaptNewsSnapshot } from '../lib/news-snapshot-adapter';
 
 import type { NewsRequestQuery } from './news.service';
@@ -17,7 +16,7 @@ export class RemoteNewsSnapshotService {
       return null;
     }
 
-    const snapshotKey = toNewsSnapshotKey(toNewsSnapshotQuery(query));
+    const snapshotKey = toNewsRequestSnapshotKey(query);
     const response = await this.fetchSnapshot(buildSnapshotBlobUrl(baseUrl, snapshotKey));
     if (!response) {
       return null;
