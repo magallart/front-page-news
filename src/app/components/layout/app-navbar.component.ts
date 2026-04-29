@@ -8,13 +8,11 @@ import {
   NAVBAR_SOCIAL_LINKS,
   NAVBAR_TICKER_HEADLINE_LIMIT,
   NAVBAR_TOP_LINKS,
-  ROUTES_WITHOUT_DEDICATED_NEWS_LOAD,
 } from '../../constants/navbar.constants';
 import { NAVBAR_TICKER_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { NewsStore } from '../../stores/news.store';
 import { formatDateLabelUppercase } from '../../utils/date-formatting';
 import { registerMediaQueryListener } from '../../utils/media-query-listener';
-import { isRouteInSet } from '../../utils/route-path';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
 import { NavbarSideMenuComponent } from './navbar/navbar-side-menu.component';
@@ -64,7 +62,7 @@ export class AppNavbarComponent {
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = NAVBAR_TICKER_HEADLINE_LIMIT;
   private readonly fallbackTickerHeadlines = NAVBAR_FALLBACK_TICKER_HEADLINES;
-  private readonly tickerNewsQuery = { page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT } as const;
+  private readonly tickerNewsQuery = { section: 'ultima-hora', page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT } as const;
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
@@ -143,14 +141,14 @@ export class AppNavbarComponent {
   }
 
   private initTickerFallbackLoad(): void {
-    this.loadTickerNewsIfNeeded(this.router.url);
+    this.loadTickerNewsIfNeeded();
 
     const subscription = this.router.events.subscribe((event) => {
       if (!(event instanceof NavigationEnd)) {
         return;
       }
 
-      this.loadTickerNewsIfNeeded(event.urlAfterRedirects);
+      this.loadTickerNewsIfNeeded();
     });
 
     this.destroyRef.onDestroy(() => {
@@ -158,11 +156,7 @@ export class AppNavbarComponent {
     });
   }
 
-  private loadTickerNewsIfNeeded(url: string): void {
-    if (!isRouteInSet(url, ROUTES_WITHOUT_DEDICATED_NEWS_LOAD)) {
-      return;
-    }
-
+  private loadTickerNewsIfNeeded(): void {
     if (this.newsStore.loading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
       return;
     }

@@ -40,5 +40,3 @@ export const NAVBAR_SOCIAL_LINKS: readonly SocialLink[] = [
   { label: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
   { label: 'X', icon: 'x', url: 'https://x.com' },
 ];
-
-export const ROUTES_WITHOUT_DEDICATED_NEWS_LOAD = new Set(['/aviso-legal', '/privacidad', '/cookies']);

@@ -113,10 +113,11 @@ describe('AppNavbarComponent', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Actualizando titulares...');
-    expect(storeMock.load).not.toHaveBeenCalled();
+    expect(storeMock.load).toHaveBeenCalledTimes(1);
+    expect(storeMock.load).toHaveBeenCalledWith({ section: 'ultima-hora', page: 1, limit: 120 });
   });
 
-  it('loads ticker news fallback on legal routes when store is empty', async () => {
+  it('loads ticker latest-news query when store is empty', async () => {
     mockMatchMedia(false);
     const storeMock = createNewsStoreMock({ articles: [] });
 
@@ -128,14 +129,15 @@ describe('AppNavbarComponent', () => {
     const fixture = TestBed.createComponent(AppNavbarComponent);
     fixture.detectChanges();
 
-    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
-    component.loadTickerNewsIfNeeded('/aviso-legal');
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: () => void };
+    component.loadTickerNewsIfNeeded();
 
-    expect(storeMock.load).toHaveBeenCalledTimes(1);
-    expect(storeMock.load).toHaveBeenCalledWith({ page: 1, limit: 120 });
+    expect(storeMock.load).toHaveBeenCalledTimes(2);
+    expect(storeMock.load).toHaveBeenNthCalledWith(1, { section: 'ultima-hora', page: 1, limit: 120 });
+    expect(storeMock.load).toHaveBeenNthCalledWith(2, { section: 'ultima-hora', page: 1, limit: 120 });
   });
 
-  it('does not load ticker fallback on legal routes while store is already loading', async () => {
+  it('does not load ticker latest-news query while store is already loading', async () => {
     mockMatchMedia(false);
     const storeMock = createNewsStoreMock({ articles: [], loading: true });
 
@@ -147,8 +149,8 @@ describe('AppNavbarComponent', () => {
     const fixture = TestBed.createComponent(AppNavbarComponent);
     fixture.detectChanges();
 
-    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: (url: string) => void };
-    component.loadTickerNewsIfNeeded('/privacidad');
+    const component = fixture.componentInstance as unknown as { loadTickerNewsIfNeeded: () => void };
+    component.loadTickerNewsIfNeeded();
 
     expect(storeMock.load).not.toHaveBeenCalled();
   });
