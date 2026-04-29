@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
+import { areNewsResponsesEqual } from '../../../shared/lib/news-response-equality';
 import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
 import {
   FORCE_REFRESH_HEADER,
@@ -315,10 +316,6 @@ function buildLocalNewsSnapshot(query: NewsQuery, payload: NewsResponse, generat
     query,
     payload,
   };
-}
-
-function areNewsResponsesEqual(left: NewsResponse, right: NewsResponse): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function isExpired(timestamp: number): boolean {
