@@ -25,6 +25,7 @@ describe('api-ui-adapters', () => {
       summary: 'Resumen',
       imageUrl: '/images/no-image.jpg',
       thumbnailUrl: '/images/no-image.jpg',
+      sourceId: 'source-1',
       source: 'Fuente Uno',
       section: 'actualidad',
       publishedAt: '',
@@ -74,6 +75,7 @@ describe('api-ui-adapters', () => {
     expect(result.title).toBe('Noticia sin titular');
     expect(result.summary).toBe('Resumen no disponible.');
     expect(result.imageUrl).toBe('/images/no-image.jpg');
+    expect(result.sourceId).toBe('source-1');
     expect(result.source).toBe('Fuente desconocida');
     expect(result.section).toBe('actualidad');
     expect(result.author).toBe('Redacción');
@@ -206,6 +208,7 @@ describe('api-ui-adapters', () => {
 
     expect(newsItems).toHaveLength(1);
     expect(newsItems[0]?.id).toBe('news-6');
+    expect(newsItems[0]?.sourceId).toBe('source-6');
     expect(sourceItems).toHaveLength(1);
     expect(sourceItems[0]?.id).toBe('source-6');
     expect(sourceItems[0]?.sectionSlugs).toEqual(['economia']);

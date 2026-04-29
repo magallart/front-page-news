@@ -1,3 +1,5 @@
+import { toSourceSlug } from './source-routing';
+
 import type { Article } from '../../../shared/interfaces/article.interface';
 import type { Source } from '../../../shared/interfaces/source.interface';
 import type { NewsItem } from '../interfaces/news-item.interface';
@@ -24,6 +26,7 @@ export function adaptArticleToNewsItem(article: Article): NewsItem {
     thumbnailUrl: toDisplayImageUrl(
       normalizeNullableString(article.thumbnailUrl ?? article.imageUrl, DEFAULT_NEWS_IMAGE_URL)
     ),
+    sourceId: toSourceSlug(article.sourceId, normalizedSource),
     source: normalizedSource,
     section: normalizedSection,
     publishedAt: normalizeNullableString(article.publishedAt, ''),
@@ -84,12 +87,7 @@ function normalizeId(id: string, externalId: string | null, title: string): stri
 }
 
 function normalizeSourceId(id: string, sourceName: string): string {
-  const normalizedId = id.trim();
-  if (normalizedId.length > 0) {
-    return normalizedId;
-  }
-
-  return `source-${slugify(sourceName) || 'unknown'}`;
+  return toSourceSlug(id, sourceName);
 }
 
 function resolveArticleUrl(url: string, canonicalUrl: string | null): string {

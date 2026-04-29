@@ -83,6 +83,7 @@ function createNewsItem(id: string, section: string, source: string, publishedAt
     title: id,
     summary: id,
     imageUrl,
+    sourceId: source.toLowerCase().trim().replace(/\s+/g, '-'),
     source,
     section,
     publishedAt,

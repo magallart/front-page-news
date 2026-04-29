@@ -35,6 +35,7 @@ describe('MostReadNewsComponent', () => {
 
     const firstMeta = fixture.nativeElement.querySelector('ol li p') as HTMLElement;
     expect(firstMeta.className).toContain('font-editorial-body');
+    expect(firstMeta.querySelector('a')?.getAttribute('href')).toBe('/fuente/diario-uno');
 
     const metaText = fixture.nativeElement.textContent as string;
     expect(metaText).toContain('08:15');
@@ -68,6 +69,7 @@ const MOCK_ITEMS: readonly NewsItem[] = [
     title: 'Titular principal',
     summary: 'Resumen principal',
     imageUrl: '',
+    sourceId: 'diario-uno',
     source: 'Diario Uno',
     section: 'actualidad',
     publishedAt: '2026-02-11T08:15:00',
@@ -79,6 +81,7 @@ const MOCK_ITEMS: readonly NewsItem[] = [
     title: 'Titular secundario',
     summary: 'Resumen secundario',
     imageUrl: '',
+    sourceId: 'diario-dos',
     source: 'Diario Dos',
     section: 'economia',
     publishedAt: '2026-02-11T09:40:00',
@@ -90,6 +93,7 @@ const MOCK_ITEMS: readonly NewsItem[] = [
     title: 'Titular tercero',
     summary: 'Resumen tercero',
     imageUrl: '',
+    sourceId: 'diario-tres',
     source: 'Diario Tres',
     section: 'cultura',
     publishedAt: '2026-02-11T10:55:00',

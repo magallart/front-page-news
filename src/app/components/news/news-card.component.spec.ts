@@ -17,6 +17,7 @@ describe('NewsCardComponent', () => {
       title: 'Titulo',
       summary: 'Resumen',
       imageUrl: 'https://example.com/broken.jpg',
+      sourceId: 'fuente',
       source: 'Fuente',
       section: 'cultura',
       publishedAt: '',
@@ -35,6 +36,7 @@ describe('NewsCardComponent', () => {
     expect(source.className).toContain('text-right');
     expect(source.className).toContain('truncate');
     expect(source.className).toContain('whitespace-nowrap');
+    expect(source.querySelector('a')?.getAttribute('href')).toBe('/fuente/fuente');
 
     const author = fixture.nativeElement.querySelector('p.mt-auto') as HTMLParagraphElement;
     expect(author.className).toContain('truncate');

@@ -91,6 +91,7 @@ function createNewsItem(id: string, source: string, publishedAt: string) {
     title: id,
     summary: id,
     imageUrl: 'https://example.com/image.jpg',
+    sourceId: source.toLowerCase().trim().replace(/\s+/g, '-'),
     source,
     section: 'actualidad',
     publishedAt,

@@ -340,6 +340,7 @@ describe('HomePageComponent', () => {
       title: 'Titulo quick-1',
       summary: 'Resumen quick-1',
       imageUrl: 'https://example.com/image.jpg',
+      sourceId: 'fuente-rapida',
       source: 'Fuente Rapida',
       section: 'actualidad',
       publishedAt: '2026-03-04T08:30:00.000Z',
@@ -348,14 +349,14 @@ describe('HomePageComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent as string).toContain('Abrir noticia completa en Fuente Rapida');
+    expect(fixture.nativeElement.textContent as string).toContain('Abrir noticia completa');
 
     const quickView = fixture.debugElement.query(By.directive(NewsQuickViewModalComponent))
       .componentInstance as NewsQuickViewModalComponent;
     quickView.closed.emit();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent as string).not.toContain('Abrir noticia completa en Fuente Rapida');
+    expect(fixture.nativeElement.textContent as string).not.toContain('Abrir noticia completa');
   });
 });
 

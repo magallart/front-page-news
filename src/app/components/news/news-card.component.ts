@@ -1,10 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { buildSourceRoute } from '../../utils/source-routing';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
 
 @Component({
   selector: 'app-news-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   styles: `
     .title-clamp {
       display: -webkit-box;
@@ -36,7 +40,13 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
           <p
             class="ml-auto max-w-[11rem] truncate text-right text-[0.6rem] font-medium uppercase tracking-[0.08em] text-muted-foreground whitespace-nowrap"
           >
-            {{ article().source }}
+            <a
+              class="rounded-sm underline decoration-transparent underline-offset-4 transition hover:text-foreground hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              [routerLink]="buildSourceRoute(article().sourceId, article().source)"
+              [attr.aria-label]="'Ver noticias de ' + article().source"
+            >
+              {{ article().source }}
+            </a>
           </p>
         </div>
 
@@ -82,6 +92,7 @@ export class NewsCardComponent {
   readonly previewRequested = output<NewsItem>();
 
   private readonly fallbackImageUrl = '/images/no-image.jpg';
+  protected readonly buildSourceRoute = buildSourceRoute;
   protected readonly previewImageUrl = computed(() => this.article().thumbnailUrl ?? this.article().imageUrl);
 
   protected onPreviewRequest(event: Event): void {

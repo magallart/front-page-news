@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { formatTime24 } from '../../utils/date-formatting';
+import { buildSourceRoute } from '../../utils/source-routing';
 import { IconTrendingUpComponent } from '../icons/icon-trending-up.component';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -8,7 +10,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
 @Component({
   selector: 'app-most-read-news',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconTrendingUpComponent],
+  imports: [IconTrendingUpComponent, RouterLink],
   template: `
     <section class="rounded-xl bg-secondary px-4 py-5 text-secondary-foreground shadow-subtle sm:px-5" id="most-read-news">
       <header class="mb-4 border-b border-primary/35 pb-3">
@@ -32,7 +34,15 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
                 {{ item.title }}
               </button>
               <p class="font-editorial-body text-xs uppercase tracking-[0.08em] text-secondary-foreground/70">
-                {{ item.source }} - {{ getPublishedTime(item.publishedAt) }}
+                <a
+                  class="underline decoration-transparent underline-offset-4 transition hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
+                  [routerLink]="buildSourceRoute(item.sourceId, item.source)"
+                  [attr.aria-label]="'Ver noticias de ' + item.source"
+                >
+                  {{ item.source }}
+                </a>
+                <span aria-hidden="true"> - </span>
+                <span>{{ getPublishedTime(item.publishedAt) }}</span>
               </p>
             </div>
           </li>
@@ -45,6 +55,7 @@ export class MostReadNewsComponent {
   readonly title = input('Lo m\u00E1s le\u00EDdo');
   readonly items = input<readonly NewsItem[]>([]);
   readonly previewRequested = output<NewsItem>();
+  protected readonly buildSourceRoute = buildSourceRoute;
 
   protected getPublishedTime(publishedAt: string): string {
     return formatTime24(new Date(publishedAt));

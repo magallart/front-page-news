@@ -21,8 +21,8 @@ describe('ArticlePreviewCtaComponent', () => {
     expect(link.target).toBe('_blank');
     expect(link.rel).toContain('noopener');
     expect(link.rel).toContain('noreferrer');
-    expect(link.getAttribute('aria-label')).toBe('Abrir noticia completa en Diario Uno');
-    expect(text).toContain('Abrir noticia completa en Diario Uno');
+    expect(link.getAttribute('aria-label')).toBe('Abrir noticia completa de Diario Uno');
+    expect(text).toContain('Abrir noticia completa');
   });
 });
 

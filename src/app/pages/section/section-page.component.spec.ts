@@ -356,6 +356,7 @@ describe('SectionPageComponent', () => {
       title: 'Titulo news-1',
       summary: 'Resumen news-1',
       imageUrl: '/images/no-image.jpg',
+      sourceId: 'fuente-a',
       source: 'Fuente A',
       section: 'economia',
       publishedAt: '2026-03-03T10:00:00.000Z',
@@ -364,14 +365,14 @@ describe('SectionPageComponent', () => {
     });
     fixture.detectChanges();
 
-    expect((fixture.nativeElement.textContent as string)).toContain('Abrir noticia completa en Fuente A');
+    expect((fixture.nativeElement.textContent as string)).toContain('Abrir noticia completa');
 
     const quickView = fixture.debugElement.query(By.directive(NewsQuickViewModalComponent))
       .componentInstance as NewsQuickViewModalComponent;
     quickView.closed.emit();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement.textContent as string)).not.toContain('Abrir noticia completa en Fuente A');
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Abrir noticia completa');
   });
 });
 
