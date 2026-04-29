@@ -139,11 +139,6 @@ export class NewsStore {
           return;
         }
 
-        if (latestEntry.visibleResponse === null || forceRefresh) {
-          this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
-          return;
-        }
-
         this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
       },
       error: (error: unknown) => {
