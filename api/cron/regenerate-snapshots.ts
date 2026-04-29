@@ -1,7 +1,7 @@
 import { RSS_SOURCES_FILE_PATH } from '../../server/constants/news.constants.js';
 import { CRON_SECRET_ENV } from '../../server/constants/snapshot.constants.js';
 import { regenerateBaseSnapshots } from '../../server/lib/base-snapshot-regeneration.js';
-import { createBlobSnapshotWriter } from '../../server/lib/blob-snapshot-writer.js';
+import { BLOB_READ_WRITE_TOKEN_ENV, createBlobSnapshotWriter } from '../../server/lib/blob-snapshot-writer.js';
 import { fetchFeedsConcurrently } from '../../server/lib/feed-fetcher.js';
 import { loadRssCatalogRecords } from '../lib/rss-catalog.js';
 import { sendJson } from '../lib/send-json.js';
@@ -22,6 +22,7 @@ interface CronHandlerDependencies {
   readonly snapshotWriter: ReturnType<typeof createBlobSnapshotWriter>;
   readonly now?: () => number;
   readonly cronSecret?: string;
+  readonly blobReadWriteToken?: string;
   readonly logger?: Pick<typeof console, 'info' | 'error'>;
 }
 
@@ -30,6 +31,7 @@ const defaultDependencies: CronHandlerDependencies = {
   fetchFeeds: fetchFeedsConcurrently,
   snapshotWriter: createBlobSnapshotWriter(),
   cronSecret: process.env[CRON_SECRET_ENV],
+  blobReadWriteToken: process.env[BLOB_READ_WRITE_TOKEN_ENV],
   logger: console,
 };
 
@@ -55,6 +57,12 @@ export function createCronRegenerateSnapshotsHandler(overrides: Partial<CronHand
 
     if (request.headers?.authorization !== `Bearer ${secret}`) {
       sendJson(response, 401, { error: 'Unauthorized' }, RESPONSE_CACHE_CONTROL);
+      return;
+    }
+
+    const blobReadWriteToken = normalizeSecret(dependencies.blobReadWriteToken);
+    if (!blobReadWriteToken) {
+      sendJson(response, 500, { error: 'Blob write token is not configured' }, RESPONSE_CACHE_CONTROL);
       return;
     }
 
