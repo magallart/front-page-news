@@ -147,6 +147,38 @@ describe('SourcePageComponent', () => {
     expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith(createSourceNewsQuery('mundo-diario'));
   });
 
+  it('dismisses the last-visit banner for the active source query', async () => {
+    const routeMock = createRouteMock('mundo-diario');
+    const sourcesStoreMock = createSourcesStoreMock({
+      sources: [createSource('mundo-diario', 'Mundo Diario', ['actualidad'])],
+    });
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'actualidad', 'mundo-diario', 'Mundo Diario', '2026-03-04T10:20:00.000Z')],
+      newSinceLastVisit: true,
+      newSinceLastVisitCount: 2,
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SourcePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourcePageComponent);
+    fixture.detectChanges();
+
+    const dismissButton = fixture.nativeElement.querySelector(
+      'button[aria-label="Ocultar aviso de novedades"]',
+    ) as HTMLButtonElement;
+    dismissButton.click();
+
+    expect(newsStoreMock.dismissLastVisitNotice).toHaveBeenCalledWith(createSourceNewsQuery('mundo-diario'));
+  });
+
   it('opens the quick-view modal from a source card and closes it on demand', async () => {
     const routeMock = createRouteMock('mundo-diario');
     const sourcesStoreMock = createSourcesStoreMock({
@@ -230,6 +262,8 @@ function createNewsStoreMock(
     refreshing: boolean;
     stale: boolean;
     freshUpdateAvailable: boolean;
+    newSinceLastVisit: boolean;
+    newSinceLastVisitCount: number;
     lastUpdated: number | null;
   }>,
 ) {
@@ -239,6 +273,8 @@ function createNewsStoreMock(
   const refreshingSignal = signal(overrides?.refreshing ?? false);
   const staleSignal = signal(overrides?.stale ?? false);
   const freshUpdateSignal = signal(overrides?.freshUpdateAvailable ?? false);
+  const newSinceLastVisitSignal = signal(overrides?.newSinceLastVisit ?? false);
+  const newSinceLastVisitCountSignal = signal(overrides?.newSinceLastVisitCount ?? 0);
   const lastUpdatedSignal = signal<number | null>(overrides?.lastUpdated ?? null);
 
   return {
@@ -250,8 +286,11 @@ function createNewsStoreMock(
     isRefreshing: refreshingSignal.asReadonly(),
     isShowingStaleData: staleSignal.asReadonly(),
     hasFreshUpdateAvailable: freshUpdateSignal.asReadonly(),
+    hasNewSinceLastVisit: newSinceLastVisitSignal.asReadonly(),
+    newSinceLastVisitCount: newSinceLastVisitCountSignal.asReadonly(),
     lastUpdated: lastUpdatedSignal.asReadonly(),
     dismissFreshUpdateNotice: vi.fn(),
+    dismissLastVisitNotice: vi.fn(),
   };
 }
 

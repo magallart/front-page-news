@@ -48,6 +48,33 @@ describe('NewsRefreshIndicatorComponent', () => {
     expect(dismissed).toBe(true);
   });
 
+  it('renders a last-visit banner when unseen headlines exist for the current scope', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsRefreshIndicatorComponent],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsRefreshIndicatorComponent);
+    fixture.componentRef.setInput('scopeLabel', 'Portada');
+    fixture.componentRef.setInput('hasNewSinceLastVisit', true);
+    fixture.componentRef.setInput('newSinceLastVisitCount', 3);
+    fixture.detectChanges();
+
+    let dismissed = false;
+    fixture.componentInstance.lastVisitDismissed.subscribe(() => {
+      dismissed = true;
+    });
+
+    const banner = fixture.nativeElement.querySelector('[data-testid="last-visit-banner"]');
+    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de novedades"]') as HTMLButtonElement;
+
+    expect(banner).toBeTruthy();
+    expect(banner.textContent as string).toContain('Novedades desde tu última visita');
+    expect(banner.textContent as string).toContain('3 titulares nuevos');
+
+    dismissButton.click();
+    expect(dismissed).toBe(true);
+  });
+
   it('renders nothing when there is no refresh or update state to expose', async () => {
     await TestBed.configureTestingModule({
       imports: [NewsRefreshIndicatorComponent],

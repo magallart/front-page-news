@@ -1,6 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 
+import { toArticleFingerprint } from '../../../shared/lib/article-identity';
 import { areNewsResponsesEqual } from '../../../shared/lib/news-response-equality';
+import { LastVisitNewsStateStore } from '../lib/last-visit-news-state-store';
 import { toNewsRequestSnapshotKey } from '../lib/news-request';
 import { NewsService } from '../services/news.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
@@ -20,6 +22,8 @@ interface NewsStoreEntryState {
   readonly isRefreshing: boolean;
   readonly isShowingStaleData: boolean;
   readonly hasFreshUpdateAvailable: boolean;
+  readonly hasNewSinceLastVisit: boolean;
+  readonly newSinceLastVisitCount: number;
   readonly activeRequestId: number;
 }
 
@@ -28,6 +32,7 @@ type NewsStoreState = Readonly<Record<string, NewsStoreEntryState>>;
 @Injectable({ providedIn: 'root' })
 export class NewsStore {
   private readonly newsService = inject(NewsService);
+  private readonly lastVisitNewsStateStore = inject(LastVisitNewsStateStore);
   private readonly entriesSignal = signal<NewsStoreState>({});
   private readonly lastQueryKeySignal = signal<string | null>(null);
   private readonly subscriptions = new Map<string, Subscription>();
@@ -59,6 +64,22 @@ export class NewsStore {
     this.setEntry(key, {
       ...currentEntry,
       hasFreshUpdateAvailable: false,
+    });
+  }
+
+  dismissLastVisitNotice(query?: NewsRequestQuery): void {
+    const resolvedQuery = this.resolveQuery(query);
+    if (!resolvedQuery) {
+      return;
+    }
+
+    const key = toQueryKey(resolvedQuery);
+    const currentEntry = this.getEntry(key);
+
+    this.setEntry(key, {
+      ...currentEntry,
+      hasNewSinceLastVisit: false,
+      newSinceLastVisitCount: 0,
     });
   }
 
@@ -109,6 +130,14 @@ export class NewsStore {
 
   hasFreshUpdateAvailable(query?: NewsRequestQuery): boolean {
     return this.getResolvedEntry(query).hasFreshUpdateAvailable;
+  }
+
+  hasNewSinceLastVisit(query?: NewsRequestQuery): boolean {
+    return this.getResolvedEntry(query).hasNewSinceLastVisit;
+  }
+
+  newSinceLastVisitCount(query?: NewsRequestQuery): number {
+    return this.getResolvedEntry(query).newSinceLastVisitCount;
   }
 
   private fetchNews(query: NewsRequestQuery, forceRefresh: boolean): void {
@@ -179,6 +208,10 @@ export class NewsStore {
       hasVisibleResponse && !areNewsResponsesEqual(currentEntry.visibleResponse, response);
     const shouldNotifyFreshUpdate =
       hasChangedVisibleContent && currentEntry.isRefreshing && !isRefreshing;
+    const articleFingerprints = response.articles.map((article) => toArticleFingerprint(article));
+    const lastVisitState = this.lastVisitNewsStateStore.read(key);
+    const newSinceLastVisitCount = hasVisibleResponse ? 0 : countUnseenArticles(articleFingerprints, lastVisitState);
+    const shouldNotifyNewSinceLastVisit = !hasVisibleResponse && newSinceLastVisitCount > 0;
 
     this.setEntry(key, {
       ...currentEntry,
@@ -190,7 +223,11 @@ export class NewsStore {
       isRefreshing,
       isShowingStaleData: isStale,
       hasFreshUpdateAvailable: shouldNotifyFreshUpdate,
+      hasNewSinceLastVisit: shouldNotifyNewSinceLastVisit,
+      newSinceLastVisitCount,
     });
+
+    this.lastVisitNewsStateStore.write(key, articleFingerprints);
   }
 
   private resolveQuery(query?: NewsRequestQuery): NewsRequestQuery | null {
@@ -252,6 +289,20 @@ function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
     isRefreshing: false,
     isShowingStaleData: false,
     hasFreshUpdateAvailable: false,
+    hasNewSinceLastVisit: false,
+    newSinceLastVisitCount: 0,
     activeRequestId: 0,
   };
+}
+
+function countUnseenArticles(
+  articleFingerprints: readonly string[],
+  lastVisitState: { readonly articleFingerprints: readonly string[] } | null,
+): number {
+  if (!lastVisitState) {
+    return 0;
+  }
+
+  const seenFingerprints = new Set(lastVisitState.articleFingerprints);
+  return articleFingerprints.filter((fingerprint) => !seenFingerprints.has(fingerprint)).length;
 }

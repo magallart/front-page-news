@@ -48,4 +48,29 @@ test.describe('Section Filters', () => {
     await expect(page.locator('app-section-filters')).toHaveCount(0);
     await expect(page.locator('app-error-state')).toBeVisible();
   });
+
+  test('persists section filter preferences after a reload', async ({ page }) => {
+    await mockApiRoutes(page);
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto('/seccion/actualidad', { waitUntil: 'domcontentloaded' });
+
+    const cards = page.locator('app-news-card');
+    const toggleFilters = page.getByRole('button', { name: /mostrar filtros/i });
+    await toggleFilters.click();
+
+    const panel = page.locator('app-section-filters');
+    await expect(panel).toBeVisible();
+
+    await panel.getByLabel('Mundo Diario').check();
+    await panel.getByLabel('Actualidad 24').uncheck();
+    await panel.getByLabel('Portada Nacional').uncheck();
+    await panel.getByLabel('Boletin Justicia').uncheck();
+    await panel.getByLabel('Salud y Ciencia').uncheck();
+    await expect(cards).toHaveCount(1);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+
+    await expect(cards).toHaveCount(1);
+    await expect(page.locator('app-news-card')).toContainText('Mundo Diario');
+  });
 });

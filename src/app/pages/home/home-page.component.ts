@@ -69,8 +69,11 @@ import type { OnInit } from '@angular/core';
               [isRefreshing]="isRefreshing()"
               [isShowingStaleData]="isShowingStaleData()"
               [hasFreshUpdateAvailable]="hasFreshUpdateAvailable()"
+              [hasNewSinceLastVisit]="hasNewSinceLastVisit()"
+              [newSinceLastVisitCount]="newSinceLastVisitCount()"
               [lastUpdated]="lastUpdated()"
               (dismissed)="dismissFreshUpdateNotice()"
+              (lastVisitDismissed)="dismissLastVisitNotice()"
             />
 
             <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-stretch">
@@ -119,6 +122,8 @@ export class HomePageComponent implements OnInit {
   protected readonly isRefreshing = computed(() => this.newsStore.isRefreshing(this.homeNewsQuery));
   protected readonly isShowingStaleData = computed(() => this.newsStore.isShowingStaleData(this.homeNewsQuery));
   protected readonly hasFreshUpdateAvailable = computed(() => this.newsStore.hasFreshUpdateAvailable(this.homeNewsQuery));
+  protected readonly hasNewSinceLastVisit = computed(() => this.newsStore.hasNewSinceLastVisit(this.homeNewsQuery));
+  protected readonly newSinceLastVisitCount = computed(() => this.newsStore.newSinceLastVisitCount(this.homeNewsQuery));
   protected readonly lastUpdated = computed(() => this.newsStore.lastUpdated(this.homeNewsQuery));
 
   protected readonly featuredNews = computed(() => selectFeaturedNews(this.newsItems()));
@@ -149,6 +154,10 @@ export class HomePageComponent implements OnInit {
 
   protected dismissFreshUpdateNotice(): void {
     this.newsStore.dismissFreshUpdateNotice(this.homeNewsQuery);
+  }
+
+  protected dismissLastVisitNotice(): void {
+    this.newsStore.dismissLastVisitNotice(this.homeNewsQuery);
   }
 
   private getNewsBySection(sectionSlug: string) {

@@ -17,6 +17,8 @@ import {
 } from '../../constants/section-page.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { createSourceNewsQuery } from '../../lib/news-query-factory';
+import { toNewsRequestSnapshotKey } from '../../lib/news-request';
+import { NewsViewPreferencesStore } from '../../lib/news-view-preferences-store';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -80,8 +82,11 @@ interface SectionSelectionState {
               [isRefreshing]="isRefreshing()"
               [isShowingStaleData]="isShowingStaleData()"
               [hasFreshUpdateAvailable]="hasFreshUpdateAvailable()"
+              [hasNewSinceLastVisit]="hasNewSinceLastVisit()"
+              [newSinceLastVisitCount]="newSinceLastVisitCount()"
               [lastUpdated]="lastUpdated()"
               (dismissed)="dismissFreshUpdateNotice()"
+              (lastVisitDismissed)="dismissLastVisitNotice()"
             />
 
             @if (hasSourceNews()) {
@@ -146,11 +151,13 @@ export class SourcePageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly newsStore = inject(NewsStore);
+  private readonly newsViewPreferencesStore = inject(NewsViewPreferencesStore);
   private readonly sourcesStore = inject(SourcesStore);
   private readonly sectionSelection = signal<SectionSelectionState>({
     hasCustomSelection: false,
     selectedSections: [],
   });
+  private readonly appliedPreferencesScopeKey = signal<string | null>(null);
   private readonly visibleNewsCount = signal(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
   protected readonly quickViewArticle = signal<NewsItem | null>(null);
   protected readonly uiViewState = UI_VIEW_STATE;
@@ -197,7 +204,13 @@ export class SourcePageComponent implements OnInit {
       return this.availableSections();
     }
 
-    return currentSelection.selectedSections;
+    if (currentSelection.selectedSections.length === 0) {
+      return [];
+    }
+
+    const availableSectionSet = new Set(this.availableSections());
+    const persistedSelection = currentSelection.selectedSections.filter((section) => availableSectionSet.has(section));
+    return persistedSelection.length > 0 ? persistedSelection : this.availableSections();
   });
 
   protected readonly filteredSourceNews = computed(() => {
@@ -245,6 +258,14 @@ export class SourcePageComponent implements OnInit {
     const query = this.sourceNewsQuery();
     return query ? this.newsStore.hasFreshUpdateAvailable(query) : false;
   });
+  protected readonly hasNewSinceLastVisit = computed(() => {
+    const query = this.sourceNewsQuery();
+    return query ? this.newsStore.hasNewSinceLastVisit(query) : false;
+  });
+  protected readonly newSinceLastVisitCount = computed(() => {
+    const query = this.sourceNewsQuery();
+    return query ? this.newsStore.newSinceLastVisitCount(query) : 0;
+  });
   protected readonly lastUpdated = computed(() => {
     const query = this.sourceNewsQuery();
     return query ? this.newsStore.lastUpdated(query) : null;
@@ -256,7 +277,19 @@ export class SourcePageComponent implements OnInit {
       return;
     }
 
-    this.newsStore.load(createSourceNewsQuery(source.id));
+    const sourceNewsQuery = createSourceNewsQuery(source.id);
+    const preferencesScopeKey = toNewsRequestSnapshotKey(sourceNewsQuery);
+    if (this.appliedPreferencesScopeKey() !== preferencesScopeKey) {
+      const storedPreferences = this.newsViewPreferencesStore.read(preferencesScopeKey);
+      this.sectionSelection.set({
+        hasCustomSelection: storedPreferences?.hasCustomSelection ?? false,
+        selectedSections: storedPreferences?.selectedValues ?? [],
+      });
+      this.sortDirection.set(storedPreferences?.sortDirection ?? 'desc');
+      this.appliedPreferencesScopeKey.set(preferencesScopeKey);
+    }
+
+    this.newsStore.load(sourceNewsQuery);
   });
 
   ngOnInit(): void {
@@ -282,11 +315,13 @@ export class SourcePageComponent implements OnInit {
       hasCustomSelection: true,
       selectedSections: nextSections,
     });
+    this.persistViewPreferences();
   }
 
   protected onSortDirectionChange(direction: 'asc' | 'desc'): void {
     this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
     this.sortDirection.set(direction);
+    this.persistViewPreferences();
   }
 
   protected loadMoreNews(): void {
@@ -310,8 +345,18 @@ export class SourcePageComponent implements OnInit {
     this.newsStore.dismissFreshUpdateNotice(query);
   }
 
+  protected dismissLastVisitNotice(): void {
+    const query = this.sourceNewsQuery();
+    if (!query) {
+      return;
+    }
+
+    this.newsStore.dismissLastVisitNotice(query);
+  }
+
   private syncFromRouteSnapshot(): void {
     this.sourceSlug.set(this.route.snapshot.paramMap.get('slug'));
+    this.appliedPreferencesScopeKey.set(null);
     this.sectionSelection.set({
       hasCustomSelection: false,
       selectedSections: [],
@@ -319,5 +364,18 @@ export class SourcePageComponent implements OnInit {
     this.filtersOpen.set(false);
     this.sortDirection.set('desc');
     this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
+  }
+
+  private persistViewPreferences(): void {
+    const query = this.sourceNewsQuery();
+    if (!query) {
+      return;
+    }
+
+    this.newsViewPreferencesStore.write(toNewsRequestSnapshotKey(query), {
+      hasCustomSelection: this.sectionSelection().hasCustomSelection,
+      selectedValues: this.sectionSelection().selectedSections,
+      sortDirection: this.sortDirection(),
+    });
   }
 }
