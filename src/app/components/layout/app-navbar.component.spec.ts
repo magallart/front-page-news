@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { createLatestNewsTickerQuery } from '../../lib/news-query-factory';
 import { NewsStore } from '../../stores/news.store';
 
 import { AppNavbarComponent } from './app-navbar.component';
@@ -114,7 +115,7 @@ describe('AppNavbarComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Actualizando titulares...');
     expect(storeMock.load).toHaveBeenCalledTimes(1);
-    expect(storeMock.load).toHaveBeenCalledWith({ section: 'ultima-hora', page: 1, limit: 120 });
+    expect(storeMock.load).toHaveBeenCalledWith(createLatestNewsTickerQuery());
   });
 
   it('loads ticker latest-news query when store is empty', async () => {
@@ -133,8 +134,8 @@ describe('AppNavbarComponent', () => {
     component.loadTickerNewsIfNeeded();
 
     expect(storeMock.load).toHaveBeenCalledTimes(2);
-    expect(storeMock.load).toHaveBeenNthCalledWith(1, { section: 'ultima-hora', page: 1, limit: 120 });
-    expect(storeMock.load).toHaveBeenNthCalledWith(2, { section: 'ultima-hora', page: 1, limit: 120 });
+    expect(storeMock.load).toHaveBeenNthCalledWith(1, createLatestNewsTickerQuery());
+    expect(storeMock.load).toHaveBeenNthCalledWith(2, createLatestNewsTickerQuery());
   });
 
   it('does not load ticker latest-news query while store is already loading', async () => {

@@ -10,8 +10,8 @@ import { MostReadNewsComponent } from '../../components/news/most-read-news.comp
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
-import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { IndexedDbSnapshotCache } from '../../lib/indexeddb-snapshot-cache';
+import { createHomeNewsQuery } from '../../lib/news-query-factory';
 import { RemoteNewsSnapshotService } from '../../services/remote-news-snapshot.service';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
@@ -94,7 +94,7 @@ describe('HomePageComponent', () => {
     const fixture = TestBed.createComponent(HomePageComponent);
     fixture.detectChanges();
 
-    expect(newsStoreMock.load).toHaveBeenCalledWith({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
+    expect(newsStoreMock.load).toHaveBeenCalledWith(createHomeNewsQuery());
     expect(fixture.nativeElement.querySelector('app-news-carousel')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-most-read-news')).toBeTruthy();
@@ -184,7 +184,7 @@ describe('HomePageComponent', () => {
     const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de actualización"]') as HTMLButtonElement;
     dismissButton.click();
 
-    expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
+    expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith(createHomeNewsQuery());
   });
 
   it('renders total error state when api fails and there is no data', async () => {

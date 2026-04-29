@@ -17,6 +17,7 @@ import {
   SECTION_PAGE_LOAD_MORE_NEWS_STEP,
 } from '../../constants/section-page.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
+import { createSectionNewsQuery } from '../../lib/news-query-factory';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { formatSectionLabel } from '../../utils/section-label';
@@ -143,13 +144,7 @@ export class SectionPageComponent implements OnInit {
     const slug = this.sectionSlug();
     const filters = this.queryFilters();
 
-    return {
-      section: slug,
-      sourceIds: filters.sourceIds,
-      searchQuery: filters.searchQuery,
-      page: filters.page,
-      limit: filters.limit,
-    };
+    return createSectionNewsQuery(slug, filters);
   });
   private readonly sectionArticles = computed(() =>
     this.newsStore.data(this.sectionNewsQuery()).filter((article) => article.sectionSlug === this.sectionSlug()),
@@ -262,12 +257,6 @@ export class SectionPageComponent implements OnInit {
     this.sortDirection.set('desc');
     this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
 
-    this.newsStore.load({
-      section: slug,
-      sourceIds: filters.sourceIds,
-      searchQuery: filters.searchQuery,
-      page: filters.page,
-      limit: filters.limit,
-    });
+    this.newsStore.load(createSectionNewsQuery(slug, filters));
   }
 }
