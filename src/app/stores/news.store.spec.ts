@@ -87,7 +87,7 @@ describe('NewsStore', () => {
     stream.complete();
 
     expect(store.data({ section: 'economia' })[0]?.id).toBe('news-2');
-    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
+    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(true);
     expect(store.isRefreshing({ section: 'economia' })).toBe(false);
     expect(store.isShowingStaleData({ section: 'economia' })).toBe(false);
   });
@@ -125,7 +125,46 @@ describe('NewsStore', () => {
     stream.complete();
 
     expect(store.data({ section: 'actualidad', limit: 10 })[0]?.id).toBe('news-2');
-    expect(store.hasFreshUpdateAvailable({ section: 'actualidad', limit: 10 })).toBe(false);
+    expect(store.hasFreshUpdateAvailable({ section: 'actualidad', limit: 10 })).toBe(true);
+  });
+
+  it('dismisses the fresh update notice without altering visible data', () => {
+    const stream = createObservableController<NewsServiceResult>();
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(stream.observable),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'economia' });
+
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isStale: true,
+        isRefreshing: true,
+      }),
+    );
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        response: createNewsResponse({
+          articles: [
+            {
+              ...createNewsResponse().articles[0],
+              id: 'news-2',
+            },
+          ],
+        }),
+      }),
+    );
+    stream.complete();
+
+    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(true);
+
+    store.dismissFreshUpdateNotice({ section: 'economia' });
+
+    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
+    expect(store.data({ section: 'economia' })[0]?.id).toBe('news-2');
   });
 
   it('keeps independent state per query key', () => {
