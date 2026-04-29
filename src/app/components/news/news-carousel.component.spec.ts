@@ -158,6 +158,27 @@ describe('NewsCarouselComponent', () => {
     expect(metaText).toContain('El País');
     expect(metaText).toMatch(/\d{2}:\d{2} - 20\.02\.2026$/);
   });
+
+  it('keeps hero copy left aligned and renders the visible section badge', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    const heroButton = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] > button') as HTMLButtonElement;
+    const heroTitle = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] h2') as HTMLHeadingElement;
+    const sectionBadge = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] p') as HTMLParagraphElement;
+
+    expect(heroButton.className).toContain('text-left');
+    expect(heroTitle.textContent?.trim()).toBe('Titular uno');
+    expect(sectionBadge.textContent?.trim()).toBe('actualidad');
+    expect(sectionBadge.className).toContain('inline-flex');
+    expect(sectionBadge.className).toContain('bg-primary');
+  });
 });
 
 function getHeroTitle(rootElement: HTMLElement): string {
