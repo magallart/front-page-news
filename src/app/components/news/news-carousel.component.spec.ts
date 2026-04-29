@@ -181,6 +181,34 @@ describe('NewsCarouselComponent', () => {
     expect(sectionBadge.className).toContain('inline-flex');
     expect(sectionBadge.className).toContain('bg-primary');
   });
+
+  it('does not open preview or cancel navigation when keyboard activation starts on the nested source link', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    let previewedArticleId: string | null = null;
+    fixture.componentInstance.previewRequested.subscribe((article) => {
+      previewedArticleId = article.id;
+    });
+
+    const sourceLink = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] a') as HTMLAnchorElement;
+    const keyboardEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    sourceLink.dispatchEvent(keyboardEvent);
+
+    expect(previewedArticleId).toBeNull();
+    expect(keyboardEvent.defaultPrevented).toBe(false);
+  });
 });
 
 function getHeroTitle(rootElement: HTMLElement): string {

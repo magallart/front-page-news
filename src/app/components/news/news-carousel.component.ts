@@ -152,6 +152,10 @@ export class NewsCarouselComponent {
   }
 
   protected onPreviewRequest(event: Event, article: NewsItem): void {
+    if (!shouldHandlePreviewEvent(event)) {
+      return;
+    }
+
     event.preventDefault();
     this.previewRequested.emit(article);
   }
@@ -178,4 +182,8 @@ export class NewsCarouselComponent {
 
     return `${formattedTime} - ${formattedDate}`;
   }
+}
+
+function shouldHandlePreviewEvent(event: Event): boolean {
+  return event.target === event.currentTarget;
 }
