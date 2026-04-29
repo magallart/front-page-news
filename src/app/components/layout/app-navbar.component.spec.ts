@@ -100,6 +100,31 @@ describe('AppNavbarComponent', () => {
     expect(storeMock.load).not.toHaveBeenCalled();
   });
 
+  it('renders latest-news ticker headlines from the canonical ticker query', async () => {
+    mockMatchMedia(false);
+    const storeMock = createNewsStoreMock({
+      articles: [
+        createArticle('news-1', 'Titular urgente 1'),
+        createArticle('news-2', 'Titular urgente 2'),
+      ],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Titular urgente 1');
+    expect(text).toContain('Titular urgente 2');
+    expect(text).not.toContain('Actualizando titulares...');
+    expect(storeMock.data).toHaveBeenCalledWith(createLatestNewsTickerQuery());
+    expect(storeMock.load).not.toHaveBeenCalled();
+  });
+
   it('shows fallback ticker headline when store has no news', async () => {
     mockMatchMedia(false);
     const storeMock = createNewsStoreMock({ articles: [] });
