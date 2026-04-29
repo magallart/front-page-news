@@ -219,6 +219,54 @@ describe('NewsService', () => {
     ]);
   });
 
+  it('emits a stale remote snapshot first and then the revalidated network response', async () => {
+    remoteNewsSnapshotServiceMock.getNewsSnapshot.mockResolvedValue(
+      createNewsSnapshot({
+        key: 'news:id=-:section=actualidad:source=-:q=-:page=1:limit=20',
+        query: {
+          id: null,
+          section: 'actualidad',
+          sourceIds: [],
+          searchQuery: null,
+          page: 1,
+          limit: 20,
+        },
+        generatedAt: '2025-12-31T22:00:00.000Z',
+        staleAt: '2025-12-31T23:00:00.000Z',
+        expiresAt: '2026-01-01T12:00:00.000Z',
+      }),
+    );
+
+    const resultPromise = lastValueFrom(service.getNews({ section: 'actualidad' }).pipe(toArray()));
+
+    await flushPendingAsyncHydration();
+    const request = await expectPendingRequest(httpController, '/api/news?section=actualidad');
+    request.flush(
+      createValidNewsPayload({
+        articles: [
+          {
+            ...createValidNewsPayload().articles[0],
+            id: 'news-remote-refresh',
+            title: 'Titulo refrescado desde snapshot remoto',
+          },
+        ],
+      }),
+    );
+
+    await expect(resultPromise).resolves.toMatchObject([
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.REMOTE_SNAPSHOT,
+        isRefreshing: true,
+        isStale: true,
+      },
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        isRefreshing: false,
+        isStale: false,
+      },
+    ]);
+  });
+
   it('reuses the memory cache for identical queries within ttl', async () => {
     const firstRequestPromise = firstValueFrom(service.getNews({ section: 'economia' }));
     await flushPendingAsyncHydration();
@@ -328,6 +376,29 @@ describe('NewsService', () => {
 
     expect(indexedDbSnapshotCacheMock.getNewsSnapshot).not.toHaveBeenCalled();
     expect(result.source).toBe(NEWS_SERVICE_RESULT_SOURCE.NETWORK);
+  });
+
+  it('does not emit a duplicate fresh result when revalidation matches the hydrated snapshot', async () => {
+    indexedDbSnapshotCacheMock.getNewsSnapshot.mockResolvedValue(
+      createPersistedNewsSnapshotRecord({
+        staleAtMs: Date.parse('2025-12-31T23:00:00.000Z'),
+        expiresAtMs: Date.parse('2026-01-01T12:00:00.000Z'),
+      }),
+    );
+
+    const resultPromise = lastValueFrom(service.getNews({ section: 'actualidad' }).pipe(toArray()));
+
+    await flushPendingAsyncHydration();
+    const request = await expectPendingRequest(httpController, '/api/news?section=actualidad');
+    request.flush(createValidNewsPayload());
+
+    await expect(resultPromise).resolves.toMatchObject([
+      {
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isRefreshing: true,
+        isStale: true,
+      },
+    ]);
   });
 
   it('fails when the network response shape is invalid and no cached data exists', async () => {

@@ -187,6 +187,36 @@ describe('NewsStore', () => {
     expect(store.data({ section: 'economia' })[0]?.id).toBe('news-2');
   });
 
+  it('does not flag a fresh update when background revalidation returns the same visible response', () => {
+    const stream = createObservableController<NewsServiceResult>();
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(stream.observable),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'economia' });
+
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isStale: true,
+        isRefreshing: true,
+      }),
+    );
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        response: createNewsResponse(),
+      }),
+    );
+    stream.complete();
+
+    expect(store.data({ section: 'economia' })[0]?.id).toBe('news-1');
+    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
+    expect(store.isRefreshing({ section: 'economia' })).toBe(false);
+    expect(store.isShowingStaleData({ section: 'economia' })).toBe(false);
+  });
+
   it('keeps independent state per query key', () => {
     const economyStream = createObservableController<NewsServiceResult>();
     const cultureStream = createObservableController<NewsServiceResult>();
