@@ -14,13 +14,17 @@ test.describe('Home Page', () => {
       'Acuerdo europeo para reforzar la seguridad energetica',
     );
     await expect(carouselHero.locator('p').first()).toContainText('actualidad');
-    await expect(carouselHero.locator('> button')).toHaveClass(/text-left/);
+    await expect(carouselHero.locator('[role="button"]')).toHaveClass(/text-left/);
     await expect(page.locator('#breaking-news')).toBeVisible();
     await expect(page.locator('#most-read-news')).toBeVisible();
     await expect(page.locator('app-section-block')).toHaveCount(4);
     await expect(page.locator('app-source-directory a[target="_blank"]')).toHaveCount(5);
     await expect(page.locator('app-source-directory')).toContainText('Mundo Diario');
     await expect(page.locator('app-source-directory')).toContainText('Salud y Ciencia');
+    await expect(page.locator('#most-read-news a[aria-label="Ver noticias de Mundo Diario"]').first()).toHaveAttribute(
+      'href',
+      '/fuente/mundo-diario',
+    );
   });
 
   test('opens and closes contextual quick-view modal from carousel', async ({ page }) => {
@@ -30,14 +34,14 @@ test.describe('Home Page', () => {
 
     const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
 
-    await page.locator('app-news-carousel article > button').click();
+    await page.locator('app-news-carousel article [role="button"]').click();
     await expect(quickViewDialog).toBeVisible();
     await expect(quickViewDialog.locator('h1')).toContainText('Acuerdo europeo');
 
     await page.locator('.quick-view-dialog button[aria-label="Cerrar modal"]').click();
     await expect(quickViewDialog).toHaveCount(0);
 
-    await page.locator('app-news-carousel article > button').click();
+    await page.locator('app-news-carousel article [role="button"]').click();
     await expect(quickViewDialog).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(quickViewDialog).toHaveCount(0);
