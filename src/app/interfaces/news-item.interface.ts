@@ -4,6 +4,7 @@ export interface NewsItem {
   readonly summary: string;
   readonly imageUrl: string;
   readonly thumbnailUrl?: string;
+  readonly sourceId: string;
   readonly source: string;
   readonly section: string;
   readonly publishedAt: string;

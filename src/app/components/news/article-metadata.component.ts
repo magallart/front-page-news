@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { formatDateLong, formatDateShort } from '../../utils/date-formatting';
+import { buildSourceRoute } from '../../utils/source-routing';
 
 @Component({
   selector: 'app-article-metadata',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   template: `
     <dl class="grid grid-cols-3 gap-3 border-y-2 border-border py-4 text-base">
       <div class="text-center">
@@ -14,7 +17,15 @@ import { formatDateLong, formatDateShort } from '../../utils/date-formatting';
 
       <div class="text-center">
         <dt class="text-[0.72rem] font-black uppercase tracking-[0.1em] text-muted-foreground">Publicado en</dt>
-        <dd class="font-editorial-body mt-1 text-[1.02rem] text-foreground sm:text-[1.08rem]">{{ source() }}</dd>
+        <dd class="font-editorial-body mt-1 text-[1.02rem] text-foreground sm:text-[1.08rem]">
+          <a
+            class="rounded-sm underline decoration-transparent underline-offset-4 transition hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            [routerLink]="buildSourceRoute(sourceId(), source())"
+            [attr.aria-label]="'Ver noticias de ' + source()"
+          >
+            {{ source() }}
+          </a>
+        </dd>
       </div>
 
       <div class="text-center">
@@ -29,8 +40,10 @@ import { formatDateLong, formatDateShort } from '../../utils/date-formatting';
 })
 export class ArticleMetadataComponent {
   readonly author = input.required<string>();
+  readonly sourceId = input.required<string>();
   readonly source = input.required<string>();
   readonly publishedAt = input.required<string>();
+  protected readonly buildSourceRoute = buildSourceRoute;
 
   protected readonly formattedDateLong = computed(() => formatDateLong(new Date(this.publishedAt())));
   protected readonly formattedDateShort = computed(() => formatDateShort(new Date(this.publishedAt())));

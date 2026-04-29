@@ -153,10 +153,12 @@ describe('NewsCarouselComponent', () => {
       fixture.nativeElement.querySelectorAll('[data-testid="carousel-hero"] p')
     ) as HTMLParagraphElement[];
     const metaText = heroParagraphs[heroParagraphs.length - 1]?.textContent?.replace(/\s+/g, ' ')?.trim() ?? '';
+    const sourceLink = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] a') as HTMLAnchorElement;
 
     expect(metaText).toContain('Por Antonio Rodríguez');
     expect(metaText).toContain('El País');
     expect(metaText).toMatch(/\d{2}:\d{2} - 20\.02\.2026$/);
+    expect(sourceLink.getAttribute('href')).toBe('/fuente/fuente-1');
   });
 
   it('keeps hero copy left aligned and renders the visible section badge', async () => {
@@ -169,7 +171,7 @@ describe('NewsCarouselComponent', () => {
     fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
     fixture.detectChanges();
 
-    const heroButton = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] > button') as HTMLButtonElement;
+    const heroButton = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] [role="button"]') as HTMLDivElement;
     const heroTitle = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] h2') as HTMLHeadingElement;
     const sectionBadge = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] p') as HTMLParagraphElement;
 
@@ -178,6 +180,34 @@ describe('NewsCarouselComponent', () => {
     expect(sectionBadge.textContent?.trim()).toBe('actualidad');
     expect(sectionBadge.className).toContain('inline-flex');
     expect(sectionBadge.className).toContain('bg-primary');
+  });
+
+  it('does not open preview or cancel navigation when keyboard activation starts on the nested source link', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    let previewedArticleId: string | null = null;
+    fixture.componentInstance.previewRequested.subscribe((article) => {
+      previewedArticleId = article.id;
+    });
+
+    const sourceLink = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] a') as HTMLAnchorElement;
+    const keyboardEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    sourceLink.dispatchEvent(keyboardEvent);
+
+    expect(previewedArticleId).toBeNull();
+    expect(keyboardEvent.defaultPrevented).toBe(false);
   });
 });
 
@@ -191,6 +221,7 @@ const MOCK_ARTICLES: readonly NewsItem[] = [
     title: 'Titular uno',
     summary: 'Resumen uno',
     imageUrl: '',
+    sourceId: 'fuente-1',
     source: 'Fuente 1',
     section: 'actualidad',
     publishedAt: '2026-02-11',
@@ -202,6 +233,7 @@ const MOCK_ARTICLES: readonly NewsItem[] = [
     title: 'Titular dos',
     summary: 'Resumen dos',
     imageUrl: '',
+    sourceId: 'fuente-2',
     source: 'Fuente 2',
     section: 'actualidad',
     publishedAt: '2026-02-11',
@@ -213,6 +245,7 @@ const MOCK_ARTICLES: readonly NewsItem[] = [
     title: 'Titular tres',
     summary: 'Resumen tres',
     imageUrl: '',
+    sourceId: 'fuente-3',
     source: 'Fuente 3',
     section: 'actualidad',
     publishedAt: '2026-02-11',
@@ -224,6 +257,7 @@ const MOCK_ARTICLES: readonly NewsItem[] = [
     title: 'Titular cuatro',
     summary: 'Resumen cuatro',
     imageUrl: '',
+    sourceId: 'fuente-4',
     source: 'Fuente 4',
     section: 'actualidad',
     publishedAt: '2026-02-11',

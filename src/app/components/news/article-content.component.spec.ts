@@ -21,6 +21,7 @@ describe('ArticleContentComponent', () => {
     expect(text).toContain('Titular de prueba para detalle');
     expect(text).toContain('Ana Redactora');
     expect(text).toContain('Diario Prueba');
+    expect(text).toContain('Abrir noticia completa');
 
     expect(fixture.nativeElement.querySelector('app-article-metadata')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-article-locked-preview')).toBeNull();
@@ -78,6 +79,7 @@ describe('ArticleContentComponent', () => {
       imageUrl: '',
       source: '',
       section: '',
+      sourceId: '',
       author: '',
       url: '',
     });
@@ -121,6 +123,7 @@ const MOCK_ARTICLE: NewsItem = {
   title: 'Titular de prueba para detalle',
   summary: 'Resumen de prueba para render de componente de contenido.',
   imageUrl: 'https://example.com/mock.jpg',
+  sourceId: 'diario-prueba',
   source: 'Diario Prueba',
   section: 'actualidad',
   publishedAt: '2026-02-16T10:00:00',

@@ -32,7 +32,7 @@ describe('NewsQuickViewModalComponent', () => {
 
     expect(dialog).toBeTruthy();
     expect(text).toContain('Titulo news-1');
-    expect(text).toContain('Abrir noticia completa en Fuente Uno');
+    expect(text).toContain('Abrir noticia completa');
   });
 
   it('emits close when clicking overlay but not when clicking dialog body', async () => {
@@ -82,6 +82,7 @@ function createNewsItem(id: string) {
     title: `Titulo ${id}`,
     summary: `Resumen ${id}`,
     imageUrl: 'https://example.com/image.jpg',
+    sourceId: 'fuente-uno',
     source: 'Fuente Uno',
     section: 'actualidad',
     publishedAt: '2026-03-04T08:30:00.000Z',

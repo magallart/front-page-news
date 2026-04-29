@@ -18,6 +18,8 @@ import {
 } from '../../constants/section-page.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
 import { createSectionNewsQuery } from '../../lib/news-query-factory';
+import { toNewsRequestSnapshotKey } from '../../lib/news-request';
+import { NewsViewPreferencesStore } from '../../lib/news-view-preferences-store';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { formatSectionLabel } from '../../utils/section-label';
@@ -60,8 +62,11 @@ import type { OnInit } from '@angular/core';
             [isRefreshing]="isRefreshing()"
             [isShowingStaleData]="isShowingStaleData()"
             [hasFreshUpdateAvailable]="hasFreshUpdateAvailable()"
+            [hasNewSinceLastVisit]="hasNewSinceLastVisit()"
+            [newSinceLastVisitCount]="newSinceLastVisitCount()"
             [lastUpdated]="lastUpdated()"
             (dismissed)="dismissFreshUpdateNotice()"
+            (lastVisitDismissed)="dismissLastVisitNotice()"
           />
 
           @if (hasSectionNews()) {
@@ -125,6 +130,7 @@ export class SectionPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly newsStore = inject(NewsStore);
+  private readonly newsViewPreferencesStore = inject(NewsViewPreferencesStore);
   private readonly sourceSelection = signal<SourceSelectionState>({
     hasCustomSelection: false,
     selectedSources: [],
@@ -163,7 +169,13 @@ export class SectionPageComponent implements OnInit {
       return this.availableSources();
     }
 
-    return currentSelection.selectedSources;
+    if (currentSelection.selectedSources.length === 0) {
+      return [];
+    }
+
+    const availableSourceSet = new Set(this.availableSources());
+    const persistedSelection = currentSelection.selectedSources.filter((source) => availableSourceSet.has(source));
+    return persistedSelection.length > 0 ? persistedSelection : this.availableSources();
   });
 
   protected readonly filteredSectionNews = computed(() => {
@@ -194,6 +206,8 @@ export class SectionPageComponent implements OnInit {
   protected readonly isRefreshing = computed(() => this.newsStore.isRefreshing(this.sectionNewsQuery()));
   protected readonly isShowingStaleData = computed(() => this.newsStore.isShowingStaleData(this.sectionNewsQuery()));
   protected readonly hasFreshUpdateAvailable = computed(() => this.newsStore.hasFreshUpdateAvailable(this.sectionNewsQuery()));
+  protected readonly hasNewSinceLastVisit = computed(() => this.newsStore.hasNewSinceLastVisit(this.sectionNewsQuery()));
+  protected readonly newSinceLastVisitCount = computed(() => this.newsStore.newSinceLastVisitCount(this.sectionNewsQuery()));
   protected readonly lastUpdated = computed(() => this.newsStore.lastUpdated(this.sectionNewsQuery()));
 
   ngOnInit(): void {
@@ -220,11 +234,13 @@ export class SectionPageComponent implements OnInit {
       hasCustomSelection: true,
       selectedSources: nextSources,
     });
+    this.persistViewPreferences();
   }
 
   protected onSortDirectionChange(direction: 'asc' | 'desc'): void {
     this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
     this.sortDirection.set(direction);
+    this.persistViewPreferences();
   }
 
   protected loadMoreNews(): void {
@@ -243,20 +259,34 @@ export class SectionPageComponent implements OnInit {
     this.newsStore.dismissFreshUpdateNotice(this.sectionNewsQuery());
   }
 
+  protected dismissLastVisitNotice(): void {
+    this.newsStore.dismissLastVisitNotice(this.sectionNewsQuery());
+  }
+
   private syncFromRouteSnapshot(): void {
     const slug = this.route.snapshot.paramMap.get('slug') ?? SECTION_PAGE_DEFAULT_SLUG;
     const filters = parseSectionQueryFilters(this.route.snapshot.queryParamMap);
+    const sectionNewsQuery = createSectionNewsQuery(slug, filters);
+    const storedPreferences = this.newsViewPreferencesStore.read(toNewsRequestSnapshotKey(sectionNewsQuery));
 
     this.sectionSlug.set(slug);
     this.queryFilters.set(filters);
     this.sourceSelection.set({
-      hasCustomSelection: false,
-      selectedSources: [],
+      hasCustomSelection: storedPreferences?.hasCustomSelection ?? false,
+      selectedSources: storedPreferences?.selectedValues ?? [],
     });
     this.filtersOpen.set(false);
-    this.sortDirection.set('desc');
+    this.sortDirection.set(storedPreferences?.sortDirection ?? 'desc');
     this.visibleNewsCount.set(SECTION_PAGE_INITIAL_VISIBLE_NEWS_COUNT);
 
-    this.newsStore.load(createSectionNewsQuery(slug, filters));
+    this.newsStore.load(sectionNewsQuery);
+  }
+
+  private persistViewPreferences(): void {
+    this.newsViewPreferencesStore.write(toNewsRequestSnapshotKey(this.sectionNewsQuery()), {
+      hasCustomSelection: this.sourceSelection().hasCustomSelection,
+      selectedValues: this.sourceSelection().selectedSources,
+      sortDirection: this.sortDirection(),
+    });
   }
 }

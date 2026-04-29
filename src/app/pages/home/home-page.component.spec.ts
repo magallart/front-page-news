@@ -187,6 +187,35 @@ describe('HomePageComponent', () => {
     expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith(createHomeNewsQuery());
   });
 
+  it('shows and dismisses the last-visit banner for the home query', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      newSinceLastVisit: true,
+      newSinceLastVisitCount: 2,
+    });
+    const sourcesStoreMock = createSourcesStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const banner = fixture.nativeElement.querySelector('[data-testid="last-visit-banner"]');
+    expect(banner).toBeTruthy();
+    expect(banner.textContent as string).toContain('2 titulares nuevos');
+
+    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de novedades"]') as HTMLButtonElement;
+    dismissButton.click();
+
+    expect(newsStoreMock.dismissLastVisitNotice).toHaveBeenCalledWith(createHomeNewsQuery());
+  });
+
   it('renders total error state when api fails and there is no data', async () => {
     const newsStoreMock = createNewsStoreMock({
       data: [],
@@ -340,6 +369,7 @@ describe('HomePageComponent', () => {
       title: 'Titulo quick-1',
       summary: 'Resumen quick-1',
       imageUrl: 'https://example.com/image.jpg',
+      sourceId: 'fuente-rapida',
       source: 'Fuente Rapida',
       section: 'actualidad',
       publishedAt: '2026-03-04T08:30:00.000Z',
@@ -348,14 +378,14 @@ describe('HomePageComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent as string).toContain('Abrir noticia completa en Fuente Rapida');
+    expect(fixture.nativeElement.textContent as string).toContain('Abrir noticia completa');
 
     const quickView = fixture.debugElement.query(By.directive(NewsQuickViewModalComponent))
       .componentInstance as NewsQuickViewModalComponent;
     quickView.closed.emit();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent as string).not.toContain('Abrir noticia completa en Fuente Rapida');
+    expect(fixture.nativeElement.textContent as string).not.toContain('Abrir noticia completa');
   });
 });
 
@@ -367,6 +397,8 @@ function createNewsStoreMock(
     refreshing: boolean;
     stale: boolean;
     freshUpdateAvailable: boolean;
+    newSinceLastVisit: boolean;
+    newSinceLastVisitCount: number;
     lastUpdated: number | null;
   }>,
 ) {
@@ -376,6 +408,8 @@ function createNewsStoreMock(
   const refreshingSignal = signal(overrides?.refreshing ?? false);
   const staleSignal = signal(overrides?.stale ?? false);
   const freshUpdateSignal = signal(overrides?.freshUpdateAvailable ?? false);
+  const newSinceLastVisitSignal = signal(overrides?.newSinceLastVisit ?? false);
+  const newSinceLastVisitCountSignal = signal(overrides?.newSinceLastVisitCount ?? 0);
   const lastUpdatedSignal = signal<number | null>(overrides?.lastUpdated ?? null);
 
   return {
@@ -386,9 +420,12 @@ function createNewsStoreMock(
     isRefreshing: refreshingSignal.asReadonly(),
     isShowingStaleData: staleSignal.asReadonly(),
     hasFreshUpdateAvailable: freshUpdateSignal.asReadonly(),
+    hasNewSinceLastVisit: newSinceLastVisitSignal.asReadonly(),
+    newSinceLastVisitCount: newSinceLastVisitCountSignal.asReadonly(),
     lastUpdated: lastUpdatedSignal.asReadonly(),
     load: vi.fn(),
     dismissFreshUpdateNotice: vi.fn(),
+    dismissLastVisitNotice: vi.fn(),
   };
 }
 

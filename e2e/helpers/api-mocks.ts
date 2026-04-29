@@ -252,6 +252,8 @@ export async function mockApiRoutes(page: Page): Promise<void> {
     const requestUrl = new URL(route.request().url());
     const section = requestUrl.searchParams.get('section');
     const articleId = requestUrl.searchParams.get('id');
+    const sourceValue = requestUrl.searchParams.get('source');
+    const searchQuery = requestUrl.searchParams.get('q')?.trim().toLowerCase() ?? null;
 
     let articles: readonly MockArticle[] = HOME_NEWS_ARTICLES;
 
@@ -262,6 +264,21 @@ export async function mockApiRoutes(page: Page): Promise<void> {
     if (articleId) {
       const found = ALL_ARTICLES.find((article) => article.id === articleId);
       articles = found ? [found] : [];
+    }
+
+    if (sourceValue) {
+      const requestedSourceIds = sourceValue
+        .split(',')
+        .map((value) => value.trim().toLowerCase())
+        .filter((value) => value.length > 0);
+      articles = articles.filter((article) => requestedSourceIds.includes(article.sourceId));
+    }
+
+    if (searchQuery) {
+      articles = articles.filter((article) => {
+        const haystack = `${article.title} ${article.summary}`.toLowerCase();
+        return haystack.includes(searchQuery);
+      });
     }
 
     const pageValue = parsePositiveInteger(requestUrl.searchParams.get('page'), 1);

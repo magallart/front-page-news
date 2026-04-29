@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { toArticleFingerprint } from '../../../shared/lib/article-identity';
 import { NEWS_SERVICE_RESULT_SOURCE } from '../interfaces/news-service-result-source.interface';
+import { LastVisitNewsStateStore } from '../lib/last-visit-news-state-store';
 import { NewsService } from '../services/news.service';
 
 import { NewsStore } from './news.store';
@@ -217,6 +219,48 @@ describe('NewsStore', () => {
     expect(store.isShowingStaleData({ section: 'economia' })).toBe(false);
   });
 
+  it('flags unseen headlines when the first visible response contains news since the last visit', () => {
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(of(createServiceResult())),
+    };
+    const lastVisitStateStoreMock = createLastVisitNewsStateStoreMock({
+      state: {
+        articleFingerprints: [createLegacyArticleFingerprint()],
+        seenAt: Date.parse('2026-01-09T09:00:00.000Z'),
+      },
+    });
+
+    const store = configureStore(newsServiceMock, lastVisitStateStoreMock);
+    store.load({ section: 'economia' });
+
+    expect(store.hasNewSinceLastVisit({ section: 'economia' })).toBe(true);
+    expect(store.newSinceLastVisitCount({ section: 'economia' })).toBe(1);
+    expect(lastVisitStateStoreMock.write).toHaveBeenCalledTimes(1);
+  });
+
+  it('dismisses the last-visit notice without altering visible data', () => {
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(of(createServiceResult())),
+    };
+    const lastVisitStateStoreMock = createLastVisitNewsStateStoreMock({
+      state: {
+        articleFingerprints: [createLegacyArticleFingerprint()],
+        seenAt: Date.parse('2026-01-09T09:00:00.000Z'),
+      },
+    });
+
+    const store = configureStore(newsServiceMock, lastVisitStateStoreMock);
+    store.load({ section: 'economia' });
+
+    expect(store.hasNewSinceLastVisit({ section: 'economia' })).toBe(true);
+
+    store.dismissLastVisitNotice({ section: 'economia' });
+
+    expect(store.hasNewSinceLastVisit({ section: 'economia' })).toBe(false);
+    expect(store.newSinceLastVisitCount({ section: 'economia' })).toBe(0);
+    expect(store.data({ section: 'economia' })[0]?.id).toBe('news-1');
+  });
+
   it('keeps independent state per query key', () => {
     const economyStream = createObservableController<NewsServiceResult>();
     const cultureStream = createObservableController<NewsServiceResult>();
@@ -283,7 +327,10 @@ describe('NewsStore', () => {
   });
 });
 
-function configureStore(newsServiceMock: Pick<NewsService, 'getNews'>): NewsStore {
+function configureStore(
+  newsServiceMock: Pick<NewsService, 'getNews'>,
+  lastVisitStateStoreMock: Pick<LastVisitNewsStateStore, 'read' | 'write'> = createLastVisitNewsStateStoreMock(),
+): NewsStore {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -292,10 +339,28 @@ function configureStore(newsServiceMock: Pick<NewsService, 'getNews'>): NewsStor
         provide: NewsService,
         useValue: newsServiceMock,
       },
+      {
+        provide: LastVisitNewsStateStore,
+        useValue: lastVisitStateStoreMock,
+      },
     ],
   });
 
   return TestBed.inject(NewsStore);
+}
+
+function createLastVisitNewsStateStoreMock(
+  overrides?: Partial<{
+    state: {
+      readonly articleFingerprints: readonly string[];
+      readonly seenAt: number;
+    } | null;
+  }>,
+) {
+  return {
+    read: vi.fn().mockReturnValue(overrides?.state ?? null),
+    write: vi.fn(),
+  };
 }
 
 function createNewsResponse(overrides: Partial<NewsResponse> = {}): NewsResponse {
@@ -380,4 +445,22 @@ function createServiceResult(overrides: Partial<NewsServiceResult> = {}): NewsSe
     isRefreshing: false,
     ...overrides,
   };
+}
+
+function createLegacyArticleFingerprint(): string {
+  return toArticleFingerprint({
+    id: 'news-legacy',
+    externalId: null,
+    title: 'Titular antiguo',
+    summary: 'Resumen antiguo',
+    url: 'https://example.com/legacy',
+    canonicalUrl: null,
+    imageUrl: null,
+    thumbnailUrl: null,
+    sourceId: 'source-ejemplo',
+    sourceName: 'Ejemplo',
+    sectionSlug: 'economia',
+    author: null,
+    publishedAt: null,
+  });
 }

@@ -29,6 +29,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         <div class="pt-2 sm:pt-3">
           <app-article-metadata
             [author]="safeArticle().author"
+            [sourceId]="safeArticle().sourceId"
             [source]="safeArticle().source"
             [publishedAt]="safeArticle().publishedAt"
           />
@@ -70,6 +71,7 @@ export class ArticleContentComponent {
       summary: item.summary.trim(),
       imageUrl,
       source,
+      sourceId: item.sourceId,
       section,
       publishedAt: item.publishedAt,
       author: normalizeOrFallback(item.author, 'Redacci\u00F3n Front Page News'),

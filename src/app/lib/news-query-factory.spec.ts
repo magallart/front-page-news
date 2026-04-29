@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { HOME_PAGE_NEWS_LIMIT, NAVBAR_TICKER_NEWS_LIMIT } from '../constants/news-limit.constants';
 
-import { createHomeNewsQuery, createLatestNewsTickerQuery, createSectionNewsQuery } from './news-query-factory';
+import {
+  createHomeNewsQuery,
+  createLatestNewsTickerQuery,
+  createSearchNewsQuery,
+  createSectionNewsQuery,
+  createSourceNewsQuery,
+} from './news-query-factory';
 
 describe('news-query-factory', () => {
   it('creates the canonical home query', () => {
@@ -34,6 +40,22 @@ describe('news-query-factory', () => {
       searchQuery: 'inflacion',
       page: 2,
       limit: 40,
+    });
+  });
+
+  it('creates source page queries from source id', () => {
+    expect(createSourceNewsQuery('mundo-diario')).toEqual({
+      sourceIds: ['mundo-diario'],
+      page: 1,
+      limit: 300,
+    });
+  });
+
+  it('creates global search queries from a search term', () => {
+    expect(createSearchNewsQuery('vivienda')).toEqual({
+      searchQuery: 'vivienda',
+      page: 1,
+      limit: 300,
     });
   });
 });
