@@ -28,7 +28,7 @@ import type { NewsItem } from '../../interfaces/news-item.interface';
         >
           <button
             type="button"
-            class="relative block h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            class="relative block h-full w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             (click)="onPreviewRequest($event, article)"
           >
             <img

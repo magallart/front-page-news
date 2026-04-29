@@ -8,7 +8,36 @@ import type { Source } from '../../shared/interfaces/source.interface';
 import type { Warning } from '../../shared/interfaces/warning.interface';
 
 describe('server/lib/base-snapshot-regeneration', () => {
-  it('does not persist degraded news snapshots with severe warnings', async () => {
+  it('reuses shared feed fetch batches for homepage and section snapshots', async () => {
+    const fetchFeeds = vi.fn(async (sources: readonly Source[]) => ({
+      successes: sources.map((source, index) => ({
+        sourceId: source.id,
+        feedUrl: source.feedUrl,
+        body: buildRssXml({
+          title: `${source.name} ${index + 1}`,
+          url: `https://example.com/${source.id}/${index + 1}`,
+        }),
+        contentType: 'application/rss+xml',
+      })),
+      warnings: [],
+    }));
+
+    await regenerateBaseSnapshots({
+      loadCatalogRecords: async () => makeCatalogRecords(),
+      fetchFeeds,
+      snapshotWriter: {
+        putNewsSnapshot: vi.fn().mockResolvedValue(undefined),
+        putSourcesSnapshot: vi.fn().mockResolvedValue(undefined),
+      },
+      now: () => Date.parse('2026-04-28T08:00:00.000Z'),
+    });
+
+    expect(fetchFeeds).toHaveBeenCalledTimes(2);
+    expect(fetchFeeds.mock.calls[0]?.[0].length).toBeGreaterThan(0);
+    expect(fetchFeeds.mock.calls[1]?.[0].length).toBe(10);
+  });
+
+  it('skips only the affected snapshots when a severe warning hits part of the shared batch', async () => {
     const putNewsSnapshot = vi.fn().mockResolvedValue(undefined);
     const putSourcesSnapshot = vi.fn().mockResolvedValue(undefined);
 
@@ -28,7 +57,7 @@ describe('server/lib/base-snapshot-regeneration', () => {
           {
             code: WARNING_CODE.SOURCE_TIMEOUT,
             message: 'timeout',
-            sourceId: 'source-1',
+            sourceId: 'source-fuente-uno',
             feedUrl: 'https://source-one.test/actualidad.xml',
           },
         ] satisfies readonly Warning[],
@@ -40,11 +69,22 @@ describe('server/lib/base-snapshot-regeneration', () => {
       now: () => Date.parse('2026-04-28T08:00:00.000Z'),
     });
 
-    expect(putNewsSnapshot).not.toHaveBeenCalled();
+    expect(putNewsSnapshot).toHaveBeenCalledTimes(9);
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
     expect(result.newsSnapshots).toBe(11);
     expect(result.sourcesSnapshots).toBe(1);
-    expect(result.keys).toEqual(['sources:default']);
+    expect(result.attemptedKeys).toHaveLength(12);
+    expect(result.persistedKeys).toContain('sources:default');
+    expect(result.skippedKeys).toEqual([
+      'news:id=-:section=-:source=-:q=-:page=1:limit=250',
+      'news:id=-:section=actualidad:source=-:q=-:page=1:limit=300',
+    ]);
+    expect(result.skippedReasons['news:id=-:section=-:source=-:q=-:page=1:limit=250']).toBe('blocking_warning');
+    expect(result.warningsCount).toBeGreaterThan(0);
+    expect(result.keys).not.toContain('news:id=-:section=-:source=-:q=-:page=1:limit=250');
+    expect(result.keys).not.toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
+    expect(result.keys).toContain('news:id=-:section=ciencia:source=-:q=-:page=1:limit=300');
+    expect(result.keys).toContain('sources:default');
   });
 
   it('does not persist empty news snapshots even without warnings', async () => {
@@ -67,6 +107,45 @@ describe('server/lib/base-snapshot-regeneration', () => {
     expect(putNewsSnapshot).not.toHaveBeenCalled();
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
     expect(result.keys).toEqual(['sources:default']);
+  });
+
+  it('does not degrade every shared section snapshot from an unscoped fetch warning', async () => {
+    const putNewsSnapshot = vi.fn().mockResolvedValue(undefined);
+    const putSourcesSnapshot = vi.fn().mockResolvedValue(undefined);
+
+    const result = await regenerateBaseSnapshots({
+      loadCatalogRecords: async () => makeCatalogRecords(),
+      fetchFeeds: async (sources: readonly Source[]) => ({
+        successes: sources.map((source, index) => ({
+          sourceId: source.id,
+          feedUrl: source.feedUrl,
+          body: buildRssXml({
+            title: `${source.name} ${index + 1}`,
+            url: `https://example.com/${source.id}/${index + 1}`,
+          }),
+          contentType: 'application/rss+xml',
+        })),
+        warnings: [
+          {
+            code: WARNING_CODE.SOURCE_FETCH_FAILED,
+            message: 'Unexpected fetch error: worker rejected',
+            sourceId: null,
+            feedUrl: null,
+          },
+        ] satisfies readonly Warning[],
+      }),
+      snapshotWriter: {
+        putNewsSnapshot,
+        putSourcesSnapshot,
+      },
+      now: () => Date.parse('2026-04-28T08:00:00.000Z'),
+    });
+
+    expect(putNewsSnapshot).toHaveBeenCalledTimes(11);
+    expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
+    expect(result.skippedKeys).toEqual([]);
+    expect(result.persistedKeys).toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
+    expect(result.persistedKeys).toContain('news:id=-:section=tecnologia:source=-:q=-:page=1:limit=300');
   });
 });
 

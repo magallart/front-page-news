@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
+import { buildSnapshotBlobUrl, normalizeSnapshotBaseUrl } from '../../../shared/lib/snapshot-url';
 import { environment } from '../../environments/environment';
 import { toNewsSnapshotQuery } from '../lib/news-request';
 import { adaptNewsSnapshot } from '../lib/news-snapshot-adapter';
@@ -11,13 +12,13 @@ import type { NewsSnapshot } from '../../../shared/interfaces/news-snapshot.inte
 @Injectable({ providedIn: 'root' })
 export class RemoteNewsSnapshotService {
   async getNewsSnapshot(query: NewsRequestQuery = {}): Promise<NewsSnapshot | null> {
-    const baseUrl = normalizeBaseUrl(environment.snapshotBlobBaseUrl);
+    const baseUrl = normalizeSnapshotBaseUrl(environment.snapshotBlobBaseUrl);
     if (!baseUrl || typeof globalThis.fetch !== 'function') {
       return null;
     }
 
     const snapshotKey = toNewsSnapshotKey(toNewsSnapshotQuery(query));
-    const response = await this.fetchSnapshot(buildSnapshotUrl(baseUrl, snapshotKey));
+    const response = await this.fetchSnapshot(buildSnapshotBlobUrl(baseUrl, snapshotKey));
     if (!response) {
       return null;
     }
@@ -47,18 +48,4 @@ export class RemoteNewsSnapshotService {
       return null;
     }
   }
-}
-
-function normalizeBaseUrl(value: string | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const normalizedValue = value.trim();
-  return normalizedValue.length > 0 ? normalizedValue : null;
-}
-
-function buildSnapshotUrl(baseUrl: string, snapshotKey: string): string {
-  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  return `${normalizedBaseUrl}/snapshots/${encodeURIComponent(snapshotKey)}.json`;
 }

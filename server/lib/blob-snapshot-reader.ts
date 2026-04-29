@@ -1,4 +1,5 @@
 import { toNewsSnapshotKey, toSourcesSnapshotKey } from '../../shared/lib/snapshot-key.js';
+import { normalizeSnapshotBaseUrl } from '../../shared/lib/snapshot-url.js';
 
 import { buildSnapshotBlobUrl, SNAPSHOT_BLOB_BASE_URL_ENV } from './blob-snapshot-path.js';
 import { createNoopSnapshotReader } from './noop-snapshot-reader.js';
@@ -60,10 +61,5 @@ async function loadSnapshot<TSnapshot>(
 }
 
 function normalizeBaseUrl(value: string | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const normalizedValue = value.trim();
-  return normalizedValue.length > 0 ? normalizedValue : null;
+  return normalizeSnapshotBaseUrl(value);
 }

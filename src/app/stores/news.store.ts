@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 
+import { areNewsResponsesEqual } from '../../../shared/lib/news-response-equality';
 import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
 import { toNewsSnapshotQuery } from '../lib/news-request';
 import { NewsService } from '../services/news.service';
@@ -13,7 +14,6 @@ import type { Subscription } from 'rxjs';
 interface NewsStoreEntryState {
   readonly query: NewsRequestQuery;
   readonly visibleResponse: NewsResponse | null;
-  readonly pendingResponse: NewsResponse | null;
   readonly error: string | null;
   readonly lastUpdated: number | null;
   readonly isHydrated: boolean;
@@ -130,7 +130,6 @@ export class NewsStore {
       isInitialLoading: currentEntry.visibleResponse === null,
       isRefreshing: currentEntry.visibleResponse !== null || forceRefresh,
       activeRequestId: requestId,
-      pendingResponse: forceRefresh ? null : currentEntry.pendingResponse,
       hasFreshUpdateAvailable: false,
     });
 
@@ -194,7 +193,6 @@ export class NewsStore {
     this.setEntry(key, {
       ...currentEntry,
       visibleResponse: response,
-      pendingResponse: null,
       error: null,
       lastUpdated: Date.now(),
       isHydrated: true,
@@ -247,7 +245,6 @@ function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
   return {
     query,
     visibleResponse: null,
-    pendingResponse: null,
     error: null,
     lastUpdated: null,
     isHydrated: false,
@@ -257,8 +254,4 @@ function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
     hasFreshUpdateAvailable: false,
     activeRequestId: 0,
   };
-}
-
-function areNewsResponsesEqual(left: NewsResponse, right: NewsResponse): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
 }

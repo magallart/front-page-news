@@ -77,10 +77,14 @@ export function createCronRegenerateSnapshotsHandler(overrides: Partial<CronHand
         fetchFeeds: dependencies.fetchFeeds,
         snapshotWriter: dependencies.snapshotWriter,
         now,
+        logger,
       });
 
       logger.info('[api/cron/regenerate-snapshots][success]', {
-        totalSnapshots: result.keys.length,
+        attemptedSnapshots: result.attemptedKeys.length,
+        persistedSnapshots: result.persistedKeys.length,
+        skippedSnapshots: result.skippedKeys.length,
+        warningsCount: result.warningsCount,
         durationMs: now() - startedAt,
       });
 
@@ -90,7 +94,7 @@ export function createCronRegenerateSnapshotsHandler(overrides: Partial<CronHand
         {
           ok: true,
           ...result,
-          totalSnapshots: result.keys.length,
+          totalSnapshots: result.persistedKeys.length,
           durationMs: now() - startedAt,
         },
         RESPONSE_CACHE_CONTROL,
