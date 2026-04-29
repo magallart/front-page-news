@@ -25,6 +25,22 @@ describe('shared/lib/news-response-equality', () => {
 
     expect(areNewsResponsesEqual(left, right)).toBe(false);
   });
+
+  it('returns false when warning metadata changes', () => {
+    const left = createNewsResponse();
+    const right = createNewsResponse({
+      warnings: [
+        {
+          code: 'source_timeout',
+          message: 'Timeout',
+          sourceId: 'source-1',
+          feedUrl: 'https://example.com/rss.xml',
+        },
+      ],
+    });
+
+    expect(areNewsResponsesEqual(left, right)).toBe(false);
+  });
 });
 
 function createNewsResponse(overrides: Partial<NewsResponse> = {}): NewsResponse {
