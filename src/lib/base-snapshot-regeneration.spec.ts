@@ -73,6 +73,14 @@ describe('server/lib/base-snapshot-regeneration', () => {
     expect(putSourcesSnapshot).toHaveBeenCalledTimes(1);
     expect(result.newsSnapshots).toBe(11);
     expect(result.sourcesSnapshots).toBe(1);
+    expect(result.attemptedKeys).toHaveLength(12);
+    expect(result.persistedKeys).toContain('sources:default');
+    expect(result.skippedKeys).toEqual([
+      'news:id=-:section=-:source=-:q=-:page=1:limit=250',
+      'news:id=-:section=actualidad:source=-:q=-:page=1:limit=300',
+    ]);
+    expect(result.skippedReasons['news:id=-:section=-:source=-:q=-:page=1:limit=250']).toBe('blocking_warning');
+    expect(result.warningsCount).toBeGreaterThan(0);
     expect(result.keys).not.toContain('news:id=-:section=-:source=-:q=-:page=1:limit=250');
     expect(result.keys).not.toContain('news:id=-:section=actualidad:source=-:q=-:page=1:limit=300');
     expect(result.keys).toContain('news:id=-:section=ciencia:source=-:q=-:page=1:limit=300');
