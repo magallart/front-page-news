@@ -185,7 +185,7 @@ export class SectionPageComponent implements OnInit {
 
   protected readonly sectionUiState = computed(() =>
     resolveSectionUiState({
-      loading: this.newsStore.loading(this.sectionNewsQuery()),
+      loading: this.newsStore.isInitialLoading(this.sectionNewsQuery()),
       error: this.newsStore.error(this.sectionNewsQuery()),
       warnings: this.newsStore.warnings(this.sectionNewsQuery()),
       itemCount: this.filteredSectionNews().length,

@@ -228,7 +228,7 @@ function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType
           createArticle('news-3', 'Titular 3'),
         ]
     ),
-    loading: vi.fn(() => overrides?.loading ?? false),
+    isInitialLoading: vi.fn(() => overrides?.loading ?? false),
     load: vi.fn(),
   };
 }

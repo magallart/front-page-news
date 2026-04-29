@@ -110,7 +110,7 @@ export class HomePageComponent implements OnInit {
 
   protected readonly uiState = computed(() =>
     resolveHomeUiState({
-      loading: this.newsStore.loading(this.homeNewsQuery),
+      loading: this.newsStore.isInitialLoading(this.homeNewsQuery),
       error: this.newsStore.error(this.homeNewsQuery),
       warnings: this.newsStore.warnings(this.homeNewsQuery),
       itemCount: this.newsItems().length,

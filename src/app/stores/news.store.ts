@@ -91,10 +91,6 @@ export class NewsStore {
     return this.getResolvedEntry(query).lastUpdated;
   }
 
-  loading(query?: NewsRequestQuery): boolean {
-    return this.getResolvedEntry(query).isInitialLoading;
-  }
-
   isHydrated(query?: NewsRequestQuery): boolean {
     return this.getResolvedEntry(query).isHydrated;
   }

@@ -379,7 +379,7 @@ function createNewsStoreMock(
   const lastUpdatedSignal = signal<number | null>(overrides?.lastUpdated ?? null);
 
   return {
-    loading: loadingSignal.asReadonly(),
+    isInitialLoading: loadingSignal.asReadonly(),
     data: dataSignal.asReadonly(),
     error: errorSignal.asReadonly(),
     warnings: signal([]).asReadonly(),

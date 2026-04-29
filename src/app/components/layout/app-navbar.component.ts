@@ -157,7 +157,7 @@ export class AppNavbarComponent {
   }
 
   private loadTickerNewsIfNeeded(): void {
-    if (this.newsStore.loading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
+    if (this.newsStore.isInitialLoading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
       return;
     }
 

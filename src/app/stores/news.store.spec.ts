@@ -23,7 +23,7 @@ describe('NewsStore', () => {
     store.load({ section: 'economia' });
 
     expect(newsServiceMock.getNews).toHaveBeenCalledWith({ section: 'economia' }, { forceRefresh: false });
-    expect(store.loading({ section: 'economia' })).toBe(false);
+    expect(store.isInitialLoading({ section: 'economia' })).toBe(false);
     expect(store.isHydrated({ section: 'economia' })).toBe(true);
     expect(store.data({ section: 'economia' })).toEqual(createNewsResponse().articles);
     expect(store.lastUpdated({ section: 'economia' })).toBe(new Date('2026-01-10T10:00:00.000Z').getTime());
@@ -247,7 +247,7 @@ describe('NewsStore', () => {
     const store = configureStore(newsServiceMock);
     store.load({ section: 'cultura' });
 
-    expect(store.loading({ section: 'cultura' })).toBe(false);
+    expect(store.isInitialLoading({ section: 'cultura' })).toBe(false);
     expect(store.error({ section: 'cultura' })).toBe('API unavailable');
     expect(store.data({ section: 'cultura' })).toEqual([]);
   });
