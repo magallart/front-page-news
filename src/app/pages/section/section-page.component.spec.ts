@@ -132,6 +132,67 @@ describe('SectionPageComponent', () => {
     expect(text).toContain('No hay noticias en esta sección');
   });
 
+  it('shows refresh status while section content is revalidating in the background', async () => {
+    const routeMock = createRouteMock({ slug: 'actualidad' });
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'actualidad', 'Mundo Diario')],
+      refreshing: true,
+      stale: true,
+      lastUpdated: Date.parse('2026-03-04T10:45:00.000Z'),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    const refreshStatus = fixture.nativeElement.querySelector('[data-testid="refresh-status"]');
+    expect(refreshStatus).toBeTruthy();
+    expect(refreshStatus.textContent as string).toContain('Actualizando en segundo plano');
+  });
+
+  it('dismisses the fresh update banner for the active section query', async () => {
+    const routeMock = createRouteMock({ slug: 'economia' });
+    const newsStoreMock = createNewsStoreMock({
+      data: [createArticle('news-1', 'economia', 'Fuente A')],
+      freshUpdateAvailable: true,
+      lastUpdated: Date.parse('2026-03-04T10:50:00.000Z'),
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [SectionPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SectionPageComponent);
+    fixture.detectChanges();
+
+    const banner = fixture.nativeElement.querySelector('[data-testid="fresh-update-banner"]');
+    expect(banner).toBeTruthy();
+
+    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de actualización"]') as HTMLButtonElement;
+    dismissButton.click();
+
+    expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith({
+      section: 'economia',
+      sourceIds: [],
+      searchQuery: null,
+      page: 1,
+      limit: 300,
+    });
+  });
+
   it('filters section cards by selected source from filters panel', async () => {
     const routeMock = createRouteMock({ slug: 'actualidad' });
     const newsStoreMock = createNewsStoreMock({
@@ -325,17 +386,36 @@ function createRouteMock(params: Record<string, string>, query: Record<string, s
   };
 }
 
-function createNewsStoreMock(overrides?: Partial<{ data: readonly ReturnType<typeof createArticle>[]; error: string | null; loading: boolean }>) {
+function createNewsStoreMock(
+  overrides?: Partial<{
+    data: readonly ReturnType<typeof createArticle>[];
+    error: string | null;
+    loading: boolean;
+    refreshing: boolean;
+    stale: boolean;
+    freshUpdateAvailable: boolean;
+    lastUpdated: number | null;
+  }>,
+) {
   const dataSignal = signal(overrides?.data ?? []);
   const errorSignal = signal<string | null>(overrides?.error ?? null);
   const loadingSignal = signal(overrides?.loading ?? false);
+  const refreshingSignal = signal(overrides?.refreshing ?? false);
+  const staleSignal = signal(overrides?.stale ?? false);
+  const freshUpdateSignal = signal(overrides?.freshUpdateAvailable ?? false);
+  const lastUpdatedSignal = signal<number | null>(overrides?.lastUpdated ?? null);
 
   return {
     loading: loadingSignal.asReadonly(),
     data: dataSignal.asReadonly(),
     error: errorSignal.asReadonly(),
     warnings: signal([]).asReadonly(),
+    isRefreshing: refreshingSignal.asReadonly(),
+    isShowingStaleData: staleSignal.asReadonly(),
+    hasFreshUpdateAvailable: freshUpdateSignal.asReadonly(),
+    lastUpdated: lastUpdatedSignal.asReadonly(),
     load: vi.fn(),
+    dismissFreshUpdateNotice: vi.fn(),
   };
 }
 

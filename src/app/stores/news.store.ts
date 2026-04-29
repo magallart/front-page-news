@@ -48,7 +48,7 @@ export class NewsStore {
     this.fetchNews(resolvedQuery, true);
   }
 
-  applyFreshUpdate(query?: NewsRequestQuery): void {
+  dismissFreshUpdateNotice(query?: NewsRequestQuery): void {
     const resolvedQuery = this.resolveQuery(query);
     if (!resolvedQuery) {
       return;
@@ -56,16 +56,9 @@ export class NewsStore {
 
     const key = toQueryKey(resolvedQuery);
     const currentEntry = this.getEntry(key);
-    if (!currentEntry.pendingResponse) {
-      return;
-    }
 
     this.setEntry(key, {
       ...currentEntry,
-      visibleResponse: currentEntry.pendingResponse,
-      pendingResponse: null,
-      lastUpdated: Date.now(),
-      isShowingStaleData: false,
       hasFreshUpdateAvailable: false,
     });
   }
@@ -138,7 +131,7 @@ export class NewsStore {
       isRefreshing: currentEntry.visibleResponse !== null || forceRefresh,
       activeRequestId: requestId,
       pendingResponse: forceRefresh ? null : currentEntry.pendingResponse,
-      hasFreshUpdateAvailable: forceRefresh ? false : currentEntry.hasFreshUpdateAvailable,
+      hasFreshUpdateAvailable: false,
     });
 
     const subscription = this.newsService.getNews(query, { forceRefresh }).subscribe({
@@ -192,6 +185,12 @@ export class NewsStore {
     isStale: boolean,
     isRefreshing: boolean,
   ): void {
+    const hasVisibleResponse = currentEntry.visibleResponse !== null;
+    const hasChangedVisibleContent =
+      hasVisibleResponse && !areNewsResponsesEqual(currentEntry.visibleResponse, response);
+    const shouldNotifyFreshUpdate =
+      hasChangedVisibleContent && currentEntry.isRefreshing && !isRefreshing;
+
     this.setEntry(key, {
       ...currentEntry,
       visibleResponse: response,
@@ -202,7 +201,7 @@ export class NewsStore {
       isInitialLoading: false,
       isRefreshing,
       isShowingStaleData: isStale,
-      hasFreshUpdateAvailable: false,
+      hasFreshUpdateAvailable: shouldNotifyFreshUpdate,
     });
   }
 
@@ -258,4 +257,8 @@ function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {
     hasFreshUpdateAvailable: false,
     activeRequestId: 0,
   };
+}
+
+function areNewsResponsesEqual(left: NewsResponse, right: NewsResponse): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }

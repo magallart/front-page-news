@@ -132,6 +132,61 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeFalsy();
   });
 
+  it('shows background refresh status when cached home content is being revalidated', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      refreshing: true,
+      stale: true,
+      lastUpdated: Date.parse('2026-03-04T10:45:00.000Z'),
+    });
+    const sourcesStoreMock = createSourcesStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const refreshStatus = fixture.nativeElement.querySelector('[data-testid="refresh-status"]');
+    expect(refreshStatus).toBeTruthy();
+    expect(refreshStatus.textContent as string).toContain('Actualizando en segundo plano');
+    expect(refreshStatus.textContent as string).toContain('Última actualización');
+  });
+
+  it('shows and dismisses the fresh update banner after a home refresh', async () => {
+    const newsStoreMock = createNewsStoreMock({
+      freshUpdateAvailable: true,
+      lastUpdated: Date.parse('2026-03-04T10:50:00.000Z'),
+    });
+    const sourcesStoreMock = createSourcesStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [HomePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: newsStoreMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HomePageComponent);
+    fixture.detectChanges();
+
+    const banner = fixture.nativeElement.querySelector('[data-testid="fresh-update-banner"]');
+    expect(banner).toBeTruthy();
+    expect(banner.textContent as string).toContain('Portada actualizada');
+
+    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de actualización"]') as HTMLButtonElement;
+    dismissButton.click();
+
+    expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith({ page: 1, limit: HOME_PAGE_NEWS_LIMIT });
+  });
+
   it('renders total error state when api fails and there is no data', async () => {
     const newsStoreMock = createNewsStoreMock({
       data: [],
@@ -304,17 +359,36 @@ describe('HomePageComponent', () => {
   });
 });
 
-function createNewsStoreMock(overrides?: Partial<{ data: readonly unknown[]; error: string | null; loading: boolean }>) {
+function createNewsStoreMock(
+  overrides?: Partial<{
+    data: readonly unknown[];
+    error: string | null;
+    loading: boolean;
+    refreshing: boolean;
+    stale: boolean;
+    freshUpdateAvailable: boolean;
+    lastUpdated: number | null;
+  }>,
+) {
   const dataSignal = signal((overrides?.data as readonly ReturnType<typeof createArticle>[]) ?? createHomeDataset());
   const loadingSignal = signal(overrides?.loading ?? false);
   const errorSignal = signal<string | null>(overrides?.error ?? null);
+  const refreshingSignal = signal(overrides?.refreshing ?? false);
+  const staleSignal = signal(overrides?.stale ?? false);
+  const freshUpdateSignal = signal(overrides?.freshUpdateAvailable ?? false);
+  const lastUpdatedSignal = signal<number | null>(overrides?.lastUpdated ?? null);
 
   return {
     loading: loadingSignal.asReadonly(),
     data: dataSignal.asReadonly(),
     error: errorSignal.asReadonly(),
     warnings: signal([]).asReadonly(),
+    isRefreshing: refreshingSignal.asReadonly(),
+    isShowingStaleData: staleSignal.asReadonly(),
+    hasFreshUpdateAvailable: freshUpdateSignal.asReadonly(),
+    lastUpdated: lastUpdatedSignal.asReadonly(),
     load: vi.fn(),
+    dismissFreshUpdateNotice: vi.fn(),
   };
 }
 
