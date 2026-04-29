@@ -1,5 +1,7 @@
 import { HttpParams } from '@angular/common/http';
 
+import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
+
 import type { NewsQuery } from '../../../shared/interfaces/news-query.interface';
 
 export type NewsRequestQuery = Partial<NewsQuery>;
@@ -60,6 +62,10 @@ export function toNewsSnapshotQuery(query: NewsRequestQuery): NewsQuery {
     page: normalizePositiveInteger(query.page, DEFAULT_PAGE),
     limit: normalizePositiveInteger(query.limit, DEFAULT_LIMIT),
   };
+}
+
+export function toNewsRequestSnapshotKey(query: NewsRequestQuery): string {
+  return toNewsSnapshotKey(toNewsSnapshotQuery(query));
 }
 
 export function normalizeSection(value: string): string {

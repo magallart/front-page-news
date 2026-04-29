@@ -23,7 +23,7 @@ describe('NewsStore', () => {
     store.load({ section: 'economia' });
 
     expect(newsServiceMock.getNews).toHaveBeenCalledWith({ section: 'economia' }, { forceRefresh: false });
-    expect(store.loading({ section: 'economia' })).toBe(false);
+    expect(store.isInitialLoading({ section: 'economia' })).toBe(false);
     expect(store.isHydrated({ section: 'economia' })).toBe(true);
     expect(store.data({ section: 'economia' })).toEqual(createNewsResponse().articles);
     expect(store.lastUpdated({ section: 'economia' })).toBe(new Date('2026-01-10T10:00:00.000Z').getTime());
@@ -128,6 +128,26 @@ describe('NewsStore', () => {
     expect(store.hasFreshUpdateAvailable({ section: 'actualidad', limit: 10 })).toBe(true);
   });
 
+  it('unsubscribes the previous in-flight request when reloading the same query', () => {
+    const firstStream = createObservableController<NewsServiceResult>();
+    const secondStream = createObservableController<NewsServiceResult>();
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValueOnce(firstStream.observable).mockReturnValueOnce(secondStream.observable),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'actualidad' });
+    store.load({ section: 'actualidad' });
+
+    expect(firstStream.unsubscribeCount()).toBe(1);
+    expect(secondStream.unsubscribeCount()).toBe(0);
+
+    secondStream.next(createServiceResult());
+    secondStream.complete();
+
+    expect(store.isRefreshing({ section: 'actualidad' })).toBe(false);
+  });
+
   it('dismisses the fresh update notice without altering visible data', () => {
     const stream = createObservableController<NewsServiceResult>();
     const newsServiceMock = {
@@ -165,6 +185,36 @@ describe('NewsStore', () => {
 
     expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
     expect(store.data({ section: 'economia' })[0]?.id).toBe('news-2');
+  });
+
+  it('does not flag a fresh update when background revalidation returns the same visible response', () => {
+    const stream = createObservableController<NewsServiceResult>();
+    const newsServiceMock = {
+      getNews: vi.fn().mockReturnValue(stream.observable),
+    };
+
+    const store = configureStore(newsServiceMock);
+    store.load({ section: 'economia' });
+
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.INDEXEDDB,
+        isStale: true,
+        isRefreshing: true,
+      }),
+    );
+    stream.next(
+      createServiceResult({
+        source: NEWS_SERVICE_RESULT_SOURCE.NETWORK,
+        response: createNewsResponse(),
+      }),
+    );
+    stream.complete();
+
+    expect(store.data({ section: 'economia' })[0]?.id).toBe('news-1');
+    expect(store.hasFreshUpdateAvailable({ section: 'economia' })).toBe(false);
+    expect(store.isRefreshing({ section: 'economia' })).toBe(false);
+    expect(store.isShowingStaleData({ section: 'economia' })).toBe(false);
   });
 
   it('keeps independent state per query key', () => {
@@ -227,7 +277,7 @@ describe('NewsStore', () => {
     const store = configureStore(newsServiceMock);
     store.load({ section: 'cultura' });
 
-    expect(store.loading({ section: 'cultura' })).toBe(false);
+    expect(store.isInitialLoading({ section: 'cultura' })).toBe(false);
     expect(store.error({ section: 'cultura' })).toBe('API unavailable');
     expect(store.data({ section: 'cultura' })).toEqual([]);
   });
@@ -279,16 +329,22 @@ function createObservableController<T>(): {
   next(value: T): void;
   complete(): void;
   error(error: unknown): void;
+  unsubscribeCount(): number;
 } {
   let nextHandler: ((value: T) => void) | null = null;
   let completeHandler: (() => void) | null = null;
   let errorHandler: ((error: unknown) => void) | null = null;
+  let unsubscribeCounter = 0;
 
   return {
     observable: new Observable<T>((subscriber) => {
       nextHandler = (value) => subscriber.next(value);
       completeHandler = () => subscriber.complete();
       errorHandler = (error) => subscriber.error(error);
+
+      return () => {
+        unsubscribeCounter += 1;
+      };
     }),
     next(value: T) {
       nextHandler?.(value);
@@ -298,6 +354,9 @@ function createObservableController<T>(): {
     },
     error(error: unknown) {
       errorHandler?.(error);
+    },
+    unsubscribeCount() {
+      return unsubscribeCounter;
     },
   };
 }

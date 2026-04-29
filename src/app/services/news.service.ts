@@ -48,36 +48,17 @@ export class NewsService {
     const normalizedQuery = toNewsSnapshotQuery(query);
     const params = buildNewsHttpParams(query);
     const snapshotKey = toNewsSnapshotKey(normalizedQuery);
-    const section = params.get('section');
+    const section = normalizedQuery.section;
     const forceRefresh = options.forceRefresh === true;
 
     this.pruneExpiredEntries();
 
-    let memoryResult: NewsServiceResult | null = null;
-
-    if (!forceRefresh) {
-      const cached = this.responseCache.get(snapshotKey);
-      if (cached && !isExpired(cached.memoryExpiresAt)) {
-        this.promoteCacheEntry(snapshotKey, cached);
-        const isMemoryResultStale = isExpired(cached.result.staleAtMs);
-        memoryResult = {
-          ...cached.result,
-          source: 'memory',
-          isRefreshing: isMemoryResultStale,
-          isStale: isMemoryResultStale,
-        };
-
-        if (!isMemoryResultStale) {
-          return new Observable((subscriber) => {
-            subscriber.next(memoryResult!);
-            subscriber.complete();
-          });
-        }
-      }
-
-      if (cached) {
-        this.responseCache.delete(snapshotKey);
-      }
+    const memoryResult = forceRefresh ? null : this.getMemoryResult(snapshotKey);
+    if (memoryResult && !memoryResult.isStale) {
+      return new Observable((subscriber) => {
+        subscriber.next(memoryResult);
+        subscriber.complete();
+      });
     }
 
     return new Observable<NewsServiceResult>((subscriber) => {
@@ -91,9 +72,7 @@ export class NewsService {
         }
 
         if (!forceRefresh && !memoryResult) {
-          hydratedResult =
-            (await this.loadIndexedDbSnapshot(query)) ??
-            (await this.loadRemoteSnapshot(query));
+          hydratedResult = await this.loadHydratedSnapshot(query);
 
           if (cancelled) {
             return;
@@ -187,6 +166,37 @@ export class NewsService {
     });
 
     return this.toServiceResult(snapshot, 'remote_snapshot', staleAtMs, expiresAtMs);
+  }
+
+  private getMemoryResult(snapshotKey: string): NewsServiceResult | null {
+    const cached = this.responseCache.get(snapshotKey);
+    if (!cached) {
+      return null;
+    }
+
+    if (isExpired(cached.memoryExpiresAt)) {
+      this.responseCache.delete(snapshotKey);
+      return null;
+    }
+
+    this.promoteCacheEntry(snapshotKey, cached);
+
+    const isMemoryResultStale = isExpired(cached.result.staleAtMs);
+    return {
+      ...cached.result,
+      source: 'memory',
+      isRefreshing: isMemoryResultStale,
+      isStale: isMemoryResultStale,
+    };
+  }
+
+  private async loadHydratedSnapshot(query: NewsRequestQueryInput): Promise<NewsServiceResult | null> {
+    const indexedDbResult = await this.loadIndexedDbSnapshot(query);
+    if (indexedDbResult) {
+      return indexedDbResult;
+    }
+
+    return this.loadRemoteSnapshot(query);
   }
 
   private async getOrCreateFreshRequest(

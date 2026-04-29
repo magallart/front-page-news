@@ -1,3 +1,5 @@
+import { toArticleDeduplicationKey } from '../../shared/lib/article-identity';
+
 import type { Article } from '../../shared/interfaces/article.interface';
 import type { RawFeedItem } from '../interfaces/raw-feed-item.interface';
 
@@ -107,7 +109,7 @@ export function dedupeAndSortArticles(items: readonly Article[]): readonly Artic
   const uniqueByKey = new Map<string, Article>();
 
   for (const item of items) {
-    const dedupeKey = item.canonicalUrl ?? buildTitleDateKey(item.title, item.publishedAt);
+    const dedupeKey = toArticleDeduplicationKey(item);
     const current = uniqueByKey.get(dedupeKey);
 
     if (!current) {
@@ -184,10 +186,6 @@ function hashFNV1a(value: string): string {
   }
 
   return (hash >>> 0).toString(16).padStart(8, '0');
-}
-
-function buildTitleDateKey(title: string, publishedAt: string | null): string {
-  return `${title.trim().toLowerCase()}|${publishedAt ?? 'no-date'}`;
 }
 
 function hasHigherSectionPriority(candidateSection: string, currentSection: string): boolean {

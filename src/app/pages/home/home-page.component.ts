@@ -10,8 +10,8 @@ import { NewsRefreshIndicatorComponent } from '../../components/news/news-refres
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
-import { HOME_PAGE_NEWS_LIMIT } from '../../constants/news-limit.constants';
 import { UI_VIEW_STATE } from '../../interfaces/ui-view-state.interface';
+import { createHomeNewsQuery } from '../../lib/news-query-factory';
 import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
@@ -103,14 +103,14 @@ export class HomePageComponent implements OnInit {
   private readonly newsStore = inject(NewsStore);
   private readonly sourcesStore = inject(SourcesStore);
   protected readonly uiViewState = UI_VIEW_STATE;
-  private readonly homeNewsQuery = { page: 1, limit: HOME_PAGE_NEWS_LIMIT } as const;
+  private readonly homeNewsQuery = createHomeNewsQuery();
 
   private readonly newsItems = computed(() => adaptArticlesToNewsItems(this.newsStore.data(this.homeNewsQuery)));
   protected readonly quickViewArticle = signal<NewsItem | null>(null);
 
   protected readonly uiState = computed(() =>
     resolveHomeUiState({
-      loading: this.newsStore.loading(this.homeNewsQuery),
+      loading: this.newsStore.isInitialLoading(this.homeNewsQuery),
       error: this.newsStore.error(this.homeNewsQuery),
       warnings: this.newsStore.warnings(this.homeNewsQuery),
       itemCount: this.newsItems().length,

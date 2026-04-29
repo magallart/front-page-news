@@ -27,9 +27,17 @@ test.describe('Header/Navbar', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
 
-    const tickerHeadlineSpans = page.locator('app-navbar-ticker .ticker-sequence span.transition');
+    const navbarTicker = page.locator('header app-navbar-ticker').first();
+    const tickerHeadlineSpans = navbarTicker.locator('.ticker-sequence span.transition');
     await expect(tickerHeadlineSpans.first()).toBeVisible();
-    await expect(page.locator('app-navbar-ticker .ticker-sequence a')).toHaveCount(0);
+    await expect(navbarTicker.locator('.ticker-sequence a')).toHaveCount(0);
+    await expect(navbarTicker).not.toContainText('Actualizando titulares...');
+    await expect(navbarTicker.locator('.ticker-sequence').first()).toContainText(
+      'Actualidad internacional marcada por acuerdos energeticos',
+    );
+    await expect(navbarTicker.locator('.ticker-sequence').first()).toContainText(
+      'Reunion de urgencia en el congreso para aprobar medidas',
+    );
 
     await page.locator('app-navbar-ticker a[href="/seccion/ultima-hora"]').first().click({ noWaitAfter: true });
     await page.waitForURL(/\/seccion\/ultima-hora$/);

@@ -9,7 +9,7 @@ import {
   NAVBAR_TICKER_HEADLINE_LIMIT,
   NAVBAR_TOP_LINKS,
 } from '../../constants/navbar.constants';
-import { NAVBAR_TICKER_NEWS_LIMIT } from '../../constants/news-limit.constants';
+import { createLatestNewsTickerQuery } from '../../lib/news-query-factory';
 import { NewsStore } from '../../stores/news.store';
 import { formatDateLabelUppercase } from '../../utils/date-formatting';
 import { registerMediaQueryListener } from '../../utils/media-query-listener';
@@ -62,7 +62,7 @@ export class AppNavbarComponent {
   private readonly isMobileViewport = signal(false);
   private readonly tickerLimit = NAVBAR_TICKER_HEADLINE_LIMIT;
   private readonly fallbackTickerHeadlines = NAVBAR_FALLBACK_TICKER_HEADLINES;
-  private readonly tickerNewsQuery = { section: 'ultima-hora', page: 1, limit: NAVBAR_TICKER_NEWS_LIMIT } as const;
+  private readonly tickerNewsQuery = createLatestNewsTickerQuery();
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
@@ -157,7 +157,7 @@ export class AppNavbarComponent {
   }
 
   private loadTickerNewsIfNeeded(): void {
-    if (this.newsStore.loading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
+    if (this.newsStore.isInitialLoading(this.tickerNewsQuery) || this.newsStore.data(this.tickerNewsQuery).length > 0) {
       return;
     }
 

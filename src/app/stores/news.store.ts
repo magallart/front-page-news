@@ -1,8 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 
 import { areNewsResponsesEqual } from '../../../shared/lib/news-response-equality';
-import { toNewsSnapshotKey } from '../../../shared/lib/snapshot-key';
-import { toNewsSnapshotQuery } from '../lib/news-request';
+import { toNewsRequestSnapshotKey } from '../lib/news-request';
 import { NewsService } from '../services/news.service';
 import { getUserErrorMessage } from '../utils/app-http-error.utils';
 
@@ -92,10 +91,6 @@ export class NewsStore {
     return this.getResolvedEntry(query).lastUpdated;
   }
 
-  loading(query?: NewsRequestQuery): boolean {
-    return this.getResolvedEntry(query).isInitialLoading;
-  }
-
   isHydrated(query?: NewsRequestQuery): boolean {
     return this.getResolvedEntry(query).isHydrated;
   }
@@ -140,11 +135,6 @@ export class NewsStore {
           return;
         }
 
-        if (latestEntry.visibleResponse === null || forceRefresh) {
-          this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
-          return;
-        }
-
         this.applyVisibleResult(key, latestEntry, result.response, result.isStale, result.isRefreshing);
       },
       error: (error: unknown) => {
@@ -153,7 +143,7 @@ export class NewsStore {
           return;
         }
 
-        this.setEntry(key, {
+        this.finalizeRequest(key, requestId, {
           ...latestEntry,
           error: getUserErrorMessage(error, 'No se pudieron cargar las noticias.'),
           isInitialLoading: false,
@@ -166,7 +156,7 @@ export class NewsStore {
           return;
         }
 
-        this.setEntry(key, {
+        this.finalizeRequest(key, requestId, {
           ...latestEntry,
           isInitialLoading: false,
           isRefreshing: false,
@@ -235,10 +225,20 @@ export class NewsStore {
       [key]: entry,
     }));
   }
+
+  private finalizeRequest(key: string, requestId: number, entry: NewsStoreEntryState): void {
+    const latestEntry = this.getEntry(key);
+    if (latestEntry.activeRequestId !== requestId) {
+      return;
+    }
+
+    this.setEntry(key, entry);
+    this.subscriptions.delete(key);
+  }
 }
 
 function toQueryKey(query: NewsRequestQuery): string {
-  return toNewsSnapshotKey(toNewsSnapshotQuery(query));
+  return toNewsRequestSnapshotKey(query);
 }
 
 function createEmptyEntry(query: NewsRequestQuery): NewsStoreEntryState {

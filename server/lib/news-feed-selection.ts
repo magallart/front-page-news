@@ -1,4 +1,5 @@
 import { FEED_FETCH_TIMEOUT_MS } from '../constants/news.constants.js';
+import { buildOrderedSectionSlugs, SECTION_PRIORITY_ORDER } from './source-targets.js';
 
 import type { NewsQuery } from '../../shared/interfaces/news-query.interface';
 import type { SourceFeedTarget } from '../../shared/interfaces/source-feed-target.interface';
@@ -9,20 +10,6 @@ const HOME_MAX_FEEDS_PER_SOURCE = 2;
 const HOME_MAX_FEEDS_PER_SECTION = 3;
 const HOME_FETCH_TIMEOUT_MS = 3500;
 const HOME_QUERY_MIN_LIMIT = 200;
-const HOME_SECTION_PRIORITY_ORDER = [
-  'actualidad',
-  'economia',
-  'espana',
-  'internacional',
-  'cultura',
-  'deportes',
-  'ciencia',
-  'tecnologia',
-  'sociedad',
-  'opinion',
-  'ultima-hora',
-];
-
 export function selectFeedTargetsForFetch(
   sources: readonly SourceFeedTarget[],
   sectionSlug: string | null,
@@ -256,8 +243,11 @@ function groupTargetsBySection(targets: readonly SourceFeedTarget[]): ReadonlyMa
 
 function buildHomepageSectionOrder(targets: readonly SourceFeedTarget[]): readonly string[] {
   const availableSections = new Set(targets.map((target) => target.sectionSlug));
-  const ordered = HOME_SECTION_PRIORITY_ORDER.filter((sectionSlug) => availableSections.has(sectionSlug));
-  const remaining = Array.from(availableSections).filter((sectionSlug) => !ordered.includes(sectionSlug));
+  const ordered = SECTION_PRIORITY_ORDER.filter((sectionSlug) => availableSections.has(sectionSlug));
+  const orderedSet = new Set<string>(ordered);
+  const remaining = buildOrderedSectionSlugs(
+    Array.from(availableSections).filter((sectionSlug) => !orderedSet.has(sectionSlug)),
+  );
 
   return [...ordered, ...remaining];
 }

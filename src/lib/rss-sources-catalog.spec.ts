@@ -32,6 +32,8 @@ describe('server/lib/rss-sources-catalog', () => {
     const elPais = response.sources.find((source) => source.id === 'source-el-pais');
     expect(elPais?.sectionSlugs).toEqual(['actualidad', 'economia']);
     expect(elPais?.baseUrl).toBe('https://feeds.elpais.com');
+    expect(elPais?.feedUrl).toBe('https://feeds.elpais.com/portada.xml');
+    expect(response.sections.map((section) => section.slug)).toEqual(['actualidad', 'economia']);
   });
 
   it('builds one feed target per source+section+url and sorts by source/section', () => {
@@ -83,6 +85,30 @@ describe('server/lib/rss-sources-catalog', () => {
 
     expect(response.sources[0]?.baseUrl).toBe('');
     expect(targets[0]?.sourceBaseUrl).toBe('');
+  });
+
+  it('sorts feed targets using section priority before alphabetical fallback', () => {
+    const records: readonly RssSourceRecord[] = [
+      {
+        sourceName: 'El Pais',
+        feedUrl: 'https://feeds.elpais.com/ultima-hora.xml',
+        sectionName: 'Ultima hora',
+      },
+      {
+        sourceName: 'El Pais',
+        feedUrl: 'https://feeds.elpais.com/economia.xml',
+        sectionName: 'Economia',
+      },
+      {
+        sourceName: 'El Pais',
+        feedUrl: 'https://feeds.elpais.com/tecnologia.xml',
+        sectionName: 'Tecnologia',
+      },
+    ];
+
+    const targets = buildSourceFeedTargetsFromRecords(records);
+
+    expect(targets.map((item) => item.sectionSlug)).toEqual(['economia', 'tecnologia', 'ultima-hora']);
   });
 });
 

@@ -25,6 +25,45 @@ describe('shared/lib/news-response-equality', () => {
 
     expect(areNewsResponsesEqual(left, right)).toBe(false);
   });
+
+  it('returns false when warning metadata changes', () => {
+    const left = createNewsResponse();
+    const right = createNewsResponse({
+      warnings: [
+        {
+          code: 'source_timeout',
+          message: 'Timeout',
+          sourceId: 'source-1',
+          feedUrl: 'https://example.com/rss.xml',
+        },
+      ],
+    });
+
+    expect(areNewsResponsesEqual(left, right)).toBe(false);
+  });
+
+  it('returns false when article fields only differ across previous fingerprint delimiters', () => {
+    const left = createNewsResponse({
+      articles: [
+        {
+          ...createNewsResponse().articles[0],
+          title: 'Titular',
+          summary: 'Resumen|desplazado',
+        },
+      ],
+    });
+    const right = createNewsResponse({
+      articles: [
+        {
+          ...createNewsResponse().articles[0],
+          title: 'Titular|Resumen',
+          summary: 'desplazado',
+        },
+      ],
+    });
+
+    expect(areNewsResponsesEqual(left, right)).toBe(false);
+  });
 });
 
 function createNewsResponse(overrides: Partial<NewsResponse> = {}): NewsResponse {
