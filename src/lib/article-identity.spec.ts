@@ -44,6 +44,19 @@ describe('shared/lib/article-identity', () => {
     expect(toNewsResponseFingerprint(base)).not.toBe(toNewsResponseFingerprint(changed));
     expect(toArticleFingerprint(base.articles[0]!)).not.toBe(toArticleFingerprint(changed.articles[0]!));
   });
+
+  it('does not collapse different article content when text contains previous fingerprint delimiters', () => {
+    const left = createArticle({
+      title: 'Titular A',
+      summary: 'Resumen|desplazado',
+    });
+    const right = createArticle({
+      title: 'Titular A|Resumen',
+      summary: 'desplazado',
+    });
+
+    expect(toArticleFingerprint(left)).not.toBe(toArticleFingerprint(right));
+  });
 });
 
 function createResponse(overrides: Partial<NewsResponse> = {}): NewsResponse {
