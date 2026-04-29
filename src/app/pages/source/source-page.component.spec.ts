@@ -70,6 +70,34 @@ describe('SourcePageComponent', () => {
     expect(newsStoreMock.load).not.toHaveBeenCalled();
   });
 
+  it('shows a source catalog error state when sources fail to load', async () => {
+    const routeMock = createRouteMock('mundo-diario');
+    const sourcesStoreMock = createSourcesStoreMock({
+      sources: [],
+      error: 'Catalogo no disponible.',
+    });
+    const newsStoreMock = createNewsStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [SourcePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourcePageComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-error-state')).toBeTruthy();
+    expect((fixture.nativeElement.textContent as string)).toContain('No se ha podido cargar el catálogo de medios');
+    expect((fixture.nativeElement.textContent as string)).toContain('Catalogo no disponible.');
+    expect(fixture.nativeElement.querySelector('app-section-page-skeleton')).toBeNull();
+    expect(newsStoreMock.load).not.toHaveBeenCalled();
+  });
+
   it('filters source news by selected sections and keeps the filters visible after clearing all', async () => {
     const routeMock = createRouteMock('mundo-diario');
     const sourcesStoreMock = createSourcesStoreMock({
@@ -240,17 +268,20 @@ function createSourcesStoreMock(
   overrides?: Partial<{
     sources: readonly ReturnType<typeof createSource>[];
     loading: boolean;
+    error: string | null;
   }>,
 ) {
   const sources = overrides?.sources ?? [];
-  const dataSignal = signal(sources.length > 0 ? { sources, sections: [] } : { sources: [], sections: [] });
+  const hasError = overrides?.error !== undefined && overrides.error !== null;
+  const dataSignal = signal(hasError ? null : { sources, sections: [] });
   const loadingSignal = signal(overrides?.loading ?? false);
+  const errorSignal = signal<string | null>(overrides?.error ?? null);
 
   return {
     loadInitial: vi.fn(),
     loading: loadingSignal.asReadonly(),
     data: dataSignal.asReadonly(),
-    error: signal<string | null>(null).asReadonly(),
+    error: errorSignal.asReadonly(),
   };
 }
 

@@ -53,6 +53,11 @@ interface SectionSelectionState {
       <section class="pt-1 pb-4 sm:pb-6">
         @if (isResolvingSource()) {
           <app-section-page-skeleton />
+        } @else if (hasSourceCatalogError()) {
+          <app-error-state
+            headline="No se ha podido cargar el catálogo de medios"
+            [message]="sourceCatalogErrorMessage()"
+          />
         } @else if (missingSource()) {
           <app-error-state
             headline="No encontramos este periódico"
@@ -229,6 +234,12 @@ export class SourcePageComponent implements OnInit {
   protected readonly isResolvingSource = computed(
     () => this.sourcesStore.loading() && this.sourcesStore.data() === null && this.resolvedSource() === null,
   );
+  protected readonly hasSourceCatalogError = computed(
+    () => !this.sourcesStore.loading() && this.sourcesStore.data() === null && this.sourcesStore.error() !== null,
+  );
+  protected readonly sourceCatalogErrorMessage = computed(
+    () => this.sourcesStore.error() ?? 'No se pudo cargar el catálogo de medios. Inténtalo de nuevo en unos minutos.',
+  );
   protected readonly missingSource = computed(
     () => !this.sourcesStore.loading() && this.sourcesStore.data() !== null && this.resolvedSource() === null,
   );
@@ -236,6 +247,10 @@ export class SourcePageComponent implements OnInit {
   protected readonly sourceUiState = computed(() => {
     const query = this.sourceNewsQuery();
     if (!query) {
+      if (this.hasSourceCatalogError()) {
+        return UI_VIEW_STATE.ERROR_TOTAL;
+      }
+
       return UI_VIEW_STATE.LOADING;
     }
 
