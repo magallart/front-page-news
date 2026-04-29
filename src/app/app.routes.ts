@@ -17,6 +17,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/source/source-page.component').then((m) => m.SourcePageComponent),
   },
   {
+    path: 'buscar',
+    title: 'Front Page News | Buscar',
+    loadComponent: () => import('./pages/search/search-page.component').then((m) => m.SearchPageComponent),
+  },
+  {
     path: 'aviso-legal',
     title: 'Front Page News | Aviso legal',
     loadComponent: () => import('./pages/legal/legal-notice-page.component').then((m) => m.LegalNoticePageComponent),

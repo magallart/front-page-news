@@ -101,13 +101,13 @@ import type { TopLink } from '../../../../interfaces/top-link.interface';
           </div>
         </nav>
 
-        <button
-          type="button"
+        <a
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          aria-label="Buscador (proximamente)"
+          aria-label="Buscar noticias"
+          routerLink="/buscar"
         >
           <app-icon-search />
-        </button>
+        </a>
       </div>
     </app-page-container>
   `,

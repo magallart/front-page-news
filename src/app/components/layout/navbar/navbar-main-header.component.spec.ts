@@ -23,7 +23,7 @@ describe('NavbarMainHeaderComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     const navRows = fixture.nativeElement.querySelectorAll('nav ul');
     const brandLink = fixture.nativeElement.querySelector('a[routerlink="/"]') as HTMLAnchorElement | null;
-    const searchButton = fixture.nativeElement.querySelector('button[aria-label="Buscador (proximamente)"]');
+    const searchButton = fixture.nativeElement.querySelector('a[aria-label="Buscar noticias"]') as HTMLAnchorElement | null;
 
     expect(text).toContain('MIERCOLES 04 DE MARZO DE 2026');
     expect(text).toContain('FRONT PAGE');
@@ -36,6 +36,7 @@ describe('NavbarMainHeaderComponent', () => {
     );
     expect(brandLink?.getAttribute('href')).toBe('/');
     expect(searchButton).toBeTruthy();
+    expect(searchButton?.getAttribute('href')).toBe('/buscar');
   });
 });
 

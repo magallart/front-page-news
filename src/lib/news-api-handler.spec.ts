@@ -157,7 +157,7 @@ describe('api/news handler contract', () => {
             kind: 'news',
             generatedAt: '2026-04-28T08:00:00.000Z',
             staleAt: '2026-04-28T08:15:00.000Z',
-            expiresAt: '2026-04-29T20:00:00.000Z',
+            expiresAt: '2026-05-29T20:00:00.000Z',
             query: {
               id: null,
               section: 'actualidad',

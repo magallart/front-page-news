@@ -37,3 +37,11 @@ export function createSourceNewsQuery(sourceId: string): NewsRequestQuery {
     limit: SECTION_PAGE_NEWS_LIMIT,
   };
 }
+
+export function createSearchNewsQuery(searchQuery: string): NewsRequestQuery {
+  return {
+    searchQuery,
+    page: 1,
+    limit: SECTION_PAGE_NEWS_LIMIT,
+  };
+}
