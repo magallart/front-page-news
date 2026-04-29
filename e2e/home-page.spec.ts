@@ -8,11 +8,19 @@ test.describe('Home Page', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
 
+    const carouselHero = page.locator('[data-testid="carousel-hero"]');
     await expect(page.locator('app-news-carousel')).toBeVisible();
+    await expect(carouselHero.getByRole('heading', { level: 2 })).toContainText(
+      'Acuerdo europeo para reforzar la seguridad energetica',
+    );
+    await expect(carouselHero.locator('p').first()).toContainText('actualidad');
+    await expect(carouselHero.locator('> button')).toHaveClass(/text-left/);
     await expect(page.locator('#breaking-news')).toBeVisible();
     await expect(page.locator('#most-read-news')).toBeVisible();
     await expect(page.locator('app-section-block')).toHaveCount(4);
     await expect(page.locator('app-source-directory a[target="_blank"]')).toHaveCount(5);
+    await expect(page.locator('app-source-directory')).toContainText('Mundo Diario');
+    await expect(page.locator('app-source-directory')).toContainText('Salud y Ciencia');
   });
 
   test('opens and closes contextual quick-view modal from carousel', async ({ page }) => {
