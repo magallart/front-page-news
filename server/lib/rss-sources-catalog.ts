@@ -5,7 +5,7 @@ import {
   type NormalizedCatalogRecord,
   normalizeCatalogRecords,
   selectPreferredCatalogRecord,
-} from './source-targets';
+} from './source-targets.js';
 
 import type { RssSourceRecord } from '../../shared/interfaces/rss-source-record.interface';
 import type { Section } from '../../shared/interfaces/section.interface';

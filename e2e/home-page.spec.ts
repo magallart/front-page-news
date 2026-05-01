@@ -33,10 +33,12 @@ test.describe('Home Page', () => {
     await page.goto('/');
 
     const quickViewDialog = page.locator('.quick-view-dialog[role="dialog"]');
+    const heroHeading = page.locator('[data-testid="carousel-hero"] h2').first();
+    const heroTitle = await heroHeading.textContent();
 
     await page.locator('app-news-carousel article [role="button"]').click();
     await expect(quickViewDialog).toBeVisible();
-    await expect(quickViewDialog.locator('h1')).toContainText('Acuerdo europeo');
+    await expect(quickViewDialog.locator('h1')).toContainText((heroTitle ?? '').trim());
 
     await page.locator('.quick-view-dialog button[aria-label="Cerrar modal"]').click();
     await expect(quickViewDialog).toHaveCount(0);

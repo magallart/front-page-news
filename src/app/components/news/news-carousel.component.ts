@@ -185,5 +185,10 @@ export class NewsCarouselComponent {
 }
 
 function shouldHandlePreviewEvent(event: Event): boolean {
-  return event.target === event.currentTarget;
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return target === event.currentTarget;
+  }
+
+  return target.closest('a') === null;
 }

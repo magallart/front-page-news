@@ -1,4 +1,4 @@
-import { toNewsResponseFingerprint } from './article-identity';
+import { toNewsResponseFingerprint } from './article-identity.js';
 
 import type { NewsResponse } from '../interfaces/news-response.interface';
 

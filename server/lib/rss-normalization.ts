@@ -1,4 +1,4 @@
-import { toArticleDeduplicationKey } from '../../shared/lib/article-identity';
+import { toArticleDeduplicationKey } from '../../shared/lib/article-identity.js';
 
 import type { Article } from '../../shared/interfaces/article.interface';
 import type { RawFeedItem } from '../interfaces/raw-feed-item.interface';

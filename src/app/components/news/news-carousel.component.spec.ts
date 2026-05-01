@@ -182,6 +182,27 @@ describe('NewsCarouselComponent', () => {
     expect(sectionBadge.className).toContain('bg-primary');
   });
 
+  it('emits preview when clicking nested hero content outside the source link', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NewsCarouselComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NewsCarouselComponent);
+    fixture.componentRef.setInput('articles', [MOCK_ARTICLES[0]]);
+    fixture.detectChanges();
+
+    let previewedArticleId: string | null = null;
+    fixture.componentInstance.previewRequested.subscribe((article) => {
+      previewedArticleId = article.id;
+    });
+
+    const heroTitle = fixture.nativeElement.querySelector('[data-testid="carousel-hero"] h2') as HTMLHeadingElement;
+    heroTitle.click();
+
+    expect(previewedArticleId).toBe('carousel-001');
+  });
+
   it('does not open preview or cancel navigation when keyboard activation starts on the nested source link', async () => {
     await TestBed.configureTestingModule({
       imports: [NewsCarouselComponent],
