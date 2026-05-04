@@ -132,10 +132,13 @@ describe('HomePageComponent', () => {
     expect(fixture.nativeElement.querySelector('app-breaking-news')).toBeFalsy();
   });
 
-  it('shows background refresh status when cached home content is being revalidated', async () => {
+  it('does not render refresh notices on the home page even during revalidation states', async () => {
     const newsStoreMock = createNewsStoreMock({
       refreshing: true,
       stale: true,
+      freshUpdateAvailable: true,
+      newSinceLastVisit: true,
+      newSinceLastVisitCount: 2,
       lastUpdated: Date.parse('2026-03-04T10:45:00.000Z'),
     });
     const sourcesStoreMock = createSourcesStoreMock();
@@ -152,68 +155,9 @@ describe('HomePageComponent', () => {
     const fixture = TestBed.createComponent(HomePageComponent);
     fixture.detectChanges();
 
-    const refreshStatus = fixture.nativeElement.querySelector('[data-testid="refresh-status"]');
-    expect(refreshStatus).toBeTruthy();
-    expect(refreshStatus.textContent as string).toContain('Actualizando en segundo plano');
-    expect(refreshStatus.textContent as string).toContain('Última actualización');
-  });
-
-  it('shows and dismisses the fresh update banner after a home refresh', async () => {
-    const newsStoreMock = createNewsStoreMock({
-      freshUpdateAvailable: true,
-      lastUpdated: Date.parse('2026-03-04T10:50:00.000Z'),
-    });
-    const sourcesStoreMock = createSourcesStoreMock();
-
-    await TestBed.configureTestingModule({
-      imports: [HomePageComponent],
-      providers: [
-        provideRouter([]),
-        { provide: NewsStore, useValue: newsStoreMock },
-        { provide: SourcesStore, useValue: sourcesStoreMock },
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(HomePageComponent);
-    fixture.detectChanges();
-
-    const banner = fixture.nativeElement.querySelector('[data-testid="fresh-update-banner"]');
-    expect(banner).toBeTruthy();
-    expect(banner.textContent as string).toContain('Portada actualizada');
-
-    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de actualización"]') as HTMLButtonElement;
-    dismissButton.click();
-
-    expect(newsStoreMock.dismissFreshUpdateNotice).toHaveBeenCalledWith(createHomeNewsQuery());
-  });
-
-  it('shows and dismisses the last-visit banner for the home query', async () => {
-    const newsStoreMock = createNewsStoreMock({
-      newSinceLastVisit: true,
-      newSinceLastVisitCount: 2,
-    });
-    const sourcesStoreMock = createSourcesStoreMock();
-
-    await TestBed.configureTestingModule({
-      imports: [HomePageComponent],
-      providers: [
-        provideRouter([]),
-        { provide: NewsStore, useValue: newsStoreMock },
-        { provide: SourcesStore, useValue: sourcesStoreMock },
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(HomePageComponent);
-    fixture.detectChanges();
-
-    const banner = fixture.nativeElement.querySelector('[data-testid="last-visit-banner"]');
-    expect(banner).toBeTruthy();
-    expect(banner.textContent as string).toContain('2 titulares nuevos');
-
-    const dismissButton = fixture.nativeElement.querySelector('button[aria-label="Ocultar aviso de novedades"]') as HTMLButtonElement;
-    dismissButton.click();
-
-    expect(newsStoreMock.dismissLastVisitNotice).toHaveBeenCalledWith(createHomeNewsQuery());
+    expect(fixture.nativeElement.querySelector('[data-testid="refresh-status"]')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('[data-testid="fresh-update-banner"]')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('[data-testid="last-visit-banner"]')).toBeFalsy();
   });
 
   it('renders total error state when api fails and there is no data', async () => {
@@ -424,8 +368,6 @@ function createNewsStoreMock(
     newSinceLastVisitCount: newSinceLastVisitCountSignal.asReadonly(),
     lastUpdated: lastUpdatedSignal.asReadonly(),
     load: vi.fn(),
-    dismissFreshUpdateNotice: vi.fn(),
-    dismissLastVisitNotice: vi.fn(),
   };
 }
 

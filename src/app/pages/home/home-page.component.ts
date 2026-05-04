@@ -6,7 +6,6 @@ import { ErrorStateComponent } from '../../components/news/error-state.component
 import { MostReadNewsComponent } from '../../components/news/most-read-news.component';
 import { NewsCarouselComponent } from '../../components/news/news-carousel.component';
 import { NewsQuickViewModalComponent } from '../../components/news/news-quick-view-modal.component';
-import { NewsRefreshIndicatorComponent } from '../../components/news/news-refresh-indicator.component';
 import { SectionBlockComponent } from '../../components/news/section-block.component';
 import { HomePageSkeletonComponent } from '../../components/news/skeletons/home-page-skeleton.component';
 import { SourceDirectoryComponent } from '../../components/news/source-directory.component';
@@ -36,7 +35,6 @@ import type { OnInit } from '@angular/core';
     BreakingNewsComponent,
     MostReadNewsComponent,
     NewsQuickViewModalComponent,
-    NewsRefreshIndicatorComponent,
     SectionBlockComponent,
     SourceDirectoryComponent,
   ],
@@ -64,18 +62,6 @@ import type { OnInit } from '@angular/core';
         }
         @default {
           <section class="space-y-6 py-4 sm:space-y-8">
-            <app-news-refresh-indicator
-              scopeLabel="Portada"
-              [isRefreshing]="isRefreshing()"
-              [isShowingStaleData]="isShowingStaleData()"
-              [hasFreshUpdateAvailable]="hasFreshUpdateAvailable()"
-              [hasNewSinceLastVisit]="hasNewSinceLastVisit()"
-              [newSinceLastVisitCount]="newSinceLastVisitCount()"
-              [lastUpdated]="lastUpdated()"
-              (dismissed)="dismissFreshUpdateNotice()"
-              (lastVisitDismissed)="dismissLastVisitNotice()"
-            />
-
             <div class="grid gap-5 lg:grid-cols-[minmax(0,2fr)_22rem] lg:items-stretch">
               <app-news-carousel title="Destacadas" [articles]="featuredNews()" (previewRequested)="openQuickView($event)" />
               <div class="lg:pl-5">
@@ -119,12 +105,6 @@ export class HomePageComponent implements OnInit {
       itemCount: this.newsItems().length,
     }),
   );
-  protected readonly isRefreshing = computed(() => this.newsStore.isRefreshing(this.homeNewsQuery));
-  protected readonly isShowingStaleData = computed(() => this.newsStore.isShowingStaleData(this.homeNewsQuery));
-  protected readonly hasFreshUpdateAvailable = computed(() => this.newsStore.hasFreshUpdateAvailable(this.homeNewsQuery));
-  protected readonly hasNewSinceLastVisit = computed(() => this.newsStore.hasNewSinceLastVisit(this.homeNewsQuery));
-  protected readonly newSinceLastVisitCount = computed(() => this.newsStore.newSinceLastVisitCount(this.homeNewsQuery));
-  protected readonly lastUpdated = computed(() => this.newsStore.lastUpdated(this.homeNewsQuery));
 
   protected readonly featuredNews = computed(() => selectFeaturedNews(this.newsItems()));
   protected readonly breakingNews = computed(() => selectBreakingNews(this.getNewsBySection('actualidad'), 6));
@@ -150,14 +130,6 @@ export class HomePageComponent implements OnInit {
 
   protected closeQuickView(): void {
     this.quickViewArticle.set(null);
-  }
-
-  protected dismissFreshUpdateNotice(): void {
-    this.newsStore.dismissFreshUpdateNotice(this.homeNewsQuery);
-  }
-
-  protected dismissLastVisitNotice(): void {
-    this.newsStore.dismissLastVisitNotice(this.homeNewsQuery);
   }
 
   private getNewsBySection(sectionSlug: string) {
