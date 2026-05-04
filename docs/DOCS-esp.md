@@ -1,11 +1,11 @@
 # Front Page News - Documentacion en español
 
-## Indice
+## Índice
 
-- [1. Vision general](#1-vision-general)
+- [1. Visión general](#1-vision-general)
 - [2. Objetivos del producto](#2-objetivos-del-producto)
 - [3. Flujos principales de usuario](#3-flujos-principales-de-usuario)
-- [4. Paginas y navegacion](#4-paginas-y-navegacion)
+- [4. Páginas y navegacion](#4-páginas-y-navegacion)
 - [5. Bloques principales de UI](#5-bloques-principales-de-ui)
 - [6. Modelo de datos y filtrado](#6-modelo-de-datos-y-filtrado)
 - [7. Comportamiento responsive](#7-comportamiento-responsive)
@@ -20,74 +20,74 @@
 
 ## 1. Vision general
 
-Front Page News es una aplicacion Angular que agrega feeds RSS y Atom de medios españoles y los transforma en una experiencia de lectura de estilo editorial. La app esta pensada para escanear titulares rapidamente, navegar por secciones y medios, y mantener tiempos de respuesta razonables incluso cuando las fuentes externas son lentas o irregulares.
+Front Page News es una aplicación Angular que agrega feeds RSS y Atom de medios españoles y los transforma en una experiencia de lectura de estilo editorial. La app esta pensada para escanear titulares rápidamente, navegar por secciones y medios, y mantener tiempos de respuesta razonables incluso cuando las fuentes externas son lentas o irregulares.
 
-El producto no intenta extraer ni reproducir articulos completos. Utiliza metadatos de los feeds, muestra una vista previa contextual y dirige la lectura final a la web del medio original.
+El producto no intenta extraer ni reproducir artículos completos. Utiliza metadatos de los feeds, muestra una vista previa contextual y dirige la lectura final a la web del medio original.
 
 ## 2. Objetivos del producto
 
-- Reunir noticias actuales de multiples medios en un unico lugar.
-- Permitir navegacion por seccion, medio y termino de busqueda.
+- Reunir noticias actuales de múltiples medios en un único lugar.
+- Permitir navegacion por sección, medio y termino de búsqueda.
 - Mantener la interfaz util incluso cuando la red tarda en responder.
 - Ocultar la complejidad de feeds, cache y snapshots tras una experiencia simple.
-- Conservar siempre la atribucion al medio y la salida al articulo original.
+- Conservar siempre la atribución al medio y la salida al artículo original.
 
 ## 3. Flujos principales de usuario
 
 ### Flujo de portada
 
 1. El usuario entra en `/`.
-2. La app hidrata contenido desde la capa valida mas rapida.
-3. La portada muestra noticias destacadas, ultima hora, mas leidas, bloques editoriales mixtos y el directorio de medios.
-4. El usuario puede abrir la vista rapida o navegar a un nivel mas profundo.
+2. La app hidrata contenido desde la capa valida mas rápida.
+3. La portada muestra noticias destacadas, ultima hora, mas leídas, bloques editoriales mixtos y el directorio de medios.
+4. El usuario puede abrir la vista rápida o navegar a un nivel mas profundo.
 
-### Flujo por seccion
+### Flujo por sección
 
 1. El usuario entra en `/seccion/:slug`.
-2. La pagina carga noticias de esa seccion.
-3. El usuario puede filtrar por medio y cambiar la ordenacion.
+2. La página carga noticias de esa sección.
+3. El usuario puede filtrar por medio y cambiar la ordenación.
 4. Las preferencias se guardan localmente para la siguiente visita.
 
 ### Flujo por medio
 
 1. El usuario pulsa en el nombre de un medio.
 2. La app navega a `/fuente/:slug`.
-3. La pagina resuelve el medio, carga sus noticias y expone filtros por seccion dentro de ese ambito.
+3. La página resuelve el medio, carga sus noticias y expone filtros por sección dentro de ese ámbito.
 
-### Flujo de busqueda
+### Flujo de búsqueda
 
 1. El usuario pulsa el icono de buscar del navbar.
 2. Se abre un modal responsive en lugar de navegar directamente.
 3. La consulta se valida antes de cambiar de ruta.
 4. Si hay resultados, la app navega a `/buscar?q=...`.
-5. Si no hay resultados, el modal muestra el aviso y el usuario permanece en la pagina actual.
+5. Si no hay resultados, el modal muestra el aviso y el usuario permanece en la página actual.
 
-## 4. Paginas y navegacion
+## 4. Páginas y navegacion
 
 | Ruta | Funcion |
 | --- | --- |
 | `/` | Portada editorial |
-| `/seccion/:slug` | Pagina de seccion |
-| `/fuente/:slug` | Pagina de medio |
-| `/buscar?q=...` | Resultados de busqueda |
+| `/seccion/:slug` | Página de sección |
+| `/fuente/:slug` | Página de medio |
+| `/buscar?q=...` | Resultados de búsqueda |
 | `/aviso-legal` | Aviso legal |
 | `/privacidad` | Privacidad |
 | `/cookies` | Cookies |
 
 La navegacion tiene tres ejes principales:
 
-- por seccion
+- por sección
 - por medio
-- por busqueda
+- por búsqueda
 
 ## 5. Bloques principales de UI
 
 - `app-navbar`
-  - cabecera principal, cabecera sticky, enlaces de seccion, disparador de busqueda y ticker
+  - cabecera principal, cabecera sticky, enlaces de sección, disparador de búsqueda y ticker
 - `app-news-carousel`
   - superficie hero de la portada
 - `app-breaking-news`
-  - lista rapida de titulares de actualidad
+  - lista rápida de titulares de actualidad
 - `app-most-read-news`
   - bloque de descubrimiento por ranking
 - `app-news-card`
@@ -95,9 +95,9 @@ La navegacion tiene tres ejes principales:
 - `app-news-quick-view-modal`
   - vista previa contextual antes de salir al medio
 - `app-section-filters`
-  - filtros por medio en paginas de seccion
+  - filtros por medio en páginas de sección
 - `app-source-section-filters`
-  - filtros por seccion en paginas de medio
+  - filtros por sección en páginas de medio
 - `app-news-refresh-indicator`
   - feedback no bloqueante para contenido stale y refrescos en segundo plano
 
@@ -114,10 +114,10 @@ La app trabaja con contenido normalizado, no con payloads crudos de los feeds.
 
 ### Donde se filtra
 
-- Las paginas de seccion filtran por medio.
-- Las paginas de medio filtran por seccion.
-- Las paginas de busqueda filtran por medio.
-- La API puede limitar el conjunto por seccion, ids de medio, id de articulo, consulta, pagina y limite.
+- Las páginas de sección filtran por medio.
+- Las páginas de medio filtran por sección.
+- Las páginas de búsqueda filtran por medio.
+- La API puede limitar el conjunto por sección, ids de medio, id de artículo, consulta, página y limite.
 
 ### Por que importa
 
@@ -131,7 +131,7 @@ Este reparto mantiene cada filtro en la capa correcta:
 El responsive forma parte del producto:
 
 - el navbar tiene version desktop y variante sticky/mobile
-- la busqueda se resuelve en un modal centrado y usable en desktop y movil
+- la búsqueda se resuelve en un modal centrado y usable en desktop y movil
 - las rejillas de noticias colapsan progresivamente segun el breakpoint
 - modales, filtros y CTAs siguen siendo operables en pantallas pequenas
 - los bloques editoriales grandes mantienen jerarquia visual sin romper la lectura
@@ -155,7 +155,7 @@ flowchart LR
 - Angular con componentes standalone
 - estado basado en signals
 - Tailwind CSS
-- paginas guiadas por rutas
+- páginas guiadas por rutas
 
 ### Backend
 
@@ -178,7 +178,7 @@ public/               assets estaticos
 server/               parseo de feeds, agregacion, snapshots y cron
 shared/               contratos y utilidades compartidas
 src/app/components/   bloques de UI
-src/app/pages/        paginas por ruta
+src/app/pages/        páginas por ruta
 src/app/services/     acceso a datos y persistencia en navegador
 src/app/stores/       estado basado en signals
 src/app/utils/        helpers de formato, rutas y filtrado
@@ -200,9 +200,9 @@ src/lib/              utilidades compartidas del lado cliente
 
 La obtencion de datos esta organizada en capas:
 
-1. Una pagina pide contenido a un store.
+1. Una página pide contenido a un store.
 2. El store delega en un servicio frontend.
-3. El servicio intenta primero las capas rapidas de hidratacion.
+3. El servicio intenta primero las capas rápidas de hidratacion.
 4. Si hace falta, llama a `/api/news` o `/api/sources`.
 5. La API intenta primero leer un snapshot persistido.
 6. Si no existe un snapshot valido, agrega feeds en vivo.
@@ -214,7 +214,7 @@ Este diseno permite que la interfaz siga siendo estable mientras converte hacia 
 
 ### Memoria del navegador
 
-- reutilizacion rapida de corta duracion dentro de la sesion
+- reutilizacion rápida de corta duracion dentro de la sesion
 
 ### IndexedDB
 
@@ -235,7 +235,7 @@ Este diseno permite que la interfaz siga siendo estable mientras converte hacia 
 
 ## 12. Runtime en Vercel
 
-La aplicacion se despliega como frontend y backend serverless sobre Vercel.
+La aplicación se despliega como frontend y backend serverless sobre Vercel.
 
 ### Endpoints principales
 
@@ -246,7 +246,7 @@ La aplicacion se despliega como frontend y backend serverless sobre Vercel.
 
 ### Que hace Vercel aqui
 
-- sirve la aplicacion Angular
+- sirve la aplicación Angular
 - ejecuta rutas API serverless
 - ejecuta el cron protegido de snapshots
 - almacena snapshots persistidos en Vercel Blob
@@ -287,7 +287,7 @@ La suite cubre:
 - handlers de API
 - parseo y normalizacion RSS
 - comportamiento de snapshots
-- flujos e2e como busqueda, paginas de medio, filtros y modales
+- flujos e2e como búsqueda, páginas de medio, filtros y modales
 
 ## 15. Lecturas adicionales
 
