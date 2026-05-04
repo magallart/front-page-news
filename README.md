@@ -273,8 +273,5 @@ pnpm rss:check
 
 ## 📎 Additional Documentation
 
-- [docs/product-scope.md](docs/product-scope.md)
-- [docs/cache-and-ui-states.md](docs/cache-and-ui-states.md)
-- [docs/snapshot-operations-runbook.md](docs/snapshot-operations-runbook.md)
-- [docs/rss-normalization.md](docs/rss-normalization.md)
-- [docs/rss-sources.md](docs/rss-sources.md)
+- [docs/DOCS-eng.md](docs/DOCS-eng.md)
+- [docs/DOCS-esp.md](docs/DOCS-esp.md)
