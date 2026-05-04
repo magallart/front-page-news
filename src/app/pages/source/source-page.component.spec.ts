@@ -70,6 +70,34 @@ describe('SourcePageComponent', () => {
     expect(newsStoreMock.load).not.toHaveBeenCalled();
   });
 
+  it('loads source news once the source catalog resolves after the initial route render', async () => {
+    const routeMock = createRouteMock('as');
+    const sourcesStoreMock = createDeferredSourcesStoreMock();
+    const newsStoreMock = createNewsStoreMock();
+
+    await TestBed.configureTestingModule({
+      imports: [SourcePageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: routeMock },
+        { provide: SourcesStore, useValue: sourcesStoreMock },
+        { provide: NewsStore, useValue: newsStoreMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SourcePageComponent);
+    fixture.detectChanges();
+
+    expect(newsStoreMock.load).not.toHaveBeenCalled();
+
+    sourcesStoreMock.resolveWithSources([createSource('source-as', 'AS', ['deportes'])]);
+    fixture.detectChanges();
+
+    expect(newsStoreMock.load).toHaveBeenCalledTimes(1);
+    expect(newsStoreMock.load).toHaveBeenCalledWith(createSourceNewsQuery('source-as'));
+    expect((fixture.nativeElement.textContent as string)).toContain('AS');
+  });
+
   it('shows a source catalog error state when sources fail to load', async () => {
     const routeMock = createRouteMock('mundo-diario');
     const sourcesStoreMock = createSourcesStoreMock({
@@ -282,6 +310,23 @@ function createSourcesStoreMock(
     loading: loadingSignal.asReadonly(),
     data: dataSignal.asReadonly(),
     error: errorSignal.asReadonly(),
+  };
+}
+
+function createDeferredSourcesStoreMock() {
+  const dataSignal = signal<{ sources: readonly ReturnType<typeof createSource>[]; sections: readonly [] } | null>(null);
+  const loadingSignal = signal(true);
+  const errorSignal = signal<string | null>(null);
+
+  return {
+    loadInitial: vi.fn(),
+    loading: loadingSignal.asReadonly(),
+    data: dataSignal.asReadonly(),
+    error: errorSignal.asReadonly(),
+    resolveWithSources(sources: readonly ReturnType<typeof createSource>[]) {
+      dataSignal.set({ sources, sections: [] });
+      loadingSignal.set(false);
+    },
   };
 }
 

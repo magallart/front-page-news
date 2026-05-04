@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 
@@ -295,17 +295,21 @@ export class SourcePageComponent implements OnInit {
 
     const sourceNewsQuery = createSourceNewsQuery(source.id);
     const preferencesScopeKey = toNewsRequestSnapshotKey(sourceNewsQuery);
-    if (this.appliedPreferencesScopeKey() !== preferencesScopeKey) {
+    if (this.appliedPreferencesScopeKey() === preferencesScopeKey) {
+      return;
+    }
+
+    untracked(() => {
       const storedPreferences = this.newsViewPreferencesStore.read(preferencesScopeKey);
       this.sectionSelection.set({
         hasCustomSelection: storedPreferences?.hasCustomSelection ?? false,
         selectedSections: storedPreferences?.selectedValues ?? [],
       });
       this.sortDirection.set(storedPreferences?.sortDirection ?? 'desc');
-      this.appliedPreferencesScopeKey.set(preferencesScopeKey);
-    }
+      this.newsStore.load(sourceNewsQuery);
+    });
 
-    this.newsStore.load(sourceNewsQuery);
+    this.appliedPreferencesScopeKey.set(preferencesScopeKey);
   });
 
   ngOnInit(): void {
