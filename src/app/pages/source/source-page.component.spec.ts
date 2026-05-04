@@ -16,11 +16,11 @@ describe('SourcePageComponent', () => {
   it('loads source news for the resolved slug and renders matching cards', async () => {
     const routeMock = createRouteMock('mundo-diario');
     const sourcesStoreMock = createSourcesStoreMock({
-      sources: [createSource('mundo-diario', 'Mundo Diario', ['actualidad', 'cultura'])],
+      sources: [createSource('source-mundo-diario', 'Mundo Diario', ['actualidad', 'cultura'])],
     });
     const newsStoreMock = createNewsStoreMock({
       data: [
-        createArticle('news-1', 'actualidad', 'mundo-diario', 'Mundo Diario', '2026-03-04T10:20:00.000Z'),
+        createArticle('news-1', 'actualidad', 'source-mundo-diario', 'Mundo Diario', '2026-03-04T10:20:00.000Z'),
         createArticle('news-2', 'cultura', 'mundo-diario', 'Mundo Diario', '2026-03-04T09:20:00.000Z'),
         createArticle('news-3', 'actualidad', 'otra-fuente', 'Otra Fuente', '2026-03-04T08:20:00.000Z'),
       ],
@@ -40,7 +40,7 @@ describe('SourcePageComponent', () => {
     fixture.detectChanges();
 
     expect(sourcesStoreMock.loadInitial).toHaveBeenCalled();
-    expect(newsStoreMock.load).toHaveBeenCalledWith(createSourceNewsQuery('mundo-diario'));
+    expect(newsStoreMock.load).toHaveBeenCalledWith(createSourceNewsQuery('source-mundo-diario'));
     expect(fixture.nativeElement.querySelectorAll('app-news-card')).toHaveLength(2);
     expect((fixture.nativeElement.textContent as string)).toContain('Mundo Diario');
   });

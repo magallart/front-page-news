@@ -23,7 +23,7 @@ import { NewsStore } from '../../stores/news.store';
 import { SourcesStore } from '../../stores/sources.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
 import { formatSectionLabel } from '../../utils/section-label';
-import { findSourceBySlug, toSourceSlug } from '../../utils/source-routing';
+import { findSourceBySlug, sourceIdsMatch } from '../../utils/source-routing';
 import { resolveSectionUiState } from '../../utils/ui-state-matrix';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -187,8 +187,9 @@ export class SourcePageComponent implements OnInit {
       return [];
     }
 
-    const sourceSlug = toSourceSlug(source.id, source.name);
-    return this.newsStore.data(query).filter((article) => toSourceSlug(article.sourceId, article.sourceName) === sourceSlug);
+    return this.newsStore
+      .data(query)
+      .filter((article) => sourceIdsMatch(source.id, source.name, article.sourceId, article.sourceName));
   });
   protected readonly sourceNews = computed(() => adaptArticlesToNewsItems(this.sourceArticles()));
   protected readonly hasSourceNews = computed(() => this.sourceNews().length > 0);
