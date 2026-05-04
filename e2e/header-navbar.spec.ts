@@ -52,7 +52,7 @@ test.describe('Header/Navbar', () => {
     await expect(stickyContainer).toHaveClass(/translate-y-0/);
 
     const compactMeta = page.locator('app-navbar-sticky-header p');
-    await expect(compactMeta).toHaveText('');
+    await expect(compactMeta).toHaveCount(0);
 
     const menuToggleButton = page.getByRole('button', { name: 'Abrir menu' });
     await menuToggleButton.click();

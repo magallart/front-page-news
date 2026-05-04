@@ -3,12 +3,13 @@ import { RouterLink } from '@angular/router';
 
 import { NAVBAR_SIDE_MENU_DIALOG_ID } from '../../../constants/navbar.constants';
 import { IconMenuComponent } from '../../icons/icon-menu.component';
+import { IconSearchComponent } from '../../icons/icon-search.component';
 import { PageContainerComponent } from '../page-container.component';
 
 @Component({
   selector: 'app-navbar-sticky-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageContainerComponent, RouterLink, IconMenuComponent],
+  imports: [PageContainerComponent, RouterLink, IconMenuComponent, IconSearchComponent],
   template: `
     <div
       class="sticky top-0 z-50 transition-all duration-300 lg:fixed lg:inset-x-0 lg:top-0"
@@ -23,7 +24,7 @@ import { PageContainerComponent } from '../page-container.component';
         style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));"
       >
         <app-page-container>
-          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr] sm:gap-4">
+          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr_auto] sm:gap-4">
             <button
               type="button"
               class="mr-2 inline-flex h-10 w-10 items-center justify-center text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:mr-3"
@@ -44,9 +45,20 @@ import { PageContainerComponent } from '../page-container.component';
               />
             </a>
 
-            <p class="justify-self-end text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-secondary-foreground sm:text-xs">
-              {{ topbarMeta() }}
-            </p>
+            @if (topbarMeta()) {
+              <p class="hidden justify-self-end text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-secondary-foreground sm:block sm:text-xs">
+                {{ topbarMeta() }}
+              </p>
+            }
+
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center justify-self-end rounded-full text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Buscar noticias"
+              (click)="searchRequested.emit()"
+            >
+              <app-icon-search />
+            </button>
           </div>
         </app-page-container>
       </div>
@@ -61,4 +73,5 @@ export class NavbarStickyHeaderComponent {
   readonly topbarMeta = input.required<string>();
 
   readonly menuToggle = output<void>();
+  readonly searchRequested = output<void>();
 }

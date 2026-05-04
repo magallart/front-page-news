@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { lastValueFrom } from 'rxjs';
 
 import {
   NAVBAR_FALLBACK_TICKER_HEADLINES,
@@ -9,12 +10,15 @@ import {
   NAVBAR_TICKER_HEADLINE_LIMIT,
   NAVBAR_TOP_LINKS,
 } from '../../constants/navbar.constants';
-import { createLatestNewsTickerQuery } from '../../lib/news-query-factory';
+import { createLatestNewsTickerQuery, createSearchNewsQuery } from '../../lib/news-query-factory';
+import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 import { formatDateLabelUppercase } from '../../utils/date-formatting';
 import { registerMediaQueryListener } from '../../utils/media-query-listener';
+import { normalizeSearchQuery } from '../../utils/search-query';
 
 import { NavbarMainHeaderComponent } from './navbar/navbar-main-header.component';
+import { NavbarSearchDialogComponent } from './navbar/navbar-search-dialog.component';
 import { NavbarSideMenuComponent } from './navbar/navbar-side-menu.component';
 import { NavbarStickyHeaderComponent } from './navbar/navbar-sticky-header.component';
 import { NavbarTickerComponent } from './navbar/navbar-ticker.component';
@@ -26,13 +30,19 @@ import type { TickerHeadline } from '../../../interfaces/ticker-headline.interfa
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NavbarMainHeaderComponent,
+    NavbarSearchDialogComponent,
     NavbarTickerComponent,
     NavbarStickyHeaderComponent,
     NavbarSideMenuComponent,
   ],
   template: `
     <header class="hidden border-b border-border bg-background lg:block">
-      <app-navbar-main-header [links]="links" [topLinks]="topLinks" [topbarMeta]="topbarMeta()" />
+      <app-navbar-main-header
+        [links]="links"
+        [topLinks]="topLinks"
+        [topbarMeta]="topbarMeta()"
+        (searchRequested)="openSearchDialog()"
+      />
       <app-navbar-ticker [headlines]="tickerHeadlines()" />
     </header>
 
@@ -41,6 +51,7 @@ import type { TickerHeadline } from '../../../interfaces/ticker-headline.interfa
       [menuOpen]="menuOpen()"
       [topbarMeta]="stickyTopbarMeta()"
       (menuToggle)="toggleMenu()"
+      (searchRequested)="openSearchDialog()"
     />
 
     <div class="border-b border-border bg-background lg:hidden">
@@ -53,10 +64,21 @@ import type { TickerHeadline } from '../../../interfaces/ticker-headline.interfa
       [socialLinks]="socialLinks"
       (closed)="closeMenu()"
     />
+
+    <app-navbar-search-dialog
+      [open]="searchDialogOpen()"
+      [query]="searchDraftQuery()"
+      [submitting]="isSearchSubmitting()"
+      [feedbackMessage]="searchFeedbackMessage()"
+      (closed)="closeSearchDialog()"
+      (queryChange)="updateSearchDraft($event)"
+      (submitted)="submitSearch()"
+    />
   `,
 })
 export class AppNavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly newsService = inject(NewsService);
   private readonly newsStore = inject(NewsStore);
   private readonly router = inject(Router);
   private readonly isMobileViewport = signal(false);
@@ -66,6 +88,10 @@ export class AppNavbarComponent {
 
   protected readonly stickyVisible = signal(false);
   protected readonly menuOpen = signal(false);
+  protected readonly searchDialogOpen = signal(false);
+  protected readonly searchDraftQuery = signal('');
+  protected readonly isSearchSubmitting = signal(false);
+  protected readonly searchFeedbackMessage = signal<string | null>(null);
   protected readonly shouldShowSticky = computed(() => this.isMobileViewport() || this.stickyVisible());
 
   protected readonly links = NAVBAR_LINKS;
@@ -99,6 +125,70 @@ export class AppNavbarComponent {
   protected closeMenu(): void {
     this.menuOpen.set(false);
   }
+
+  protected openSearchDialog(): void {
+    this.lastFocusedElement = this.getActiveElement();
+    this.searchFeedbackMessage.set(null);
+    this.searchDialogOpen.set(true);
+  }
+
+  protected closeSearchDialog(): void {
+    this.searchDialogOpen.set(false);
+    this.isSearchSubmitting.set(false);
+    this.searchFeedbackMessage.set(null);
+
+    const focusTarget = this.lastFocusedElement;
+    this.lastFocusedElement = null;
+    if (!focusTarget) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      focusTarget.focus();
+    });
+  }
+
+  protected updateSearchDraft(value: string): void {
+    this.searchDraftQuery.set(value);
+    if (this.searchFeedbackMessage()) {
+      this.searchFeedbackMessage.set(null);
+    }
+  }
+
+  protected async submitSearch(): Promise<void> {
+    if (this.isSearchSubmitting()) {
+      return;
+    }
+
+    const query = normalizeSearchQuery(this.searchDraftQuery());
+    if (!query) {
+      this.searchFeedbackMessage.set('Escribe un término de búsqueda para continuar.');
+      return;
+    }
+
+    this.isSearchSubmitting.set(true);
+    this.searchFeedbackMessage.set(null);
+
+    try {
+      const result = await lastValueFrom(this.newsService.getNews(createSearchNewsQuery(query)));
+      if (result.response.articles.length === 0) {
+        this.searchFeedbackMessage.set(`No encontramos resultados para "${query}". Prueba con otro término.`);
+        return;
+      }
+
+      this.searchDraftQuery.set('');
+      this.closeSearchDialog();
+      await this.router.navigate(['/buscar'], {
+        queryParams: { q: query },
+      });
+    } catch {
+      this.searchFeedbackMessage.set('No se pudo completar la búsqueda. Inténtalo de nuevo en unos minutos.');
+    } finally {
+      this.isSearchSubmitting.set(false);
+    }
+  }
+
+  private lastFocusedElement: HTMLElement | null = null;
 
   private initStickyOnScroll(): void {
     if (typeof window === 'undefined') {
@@ -162,5 +252,13 @@ export class AppNavbarComponent {
     }
 
     this.newsStore.load(this.tickerNewsQuery);
+  }
+
+  private getActiveElement(): HTMLElement | null {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    return document.activeElement instanceof HTMLElement ? document.activeElement : null;
   }
 }

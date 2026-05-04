@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { NAVBAR_PRIMARY_LINKS_COUNT, NAVBAR_SECONDARY_LINKS_MAX_COUNT } from '../../../constants/navbar.constants';
@@ -101,13 +101,14 @@ import type { TopLink } from '../../../../interfaces/top-link.interface';
           </div>
         </nav>
 
-        <a
+        <button
+          type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label="Buscar noticias"
-          routerLink="/buscar"
+          (click)="searchRequested.emit()"
         >
           <app-icon-search />
-        </a>
+        </button>
       </div>
     </app-page-container>
   `,
@@ -116,6 +117,7 @@ export class NavbarMainHeaderComponent {
   readonly links = input.required<readonly NavLink[]>();
   readonly topLinks = input.required<readonly TopLink[]>();
   readonly topbarMeta = input.required<string>();
+  readonly searchRequested = output<void>();
   protected readonly primaryLinks = computed(() => this.links().slice(0, NAVBAR_PRIMARY_LINKS_COUNT));
   protected readonly secondaryLinks = computed(() =>
     this.links().slice(NAVBAR_PRIMARY_LINKS_COUNT, NAVBAR_PRIMARY_LINKS_COUNT + NAVBAR_SECONDARY_LINKS_MAX_COUNT),

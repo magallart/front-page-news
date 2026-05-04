@@ -22,6 +22,7 @@ import { toNewsRequestSnapshotKey } from '../../lib/news-request';
 import { NewsViewPreferencesStore } from '../../lib/news-view-preferences-store';
 import { NewsStore } from '../../stores/news.store';
 import { adaptArticlesToNewsItems } from '../../utils/api-ui-adapters';
+import { normalizeSearchQuery } from '../../utils/search-query';
 import { resolveSectionUiState } from '../../utils/ui-state-matrix';
 
 import type { NewsItem } from '../../interfaces/news-item.interface';
@@ -397,13 +398,4 @@ export class SearchPageComponent implements OnInit {
       sortDirection: this.sortDirection(),
     });
   }
-}
-
-function normalizeSearchQuery(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.trim().toLowerCase();
-  return normalized.length > 0 ? normalized : null;
 }

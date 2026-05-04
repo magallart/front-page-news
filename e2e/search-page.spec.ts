@@ -3,13 +3,13 @@ import { expect, test } from '@playwright/test';
 import { mockApiRoutes } from './helpers/api-mocks';
 
 test.describe('Search Page', () => {
-  test('navigates from the navbar search button and filters search results by source', async ({ page }) => {
+  test('opens a search modal from the navbar and navigates only after finding results', async ({ page }) => {
     await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-    await page.getByRole('link', { name: /buscar noticias/i }).click();
-    await expect(page).toHaveURL(/\/buscar$/);
+    await page.locator('header').getByRole('button', { name: /buscar noticias/i }).click();
+    await expect(page.getByRole('dialog', { name: /buscar noticias/i })).toBeVisible();
 
     await page.getByRole('searchbox', { name: /buscar noticias/i }).fill('vivienda');
     await page.getByRole('button', { name: /^buscar$/i }).click();
@@ -31,5 +31,18 @@ test.describe('Search Page', () => {
 
     await panel.getByLabel('Actualidad 24').check();
     await expect(cards).toHaveCount(1);
+  });
+
+  test('shows an inline no-results message in the search modal and stays on the current page', async ({ page }) => {
+    await mockApiRoutes(page);
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    await page.locator('header').getByRole('button', { name: /buscar noticias/i }).click();
+    await page.getByRole('searchbox', { name: /buscar noticias/i }).fill('termino inexistente');
+    await page.getByRole('button', { name: /^buscar$/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('dialog')).toContainText('No encontramos resultados para "termino inexistente"');
   });
 });

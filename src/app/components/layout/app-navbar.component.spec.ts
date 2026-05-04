@@ -1,9 +1,11 @@
 import { type Signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createLatestNewsTickerQuery } from '../../lib/news-query-factory';
+import { NewsService } from '../../services/news.service';
 import { NewsStore } from '../../stores/news.store';
 
 import { AppNavbarComponent } from './app-navbar.component';
@@ -14,7 +16,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -30,7 +36,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -52,7 +62,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -74,7 +88,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: createNewsStoreMock() }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -91,7 +109,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: storeMock },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -111,7 +133,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: storeMock },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -131,7 +157,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: storeMock },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -149,7 +179,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: storeMock },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -169,7 +203,11 @@ describe('AppNavbarComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AppNavbarComponent],
-      providers: [provideRouter([]), { provide: NewsStore, useValue: storeMock }],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: storeMock },
+        { provide: NewsService, useValue: createNewsServiceMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AppNavbarComponent);
@@ -179,6 +217,84 @@ describe('AppNavbarComponent', () => {
     component.loadTickerNewsIfNeeded();
 
     expect(storeMock.load).not.toHaveBeenCalled();
+  });
+
+  it('opens the search dialog and navigates only when the search has results', async () => {
+    mockMatchMedia(false);
+    const newsServiceMock = createNewsServiceMock({
+      resultArticles: [createArticle('search-1', 'Resultado vivienda')],
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const openButton = fixture.nativeElement.querySelector('button[aria-label="Buscar noticias"]') as HTMLButtonElement;
+    openButton.click();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
+    input.value = 'Vivienda';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+    await Promise.resolve();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(newsServiceMock.getNews).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(['/buscar'], {
+      queryParams: { q: 'vivienda' },
+    });
+  });
+
+  it('keeps the dialog open and shows feedback when the search has no results', async () => {
+    mockMatchMedia(false);
+    const newsServiceMock = createNewsServiceMock({ resultArticles: [] });
+
+    await TestBed.configureTestingModule({
+      imports: [AppNavbarComponent],
+      providers: [
+        provideRouter([]),
+        { provide: NewsStore, useValue: createNewsStoreMock() },
+        { provide: NewsService, useValue: newsServiceMock },
+      ],
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(AppNavbarComponent);
+    fixture.detectChanges();
+
+    const openButton = fixture.nativeElement.querySelector('button[aria-label="Buscar noticias"]') as HTMLButtonElement;
+    openButton.click();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
+    input.value = 'Termino inexistente';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+    await Promise.resolve();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent as string).toContain('No encontramos resultados para "termino inexistente"');
   });
 });
 
@@ -230,6 +346,29 @@ function createNewsStoreMock(overrides?: Partial<{ articles: readonly ReturnType
     ),
     isInitialLoading: vi.fn(() => overrides?.loading ?? false),
     load: vi.fn(),
+  };
+}
+
+function createNewsServiceMock(overrides?: Partial<{ resultArticles: readonly ReturnType<typeof createArticle>[] }>) {
+  return {
+    getNews: vi.fn(() =>
+      of({
+        key: 'news:id=-:section=-:source=-:q=vivienda:page=1:limit=20',
+        query: { searchQuery: 'vivienda' },
+        response: {
+          articles: overrides?.resultArticles ?? [],
+          total: overrides?.resultArticles?.length ?? 0,
+          page: 1,
+          limit: 20,
+          warnings: [],
+        },
+        source: 'network',
+        staleAtMs: Date.now() + 60_000,
+        expiresAtMs: Date.now() + 120_000,
+        isStale: false,
+        isRefreshing: false,
+      }),
+    ),
   };
 }
 

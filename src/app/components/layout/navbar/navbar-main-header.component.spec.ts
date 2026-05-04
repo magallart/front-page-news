@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { NAVBAR_PRIMARY_LINKS_COUNT, NAVBAR_SECONDARY_LINKS_MAX_COUNT } from '../../../constants/navbar.constants';
 
@@ -23,7 +23,7 @@ describe('NavbarMainHeaderComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     const navRows = fixture.nativeElement.querySelectorAll('nav ul');
     const brandLink = fixture.nativeElement.querySelector('a[routerlink="/"]') as HTMLAnchorElement | null;
-    const searchButton = fixture.nativeElement.querySelector('a[aria-label="Buscar noticias"]') as HTMLAnchorElement | null;
+    const searchButton = fixture.nativeElement.querySelector('button[aria-label="Buscar noticias"]') as HTMLButtonElement | null;
 
     expect(text).toContain('MIERCOLES 04 DE MARZO DE 2026');
     expect(text).toContain('FRONT PAGE');
@@ -36,7 +36,27 @@ describe('NavbarMainHeaderComponent', () => {
     );
     expect(brandLink?.getAttribute('href')).toBe('/');
     expect(searchButton).toBeTruthy();
-    expect(searchButton?.getAttribute('href')).toBe('/buscar');
+  });
+
+  it('emits a search request when clicking the search button', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NavbarMainHeaderComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NavbarMainHeaderComponent);
+    fixture.componentRef.setInput('topbarMeta', 'MIERCOLES 04 DE MARZO DE 2026');
+    fixture.componentRef.setInput('topLinks', []);
+    fixture.componentRef.setInput('links', createNavLinks());
+    fixture.detectChanges();
+
+    const searchSpy = vi.fn();
+    fixture.componentInstance.searchRequested.subscribe(searchSpy);
+
+    const searchButton = fixture.nativeElement.querySelector('button[aria-label="Buscar noticias"]') as HTMLButtonElement;
+    searchButton.click();
+
+    expect(searchSpy).toHaveBeenCalledOnce();
   });
 });
 

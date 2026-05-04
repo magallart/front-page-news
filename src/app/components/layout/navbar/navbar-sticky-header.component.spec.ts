@@ -53,5 +53,26 @@ describe('NavbarStickyHeaderComponent', () => {
 
     expect(toggleSpy).toHaveBeenCalledOnce();
   });
+
+  it('emits a search request from the sticky header search button', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NavbarStickyHeaderComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NavbarStickyHeaderComponent);
+    fixture.componentRef.setInput('visible', true);
+    fixture.componentRef.setInput('menuOpen', false);
+    fixture.componentRef.setInput('topbarMeta', '11-02-26');
+    fixture.detectChanges();
+
+    const searchSpy = vi.fn();
+    fixture.componentInstance.searchRequested.subscribe(searchSpy);
+
+    const button = fixture.nativeElement.querySelector('button[aria-label="Buscar noticias"]') as HTMLButtonElement;
+    button.click();
+
+    expect(searchSpy).toHaveBeenCalledOnce();
+  });
 });
 
