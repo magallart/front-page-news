@@ -24,10 +24,10 @@ import { PageContainerComponent } from '../page-container.component';
         style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));"
       >
         <app-page-container>
-          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr_auto] sm:gap-4">
+          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:grid-cols-[auto_auto_1fr_auto] sm:gap-4 lg:grid-cols-[auto_1fr_auto]">
             <button
               type="button"
-              class="mr-2 inline-flex h-10 w-10 items-center justify-center text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:mr-3"
+              class="mr-2 inline-flex h-10 w-10 items-center justify-center text-secondary-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:mr-3 lg:hidden"
               (click)="menuToggle.emit()"
               [attr.aria-expanded]="menuOpen()"
               [attr.aria-controls]="sideMenuDialogId"

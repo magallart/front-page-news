@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { mockApiRoutes } from './helpers/api-mocks';
 
 test.describe('Header/Navbar', () => {
-  test('desktop: sticky appears on scroll and side menu navigates to section', async ({ page }) => {
+test('desktop: sticky appears on scroll without exposing the mobile side menu', async ({ page }) => {
     await mockApiRoutes(page);
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
@@ -14,12 +14,8 @@ test.describe('Header/Navbar', () => {
     await page.locator('#most-read').scrollIntoViewIfNeeded();
     await expect(stickyContainer).toHaveClass(/translate-y-0/);
 
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
-    const sideMenu = page.locator('app-navbar-side-menu aside');
-    await expect(sideMenu).toBeVisible();
-
-    await sideMenu.getByRole('link', { name: 'Actualidad' }).click({ noWaitAfter: true });
-    await page.waitForURL(/\/seccion\/actualidad$/);
+    await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeHidden();
+    await expect(page.locator('app-navbar-side-menu > div')).toBeHidden();
   });
 
   test('ticker uses text headlines and badge routes to /seccion/ultima-hora', async ({ page }) => {
@@ -68,7 +64,7 @@ test.describe('Header/Navbar', () => {
     await expect(sideMenu.locator('a[href="/seccion/ultima-hora"]')).toBeVisible();
 
     await page.keyboard.press('Escape');
-    await expect(sideMenu).toHaveClass(/-translate-x-full/);
+    await expect(page.locator('app-navbar-side-menu > div')).toHaveAttribute('aria-hidden', 'true');
     await expect(menuToggleButton).toBeFocused();
   });
 });

@@ -36,6 +36,21 @@ describe('NavbarSideMenuComponent', () => {
     expect(heading.textContent?.trim()).toBe('Menu');
   });
 
+  it('starts hidden off-canvas and remains hidden on desktop by responsive classes', async () => {
+    const fixture = await createFixture(false);
+
+    const container = fixture.nativeElement.firstElementChild as HTMLElement;
+    const overlayButton = fixture.nativeElement.querySelector(
+      'button[aria-label="Cerrar menu lateral"]',
+    ) as HTMLButtonElement;
+    const panel = fixture.nativeElement.querySelector(`#${NAVBAR_SIDE_MENU_DIALOG_ID}`) as HTMLElement;
+
+    expect(container.className).toContain('lg:hidden');
+    expect(container.className).toContain('pointer-events-none');
+    expect(overlayButton.style.opacity).toBe('0');
+    expect(panel.style.transform).toBe('translateX(-100%)');
+  });
+
   it('emits close event from overlay and close button', async () => {
     const fixture = await createFixture();
 

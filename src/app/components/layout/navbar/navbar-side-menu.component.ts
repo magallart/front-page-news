@@ -15,16 +15,15 @@ import type { ElementRef, OnChanges, SimpleChanges } from '@angular/core';
   imports: [RouterLink, SocialIconComponent, IconCloseComponent],
   template: `
     <div
-      class="fixed inset-0 z-[60] transition"
+      class="fixed inset-0 z-[60] transition lg:hidden"
       [class.pointer-events-none]="!open()"
       [attr.aria-hidden]="!open()"
       (keydown)="onContainerKeydown($event)"
     >
       <button
         type="button"
-        class="absolute inset-0 bg-black/50 transition-opacity duration-300"
-        [class.opacity-0]="!open()"
-        [class.opacity-100]="open()"
+        class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300"
+        [style.opacity]="open() ? '1' : '0'"
         (click)="emitClose()"
         aria-label="Cerrar menu lateral"
       ></button>
@@ -33,8 +32,7 @@ import type { ElementRef, OnChanges, SimpleChanges } from '@angular/core';
         #sideMenuPanel
         [id]="dialogId"
         class="absolute left-0 top-0 h-full w-80 max-w-[85vw] border-r border-border bg-background p-5 shadow-medium transition-transform duration-300"
-        [class.-translate-x-full]="!open()"
-        [class.translate-x-0]="open()"
+        [style.transform]="open() ? 'translateX(0)' : 'translateX(-100%)'"
         role="dialog"
         aria-modal="true"
         [attr.aria-labelledby]="dialogTitleId"

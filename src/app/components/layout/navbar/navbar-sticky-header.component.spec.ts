@@ -54,6 +54,22 @@ describe('NavbarStickyHeaderComponent', () => {
     expect(toggleSpy).toHaveBeenCalledOnce();
   });
 
+  it('keeps the menu trigger hidden on desktop layouts', async () => {
+    await TestBed.configureTestingModule({
+      imports: [NavbarStickyHeaderComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NavbarStickyHeaderComponent);
+    fixture.componentRef.setInput('visible', true);
+    fixture.componentRef.setInput('menuOpen', false);
+    fixture.componentRef.setInput('topbarMeta', '11-02-26');
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('button[aria-label="Abrir menu"]') as HTMLButtonElement;
+    expect(button.className).toContain('lg:hidden');
+  });
+
   it('emits a search request from the sticky header search button', async () => {
     await TestBed.configureTestingModule({
       imports: [NavbarStickyHeaderComponent],
